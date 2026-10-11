@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ЛР3 · Чисельна похідна та інтеграл</title>
+<style>
+  :root {
+    --bg: #11151c; --card: #1a2029; --ink: #e9edf3; --muted: #9aa5b4; --line: #2b3442; --chip: #232c38; --accent: #ffb26b;
+    --L1: #5aa7ff; --L2: #ffab4a; --L3: #d08cff; --L4: #4fd690;
+    --grid: #262f3c; --zero: #56627a; --frame: #3a4556; --tick: #a3adbb; --band: #2b2a1f;
+    --pt: #f4f1e8; --halo: #11151c; --ctrl: #232c38; --ctrl-line: #3a4556; --on: #2f3b4d;
+  }
+  :root[data-theme="light"] {
+    --bg: #f7f5ef; --card: #fffdf8; --ink: #1b2330; --muted: #5a6272; --line: #e2ddd0; --chip: #f0ece2; --accent: #b4501f;
+    --L1: #1f5fa8; --L2: #c9731a; --L3: #7a3e9d; --L4: #2e8a62;
+    --grid: #e7e2d6; --zero: #9a9384; --frame: #cfc9ba; --tick: #5a6272; --band: #efe8d6;
+    --pt: #1b2330; --halo: #fffdf8; --ctrl: #ffffff; --ctrl-line: #cfc9ba; --on: #f0ece2;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 "Segoe UI", system-ui, Arial, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 18px 16px 70px; }
+  .top { display: flex; align-items: center; gap: 12px; }
+  .top button { margin-left: auto; }
+  h1 { font-size: 26px; line-height: 1.25; margin: 6px 0 4px; }
+  h2 { font-size: 20px; margin: 0 0 6px; }
+  p { margin: 6px 0 10px; }
+  .muted { color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin: 18px 0; }
+  .try { background: var(--chip); border-radius: 10px; padding: 8px 12px; margin: 10px 0 0; font-size: 16px; }
+  .try b { color: var(--accent); }
+  .note { border-left: 3px solid var(--accent); padding: 2px 0 2px 12px; margin: 10px 0 0; font-size: 16px; }
+  button, select { font: inherit; font-size: 15px; padding: 6px 12px; border-radius: 9px; border: 1px solid var(--ctrl-line); background: var(--ctrl); color: var(--ink); cursor: pointer; }
+  button.on { background: var(--on); border-color: var(--accent); font-weight: 600; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .chips label { display: inline-flex; align-items: center; gap: 6px; margin: 0 14px 4px 0; cursor: pointer; white-space: nowrap; font-size: 16px; }
+  .tag { display: inline-block; width: 24px; height: 5px; border-radius: 3px; }
+  input[type=range] { width: 100%; margin: 8px 0 2px; accent-color: var(--accent); }
+  .rlabel { display: flex; justify-content: space-between; font-size: 15px; color: var(--muted); }
+  .rlabel b { color: var(--ink); font-family: Consolas, "Courier New", monospace; }
+  svg { width: 100%; height: auto; display: block; touch-action: pan-y; }
+  .drag { cursor: grab; touch-action: none; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; margin-top: 8px; }
+  th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; }
+  td.num { font-family: Consolas, "Courier New", monospace; text-align: right; white-space: nowrap; }
+  .tbl { overflow-x: auto; }
+  .mono { font-family: Consolas, "Courier New", monospace; }
+  .formula { font-family: Consolas, "Courier New", monospace; font-size: 15px; background: var(--chip); border-radius: 10px; padding: 8px 12px; overflow-x: auto; white-space: nowrap; margin-top: 8px; }
+  .big { font-size: 22px; font-weight: 700; font-family: Consolas, "Courier New", monospace; }
+  ul.sum li { margin-bottom: 6px; }
+  .z-in { color: var(--L4); } .z-ex { color: var(--accent); }
+  h3 { font-size: 17px; margin: 14px 0 4px; }
+  ol { margin: 6px 0 10px; padding-left: 22px; }
+  .tbl th { text-align: left; }
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><span class="muted">Лабораторна робота № 3 · Чисельні методи</span><button id="theme" title="Світла / темна тема">☀ / ☾</button></div>
+  <h1>Чисельне визначення похідної та інтеграла</h1>
+  <p class="muted">Усі приклади побудовано на функції зразка звіту. Для свого варіанта підставте власні A і k.</p>
+
+  <!-- 1 -->
+  <section class="card">
+    <h2>1. Функція</h2>
+    <p>У кожному варіанті функцію задано формулою</p>
+    <div class="formula big">f(x) = A · e<sup>−k·x</sup></div>
+    <p>A залежить від групи, k — від номера варіанта. У зразку A = 1, k = 0,189: f(x) = e<sup>−0,189x</sup>.</p>
+    <p>Це <b>показникова</b> функція y = A · a<sup>x</sup> (a &gt; 0, a ≠ 1): змінна x стоїть у показнику степеня. Оскільки e<sup>−kx</sup> = (e<sup>−k</sup>)<sup>x</sup>, основа a = e<sup>−k</sup> &lt; 1, тому функція <b>спадає</b>.</p>
+    <div class="tbl"><table>
+      <tr><th>Область визначення</th><td>(−∞; +∞)</td></tr>
+      <tr><th>Множина значень</th><td>(0; +∞) — завжди додатна, нуля не досягає</td></tr>
+      <tr><th>Значення в x = 0</th><td>A (бо a<sup>0</sup> = 1)</td></tr>
+      <tr><th>Зразок</th><td>a = e<sup>−0,189</sup> = 0,8278: на кожній одиниці x значення зменшується на ≈ 17 %</td></tr>
+    </table></div>
+    <svg id="ch1"></svg>
+  </section>
+
+  <!-- 2 -->
+  <section class="card">
+    <h2>2. Завдання</h2>
+    <ol>
+      <li><b>Похідна в точці x = 0</b> — швидкість зміни функції на початку.</li>
+      <li><b>Інтеграл від 0 до ∞</b> — площа під усією кривою.</li>
+    </ol>
+    <p>Кожну величину визначають двічі: <b>аналітично</b> (точне значення за формулами) і <b>чисельно</b> (програмою, лише за значеннями f у точках). Порівняння показує похибку чисельного методу.</p>
+    <p class="note">На практиці формули часто немає: є записи датчика або програма, що обчислює f(x). Тут формулу відомо навмисно — щоб виміряти похибку.</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="card">
+    <h2>3. Похідна — нахил дотичної</h2>
+    <p><b>Похідна</b> показує, як швидко змінюється функція в точці. Геометрично — нахил дотичної до графіка. За означенням беруть нахил хорди через дві близькі точки і зменшують відстань h між ними:</p>
+    <div class="formula">f′(x) = lim<sub>h→0</sub> (f(x + h) − f(x)) / h</div>
+    <svg id="ch3"></svg>
+    <div class="chips"><label><span class="tag" style="background:var(--L1)"></span>f(x)</label><label><span class="tag" style="background:var(--L4)"></span>дотична, нахил −0,189</label><label><span class="tag" style="background:var(--accent)"></span>хорда через x = 0 і x = h</label></div>
+    <input type="range" id="h3" min="0" max="100" value="100">
+    <div class="rlabel"><span>h = <b id="h3v"></b></span><span>нахил хорди <b id="s3v"></b> · точна похідна <b>−0,189</b></span></div>
+    <p class="try"><b>Завдання:</b> зменшуйте h. Як змінюється нахил хорди? У скільки разів зменшується різниця з точним значенням, якщо h зменшити в 10 разів?</p>
+    <p class="note"><b>Чисельна похідна</b> — це нахил хорди з малим, але ненульовим h.</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="card">
+    <h2>4. Інтеграл — площа під кривою</h2>
+    <p><b>Визначений інтеграл</b> — площа під графіком між межами. Фізично — накопичена величина: швидкість → шлях, витрата → об'єм. Відрізок розбивають на смужки ширини h і додають їхні площі:</p>
+    <div class="formula">∫ ≈ h · (f(x<sub>1</sub>) + f(x<sub>2</sub>) + … + f(x<sub>n</sub>))</div>
+    <div class="seg" id="mode4"></div>
+    <svg id="ch4"></svg>
+    <input type="range" id="h4" min="0" max="100" value="50">
+    <div class="rlabel"><span>h = <b id="h4v"></b></span><span>сума <b id="s4v"></b> · точна площа <b>5,291</b></span></div>
+    <p class="try"><b>Завдання:</b> встановіть h = 1 і оберіть трапеції. Порівняйте результат із рядком N = 10000 у таблиці інтеграла зразка звіту.</p>
+    <p class="note">Похідна — це відношення різниць (ділення на h), інтеграл — сума (множення на h). Чисельні методи роблять саме це з малим h.</p>
+  </section>
+
+  <!-- 5 -->
+  <section class="card">
+    <h2>5. Аналітично чи чисельно</h2>
+    <div class="tbl"><table>
+      <tr><th></th><th>Аналітично</th><th>Чисельно</th></tr>
+      <tr><th>Результат</th><td>формула, з неї точне число</td><td>наближене число в точці</td></tr>
+      <tr><th>Спосіб</th><td>таблиця похідних і правила</td><td>значення f у кількох точках</td></tr>
+      <tr><th>Потрібно знати</th><td>формулу f</td><td>лише як обчислити f(x)</td></tr>
+    </table></div>
+    <ul class="sum">
+      <li><b>Похідну</b> функції, записаної формулою з елементарних (поліноми, e<sup>x</sup>, sin, ln), можна знайти аналітично <b>завжди</b>.</li>
+      <li><b>Первісну</b> — <b>не завжди</b>: для e<sup>−x²</sup> чи sin(x)/x її не записати формулою, такі інтеграли обчислюють лише чисельно.</li>
+      <li>Для функції, заданої таблицею чи програмою, — тільки чисельно.</li>
+    </ul>
+    <p>Для функції цієї роботи відомі обидві відповіді — тому можна виміряти похибку чисельних методів.</p>
+  </section>
+
+  <!-- 6 -->
+  <section class="card">
+    <h2>6. Точні значення (п. 2 звіту)</h2>
+    <h3>Похідна</h3>
+    <p>(e<sup>a·x</sup>)′ = a · e<sup>a·x</sup>, тут a = −k:</p>
+    <div class="formula">f′(x) = −A · k · e<sup>−k·x</sup>   →   f′(0) = −A · k</div>
+    <p>Зразок: f′(0) = −1 · 0,189 = <b>−0,189</b>. Перевірка: функція спадає — похідна від'ємна ✓</p>
+    <h3>Інтеграл</h3>
+    <div class="formula">F(x) = −(A / k) · e<sup>−k·x</sup>   ·   перевірка: F′(x) = A · e<sup>−k·x</sup> = f(x) ✓</div>
+    <div class="formula">∫<sub>0</sub><sup>∞</sup> f(x) dx = F(∞) − F(0) = 0 − (−A / k) = A / k</div>
+    <p>Зразок: 1 / 0,189 = <b>5,291005291005291</b>.</p>
+    <p class="note"><b>Чому в програмі ∞ замінено на 10000.</b> Площа «хвоста» за межею дорівнює (A / k) · e<sup>−k·10000</sup>. У зразку це e<sup>−1890</sup> — у комп'ютері точно 0; навіть для k = 0,01 — близько 10<sup>−42</sup>. Для цих функцій 10000 фактично є нескінченністю.</p>
+  </section>
+
+  <!-- 7 -->
+  <section class="card">
+    <h2>7. Різницеві формули похідної</h2>
+    <p><b>Різницева формула</b> наближено обчислює похідну в точці через значення функції в кількох сусідніх точках, віддалених на крок h. Це означення похідної без границі: h мале, але не нульове.</p>
+    <div class="tbl"><table>
+      <tr><th>Формула</th><th>Точки</th><th>Порядок</th><th>У звіті</th></tr>
+      <tr><td class="mono">(f(x+h) − f(x)) / h</td><td>x, x+h</td><td>1</td><td>— (для порівняння)</td></tr>
+      <tr><td class="mono">(f(x+h) − f(x−h)) / (2h)</td><td>x−h, x+h</td><td><b>2</b></td><td>df/dx1</td></tr>
+      <tr><td class="mono">(−f(x+2h) + 8f(x+h) − 8f(x−h) + f(x−2h)) / (12h)</td><td>x−2h … x+2h</td><td><b>4</b></td><td>df/dx2</td></tr>
+    </table></div>
+    <p>Обидві формули роботи — <b>центральні</b>: точки беруться симетрично з обох боків від x. Тому програма обчислює f і при x &lt; 0.</p>
+    <h3>Порядок формули</h3>
+    <p>Похибка формули порядку p пропорційна h<sup>p</sup>: якщо h зменшити в 10 разів, похибка зменшиться в 10<sup>p</sup> разів. Відносна похибка на функції зразка:</p>
+    <div class="tbl"><table>
+      <tr><th>h</th><th>порядок 1</th><th>порядок 2</th><th>порядок 4</th></tr>
+      <tr><td class="num">1</td><td class="num">8,88 %</td><td class="num">0,596 %</td><td class="num">0,00427 %</td></tr>
+      <tr><td class="num">0,1</td><td class="num">0,939 %</td><td class="num">0,00595 %</td><td class="num">4,25·10⁻⁷ %</td></tr>
+      <tr><td class="num">0,01</td><td class="num">0,0944 %</td><td class="num">5,95·10⁻⁵ %</td><td class="num">4,39·10⁻¹¹ %</td></tr>
+    </table></div>
+    <p>h ÷ 10 → похибка ÷ 10, ÷ 100, ÷ 10 000 відповідно. Формула вищого порядку точніша при тому самому h, але обчислює f у більшій кількості точок.</p>
+  </section>
+
+  <!-- 8 -->
+  <section class="card">
+    <h2>8. Від полінома Лагранжа до різницевої формули</h2>
+    <p><b>Ідея</b> (зв'язок із лабораторною роботою № 2): похідну функції замінюють похідною інтерполяційного полінома, що проходить через її точки поблизу x.</p>
+    <svg id="ch8"></svg>
+    <div class="chips"><label><span class="tag" style="background:var(--L1)"></span>f(x)</label><label><span class="tag" style="background:var(--L2)"></span>L2 через −h, 0, h</label><label><span class="tag" style="background:var(--accent)"></span>дотична до L2 у x = 0</label></div>
+    <input type="range" id="h8" min="0" max="100" value="80">
+    <div class="rlabel"><span>h = <b id="h8v"></b></span><span>нахил дотичної до L2 <b id="s8v"></b> · точна похідна <b>−0,189</b></span></div>
+
+    <h3>Центральна формула — з L2</h3>
+    <p>Для зручності x = 0. Три точки з кроком h:</p>
+    <div class="tbl"><table>
+      <tr><th>x</th><td class="num">−h</td><td class="num">0</td><td class="num">h</td></tr>
+      <tr><th>y</th><td class="num">y₋</td><td class="num">y₀</td><td class="num">y₊</td></tr>
+    </table></div>
+    <p><b>1. Поліном Лагранжа</b> через ці точки:</p>
+    <div class="formula">L2(x) = y₋·(x − 0)(x − h) / ((−h − 0)(−h − h)) + y₀·(x + h)(x − h) / ((0 + h)(0 − h)) + y₊·(x + h)(x − 0) / ((h + h)(h − 0))</div>
+    <p><b>2. Знаменники:</b> (−h)(−2h) = 2h², (h)(−h) = −h², (2h)(h) = 2h². Після розкриття дужок:</p>
+    <div class="formula">L2(x) = y₋·(x² − h·x) / (2h²) − y₀·(x² − h²) / h² + y₊·(x² + h·x) / (2h²)</div>
+    <p><b>3. Похідна</b> за x (h — стале число):</p>
+    <div class="formula">L2′(x) = y₋·(2x − h) / (2h²) − y₀·2x / h² + y₊·(2x + h) / (2h²)</div>
+    <p><b>4. Підстановка x = 0:</b></p>
+    <div class="formula">L2′(0) = y₋·(−h) / (2h²) − 0 + y₊·h / (2h²) = (y₊ − y₋) / (2h)</div>
+    <p>Отримано центральну формулу (f(x + h) − f(x − h)) / (2h). Середня точка y₀ скоротилася, тому у формулі лише дві точки.</p>
+    <p class="note"><b>Перевірка на зразку</b>, h = 1: y₋ = f(−1) = 1,2080, y₊ = f(1) = 0,8278 → (0,8278 − 1,2080) / 2 = −0,19013 — збігається з таблицею звіту при h = 1.</p>
+
+    <h3>П'ятиточкова формула — з L4</h3>
+    <p>Аналогічно, через п'ять точок −2h, −h, 0, h, 2h. Похідна кожного доданка Лагранжа в x = 0 дорівнює y цієї точки, помноженому на коефіцієнт:</p>
+    <div class="tbl"><table>
+      <tr><th>точка</th><td class="num">−2h</td><td class="num">−h</td><td class="num">0</td><td class="num">h</td><td class="num">2h</td></tr>
+      <tr><th>коефіцієнт × 1/(12h)</th><td class="num">1</td><td class="num">−8</td><td class="num">0</td><td class="num">8</td><td class="num">−1</td></tr>
+    </table></div>
+    <div class="formula">L4′(0) = (y₋₂ − 8y₋₁ + 8y₁ − y₂) / (12h)</div>
+    <p><b>Перевірка коефіцієнта точки h:</b> доданок Лагранжа y₁·(x + 2h)(x + h)(x − 0)(x − 2h) / ((3h)(2h)(h)(−h)). Похідна в x = 0 дорівнює добутку решти дужок у нулі: y₁·(2h)(h)(−2h) / (−6h⁴) = y₁·8 / (12h).</p>
+    <p class="note">Що більше точок, то точніше поліном повторює функцію поблизу x і то вищий порядок формули: 3 точки → порядок 2, 5 точок → порядок 4.</p>
+  </section>
+
+  <p class="muted">Розділи про вибір оптимального кроку та квадратурні формули інтеграла буде додано.</p>
+</main>
+
+<script>
+const A = 1, K = 0.189, f = x => A * Math.exp(-K * x), D0 = -A * K, S = A / K;
+const c = (v, d = 3) => { const r = Number(v.toFixed(d)); return (r < 0 ? "−" : "") + String(Math.abs(r)).replace(".", ","); };
+const sig = (v, d = 4) => { const r = Number(v.toPrecision(d)); return (r < 0 ? "−" : "") + String(Math.abs(r)).replace(".", ",").replace(/e([+-])(\d+)/, (m, s, e) => "·10" + (s === "-" ? "⁻" : "") + e.replace(/\d/g, x => "⁰¹²³⁴⁵⁶⁷⁸⁹"[x])); };
+// ---------- тема ----------
+let TH = {};
+function readTheme() {
+  const s = getComputedStyle(document.documentElement), v = n => s.getPropertyValue(n).trim();
+  TH = { L1: v("--L1"), L2: v("--L2"), L3: v("--L3"), L4: v("--L4"), grid: v("--grid"), zero: v("--zero"), frame: v("--frame"),
+    tick: v("--tick"), band: v("--band"), pt: v("--pt"), halo: v("--halo"), ink: v("--ink"), accent: v("--accent"), muted: v("--muted") };
+}
+// усередині сайту тему задає оболонка (#theme=dark), тоді своя кнопка не потрібна
+const embedded = window.parent !== window;
+let theme = "dark";
+try { theme = localStorage.getItem("chm.theme") || "dark"; } catch (e) {}
+function hashTheme() { const t = new URLSearchParams(location.hash.slice(1)).get("theme"); return t === "light" || t === "dark" ? t : null; }
+if (hashTheme()) theme = hashTheme();
+if (embedded) document.getElementById("theme").style.display = "none";
+window.addEventListener("hashchange", () => { const t = hashTheme(); if (t && t !== theme) { theme = t; applyTheme(); renderAll(); } });
+function applyTheme() {
+  if (theme === "light") document.documentElement.setAttribute("data-theme", "light"); else document.documentElement.removeAttribute("data-theme");
+  readTheme();
+}
+document.getElementById("theme").addEventListener("click", () => {
+  theme = theme === "dark" ? "light" : "dark";
+  try { localStorage.setItem("chm.theme", theme); } catch (e) {}
+  applyTheme(); renderAll();
+});
+
+// ---------- SVG-графік ----------
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const a in attrs) e.setAttribute(a, attrs[a]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(parent, x, y, s, attrs = {}) {
+  const t = el("text", Object.assign({ x, y, "font-size": 14, fill: TH.tick }, attrs), parent);
+  t.textContent = s; return t;
+}
+function label(parent, x, y, s, attrs = {}) {
+  return txt(parent, x, y, s, Object.assign({ "font-size": 15, "font-weight": 700, fill: TH.ink, stroke: TH.halo, "stroke-width": 5, "paint-order": "stroke", "stroke-linejoin": "round" }, attrs));
+}
+function niceTicks(min, max, count = 6) {
+  const span = max - min || 1;
+  let step = Math.pow(10, Math.floor(Math.log10(span / count)));
+  const err = span / count / step;
+  if (err >= 7.5) step *= 10; else if (err >= 3.5) step *= 5; else if (err >= 1.5) step *= 2;
+  const t = [];
+  for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) t.push(Number(v.toFixed(10)));
+  return t;
+}
+function chart(svg, o) {
+  const W = 720, H = o.H || 380, Lm = 54, R = 12, T = 12, B = 32;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  const X = v => Lm + (v - o.xmin) / (o.xmax - o.xmin) * (W - Lm - R);
+  const Y = v => H - B - (v - o.ymin) / (o.ymax - o.ymin) * (H - T - B);
+  const id = "c" + Math.random().toString(36).slice(2);
+  el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B }, el("clipPath", { id }, el("defs", {}, svg)));
+  if (o.band) el("rect", { x: X(o.band[0]), y: T, width: X(o.band[1]) - X(o.band[0]), height: H - T - B, fill: TH.band }, svg);
+  for (const v of niceTicks(o.ymin, o.ymax)) {
+    const zero = Math.abs(v) < 1e-12;
+    el("line", { x1: Lm, x2: W - R, y1: Y(v), y2: Y(v), stroke: zero ? TH.zero : TH.grid, "stroke-width": zero ? 2 : 1 }, svg);
+    txt(svg, Lm - 8, Y(v) + 5, c(v, 3), { "text-anchor": "end" });
+  }
+  for (const v of (o.xticks || niceTicks(o.xmin, o.xmax))) {
+    el("line", { x1: X(v), x2: X(v), y1: T, y2: H - B, stroke: TH.grid, "stroke-dasharray": "3 4" }, svg);
+    txt(svg, X(v), H - B + 21, c(v, 3), { "text-anchor": "middle" });
+  }
+  el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B, fill: "none", stroke: TH.frame }, svg);
+  const g = el("g", { "clip-path": `url(#${id})` }, svg);
+  return { X, Y, g, svg, W, H, T, B, o,
+    toData(evt) { const pt = svg.createSVGPoint(); pt.x = evt.clientX; pt.y = evt.clientY; const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      return [o.xmin + (p.x - Lm) / (W - Lm - R) * (o.xmax - o.xmin), o.ymin + (H - B - p.y) / (H - T - B) * (o.ymax - o.ymin)]; } };
+}
+function curve(ch, fn, a, b, attrs, n = 300) {
+  let d = "";
+  for (let i = 0; i <= n; i++) {
+    const x = a + (b - a) * i / n, y = Math.max(-1e4, Math.min(1e4, ch.Y(fn(x))));
+    d += (i ? "L" : "M") + ch.X(x).toFixed(1) + " " + y.toFixed(1);
+  }
+  return el("path", Object.assign({ d, fill: "none", "stroke-width": 4, "stroke-linecap": "round", "stroke-linejoin": "round" }, attrs), ch.g);
+}
+function vline(ch, x, color) {
+  el("line", { x1: ch.X(x), x2: ch.X(x), y1: ch.T, y2: ch.H - ch.B, stroke: color || TH.tick, "stroke-width": 2, "stroke-dasharray": "5 5" }, ch.g);
+}
+function seg(boxId, items, cur, onPick) {
+  const box = document.getElementById(boxId);
+  box.innerHTML = items.map(([v, t]) => `<button data-v="${v}" class="${String(v) === String(cur) ? "on" : ""}">${t}</button>`).join("");
+  box.querySelectorAll("button").forEach(b => b.addEventListener("click", () => onPick(b.dataset.v)));
+}
+
+// ---------- 1. функція ----------
+function render1() {
+  const ch = chart(document.getElementById("ch1"), { xmin: -3, xmax: 20, ymin: 0, ymax: 1.8, H: 320 });
+  curve(ch, f, -3, 20, { stroke: TH.L1 });
+  for (const [x, t] of [[0, "(0; 1) = A"], [1 / K, "(5,29; 0,368)"]]) {
+    el("circle", { cx: ch.X(x), cy: ch.Y(f(x)), r: 7, fill: TH.L1, stroke: TH.halo, "stroke-width": 2.5 }, ch.g);
+    label(ch.svg, ch.X(x) + 12, ch.Y(f(x)) - 12, t);
+  }
+  label(ch.svg, ch.X(9), ch.Y(f(9)) - 14, "f(x) = e^(−0,189x)", { fill: TH.L1 });
+}
+
+// ---------- 3. хорда → дотична ----------
+function render3() {
+  const h = Math.pow(10, -2 + 2.7 * document.getElementById("h3").value / 100);   // 0,01 … 5
+  const slope = (f(h) - f(0)) / h;
+  const ch = chart(document.getElementById("ch3"), { xmin: -1, xmax: 6, ymin: 0, ymax: 1.25, H: 340 });
+  curve(ch, f, -1, 6, { stroke: TH.L1 });
+  curve(ch, x => 1 + D0 * x, -1, 6, { stroke: TH.L4, "stroke-width": 2.5, "stroke-dasharray": "8 6" });
+  curve(ch, x => 1 + slope * x, -1, 6, { stroke: TH.accent, "stroke-width": 3 });
+  for (const x of [0, h]) el("circle", { cx: ch.X(x), cy: ch.Y(f(x)), r: 7, fill: TH.accent, stroke: TH.halo, "stroke-width": 2.5 }, ch.g);
+  document.getElementById("h3v").textContent = c(h, h < 0.1 ? 3 : 2);
+  document.getElementById("s3v").textContent = c(slope, 5);
+}
+document.getElementById("h3").addEventListener("input", render3);
+
+// ---------- 4. смужки ----------
+let mode = "trap";
+const MODES = { left: "за лівим краєм", right: "за правим краєм", trap: "трапеції" };
+function render4() {
+  seg("mode4", Object.keys(MODES).map(k => [k, MODES[k]]), mode, v => { mode = v; render4(); });
+  const h = Math.pow(10, -0.7 + 1.4 * document.getElementById("h4").value / 100);  // 0,2 … 5
+  // суми до ∞ — геометрична прогресія зі знаменником q = e^(−k·h)
+  const q = Math.exp(-K * h), left = h / (1 - q), right = h * q / (1 - q), sum = { left, right, trap: (left + right) / 2 }[mode];
+  const ch = chart(document.getElementById("ch4"), { xmin: 0, xmax: 25, ymin: 0, ymax: 1.08, H: 340 });
+  for (let x = 0; x < 25; x += h) {
+    const yl = f(x), yr = f(x + h);
+    const pts = mode === "trap" ? [[x, 0], [x, yl], [x + h, yr], [x + h, 0]]
+      : [[x, 0], [x, mode === "left" ? yl : yr], [x + h, mode === "left" ? yl : yr], [x + h, 0]];
+    el("polygon", { points: pts.map(([a, b]) => ch.X(a) + "," + ch.Y(b)).join(" "), fill: TH.accent, "fill-opacity": 0.28, stroke: TH.accent, "stroke-width": 1.5 }, ch.g);
+  }
+  curve(ch, f, 0, 25, { stroke: TH.L1 });
+  document.getElementById("h4v").textContent = c(h, 2);
+  document.getElementById("s4v").textContent = c(sum, 3) + " (похибка " + sig(Math.abs(sum - S) / S * 100, 2) + " %)";
+}
+document.getElementById("h4").addEventListener("input", render4);
+
+// ---------- 8. дотична до L2 ----------
+function render8() {
+  const h = Math.pow(10, -0.5 + 1 * document.getElementById("h8").value / 100);   // 0,32 … 3,2
+  const P = [[-h, f(-h)], [0, f(0)], [h, f(h)]];
+  const L2 = x => P.reduce((s, [xi, yi], i) => { let t = yi; P.forEach(([xj], j) => { if (j !== i) t *= (x - xj) / (xi - xj); }); return s + t; }, 0);
+  const slope = (f(h) - f(-h)) / (2 * h);
+  const ch = chart(document.getElementById("ch8"), { xmin: -3.5, xmax: 5, ymin: 0, ymax: 2, H: 320 });
+  curve(ch, f, -3.5, 5, { stroke: TH.L1 });
+  curve(ch, L2, -3.5, 5, { stroke: TH.L2, "stroke-width": 3, "stroke-dasharray": "10 7" });
+  curve(ch, x => 1 + slope * x, -3.5, 5, { stroke: TH.accent, "stroke-width": 3 });
+  P.forEach(([x, y]) => el("circle", { cx: ch.X(x), cy: ch.Y(y), r: 7, fill: TH.L2, stroke: TH.halo, "stroke-width": 2.5 }, ch.g));
+  document.getElementById("h8v").textContent = c(h, 2);
+  document.getElementById("s8v").textContent = c(slope, 5);
+}
+document.getElementById("h8").addEventListener("input", render8);
+
+function renderAll() { render1(); render3(); render4(); render8(); }
+applyTheme(); renderAll();
+</script>
+</body>
+</html>
