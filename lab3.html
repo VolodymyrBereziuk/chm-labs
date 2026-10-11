@@ -90,20 +90,78 @@
 
   <!-- 3 -->
   <section class="card">
-    <h2>3. Похідна — нахил дотичної</h2>
-    <p><b>Похідна</b> показує, як швидко змінюється функція в точці. Геометрично — нахил дотичної до графіка. За означенням беруть нахил хорди через дві близькі точки і зменшують відстань h між ними:</p>
+    <h2>3. Різницеві формули похідної</h2>
+    <p>Для знаходження похідної в точці x програма використовує дві <b>різницеві формули</b>:</p>
+    <div class="formula">df/dx<sub>1</sub> = (f(x + h) − f(x − h)) / (2h)</div>
+    <div class="formula">df/dx<sub>2</sub> = (−f(x + 2h) + 8f(x + h) − 8f(x − h) + f(x − 2h)) / (12h)</div>
+    <p>h — крок. Похідну обчислюють при x = 0 для h = 1; 0,1; 0,01; … ; 10<sup>−16</sup> і порівнюють з точним значенням.</p>
+    <p><b>Різницева формула</b> наближено обчислює похідну через значення функції в кількох сусідніх точках, віддалених на крок h.</p>
+    <h3>Чому так: похідна — нахил дотичної</h3>
+    <p><b>Похідна</b> показує, як швидко змінюється функція в точці; геометрично — нахил дотичної до графіка. За означенням беруть нахил хорди через дві близькі точки і зменшують відстань h між ними:</p>
     <div class="formula">f′(x) = lim<sub>h→0</sub> (f(x + h) − f(x)) / h</div>
     <svg id="ch3"></svg>
     <div class="chips"><label><span class="tag" style="background:var(--L1)"></span>f(x)</label><label><span class="tag" style="background:var(--L4)"></span>дотична, нахил −0,189</label><label><span class="tag" style="background:var(--accent)"></span>хорда через x = 0 і x = h</label></div>
     <input type="range" id="h3" min="0" max="100" value="100">
     <div class="rlabel"><span>h = <b id="h3v"></b></span><span>нахил хорди <b id="s3v"></b> · точна похідна <b>−0,189</b></span></div>
     <p class="try"><b>Завдання:</b> зменшуйте h. Як змінюється нахил хорди? У скільки разів зменшується різниця з точним значенням, якщо h зменшити в 10 разів?</p>
-    <p class="note"><b>Чисельна похідна</b> — це нахил хорди з малим, але ненульовим h.</p>
+    <p class="note">Різницева формула — це нахил хорди з малим, але ненульовим h. Тобто означення похідної без границі.</p>
+    <h3>Які бувають різницеві формули</h3>
+    <div class="tbl"><table>
+      <tr><th>Формула</th><th>Точки</th><th>У звіті</th></tr>
+      <tr><td class="mono">(f(x+h) − f(x)) / h</td><td>x, x+h</td><td>— (для порівняння)</td></tr>
+      <tr><td class="mono">(f(x+h) − f(x−h)) / (2h)</td><td>x−h, x+h</td><td>df/dx1</td></tr>
+      <tr><td class="mono">(−f(x+2h) + 8f(x+h) − 8f(x−h) + f(x−2h)) / (12h)</td><td>x−2h … x+2h</td><td>df/dx2</td></tr>
+    </table></div>
+    <p>Обидві формули роботи — <b>центральні</b>: точки беруться симетрично з обох боків від x. Тому програма обчислює f і при x &lt; 0.</p>
   </section>
 
   <!-- 4 -->
   <section class="card">
-    <h2>4. Інтеграл — площа під кривою</h2>
+    <h2>4. Різницеві формули на графіку</h2>
+    <p>Кожна різницева формула бере кілька точок функції навколо x, проводить через них криву і повертає <b>нахил цієї кривої в точці x</b>. Що більше точок, то ближче крива до функції — і то ближче нахил до точної похідної.</p>
+    <div class="seg" id="kind4"></div>
+    <svg id="ch4d"></svg>
+    <div class="chips"><label><span class="tag" style="background:var(--L1)"></span>f(x)</label><label><span class="tag" style="background:var(--L2)"></span>крива через точки формули</label><label><span class="tag" style="background:var(--accent)"></span>її нахил у x = 0 (результат формули)</label><label><span class="tag" style="background:var(--L4)"></span>точна дотична</label></div>
+    <input type="range" id="h4d" min="0" max="100" value="85">
+    <div class="rlabel"><span>h = <b id="h4dv"></b></span><span>точна похідна <b>−0,189</b></span></div>
+    <div class="tbl"><table id="t4d"></table></div>
+    <p class="try"><b>Завдання:</b> при h = 2 порівняйте три формули на графіку. Яка крива найближче до f(x) поблизу x = 0? Зменшуйте h — що відбувається з усіма трьома?</p>
+  </section>
+
+  <!-- 5 -->
+  <section class="card">
+    <h2>5. Похибка залежно від кроку: оптимальний h</h2>
+    <p>Програма обчислює обидві формули для h = 1; 0,1; …; 10<sup>−16</sup>. Графік відносної похибки від h має форму <b>«ями»</b>: спершу похибка падає, потім знову зростає.</p>
+    <svg id="ch5e"></svg>
+    <div class="chips"><label><span class="tag" style="background:var(--L1)"></span>df/dx1 (центральна)</label><label><span class="tag" style="background:var(--L3)"></span>df/dx2 (п'ятиточкова)</label></div>
+    <h3>Два джерела похибки</h3>
+    <ol>
+      <li><b>Похибка формули</b> (великий h): хорда не збігається з дотичною. Зменшення h її зменшує.</li>
+      <li><b>Похибка заокруглення</b> (малий h): комп'ютер зберігає близько 16 значущих цифр. При малому h значення f(x + h) і f(x − h) майже однакові, і при відніманні більшість цифр взаємно знищується. Отриману різницю ще й ділять на малий h.</li>
+    </ol>
+    <div class="tbl"><table>
+      <tr><th>h</th><th>f(h)</th><th>f(−h)</th><th>різниця</th><th>має бути</th></tr>
+      <tr><td class="num">10⁻⁵</td><td class="num">0,99999811000178607</td><td class="num">1,0000018900017860</td><td class="num">−3,7799999999·10⁻⁶</td><td class="num">−3,78·10⁻⁶</td></tr>
+      <tr><td class="num">10⁻¹⁰</td><td class="num">0,99999999998110001</td><td class="num">1,0000000000189000</td><td class="num">−3,7799985·10⁻¹¹</td><td class="num">−3,78·10⁻¹¹</td></tr>
+      <tr><td class="num">10⁻¹⁵</td><td class="num">0,99999999999999978</td><td class="num">1,0000000000000002</td><td class="num">−4,44·10⁻¹⁶</td><td class="num">−3,78·10⁻¹⁶</td></tr>
+      <tr><td class="num">10⁻¹⁶</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">−3,78·10⁻¹⁷</td></tr>
+    </table></div>
+    <p>При h = 10<sup>−16</sup> зміна f менша за точність числа: обидва значення заокруглюються до 1, похідна дорівнює 0, похибка — 100 %.</p>
+    <h3>Оптимальний крок</h3>
+    <p><b>Оптимальний h</b> — дно «ями», де похибка найменша. У зразку: <b>10<sup>−5</sup></b> для df/dx1 і <b>10<sup>−3</sup></b> для df/dx2. Для п'ятиточкової формули оптимум більший, бо похибка формули в неї зменшується швидше і похибка заокруглення починає переважати раніше.</p>
+    <p class="note">Аналогія: нахил дороги визначають за висотою двох кілочків. Якщо кілочки далеко — вигин дороги пропущено; якщо на відстані 1 мм — різниця висот менша за похибку лінійки.</p>
+    <p class="try"><b>Завдання:</b> визначте оптимальний крок для обох формул за власними результатами. Чи збігається він зі зразком?</p>
+  </section>
+
+  <!-- 6 -->
+  <section class="card">
+    <h2>6. Квадратурні формули інтеграла</h2>
+    <p>Для обчислення інтеграла на відрізку [u; v] програма ділить його на N рівних частин з кроком h = (v − u) / N і використовує дві <b>квадратурні формули</b>:</p>
+    <div class="formula">S1 (трапеції) = h · ((f(u) − f(v)) / 2 + Σ<sub>i=1..N</sub> f(u + i·h))</div>
+    <div class="formula">S2 (Сімпсон) = (h / 3) · ((f(u) − f(v)) + Σ<sub>i=1..N/2</sub> (4·f(u + (2i − 1)·h) + 2·f(u + 2i·h)))</div>
+    <p>u = 0, v = 10000 (замість ∞), N = 10; 100; …; 10<sup>7</sup>. Для формули Сімпсона N має бути парним.</p>
+    <p class="note">Мінус f(v) не є помилкою: сума до N уже містить f(v). Після перетворення це звичні формули з методички: трапеції (h/2)(y<sub>0</sub> + 2y<sub>1</sub> + … + 2y<sub>N−1</sub> + y<sub>N</sub>), Сімпсон (h/3)(y<sub>0</sub> + 4y<sub>1</sub> + 2y<sub>2</sub> + … + 4y<sub>N−1</sub> + y<sub>N</sub>).</p>
+    <h3>Що таке інтеграл: площа під кривою</h3>
     <p><b>Визначений інтеграл</b> — площа під графіком між межами. Фізично — накопичена величина: швидкість → шлях, витрата → об'єм. Відрізок розбивають на смужки ширини h і додають їхні площі:</p>
     <div class="formula">∫ ≈ h · (f(x<sub>1</sub>) + f(x<sub>2</sub>) + … + f(x<sub>n</sub>))</div>
     <div class="seg" id="mode4"></div>
@@ -111,12 +169,44 @@
     <input type="range" id="h4" min="0" max="100" value="50">
     <div class="rlabel"><span>h = <b id="h4v"></b></span><span>сума <b id="s4v"></b> · точна площа <b>5,291</b></span></div>
     <p class="try"><b>Завдання:</b> встановіть h = 1 і оберіть трапеції. Порівняйте результат із рядком N = 10000 у таблиці інтеграла зразка звіту.</p>
-    <p class="note">Похідна — це відношення різниць (ділення на h), інтеграл — сума (множення на h). Чисельні методи роблять саме це з малим h.</p>
+    <p class="note">Похідна — відношення різниць (ділення на h), інтеграл — сума (множення на h).</p>
   </section>
 
-  <!-- 5 -->
+  <!-- 7 -->
   <section class="card">
-    <h2>5. Аналітично чи чисельно</h2>
+    <h2>7. Квадратурні формули на графіку</h2>
+    <p>Як і різницеві формули, квадратурні замінюють функцію між вузлами простою кривою і обчислюють площу вже під нею:</p>
+    <ul class="sum">
+      <li><b>трапеції</b> — на кожній смужці <b>пряма</b> через 2 точки, площа (h/2)(y<sub>i</sub> + y<sub>i+1</sub>);</li>
+      <li><b>Сімпсон</b> — на кожній парі смужок <b>парабола</b> через 3 точки, площа (h/3)(y<sub>0</sub> + 4y<sub>1</sub> + y<sub>2</sub>).</li>
+    </ul>
+    <p>Для наочності — відрізок [0; 20], точна площа <b id="ex7"></b>.</p>
+    <div class="seg" id="kind7"></div>
+    <svg id="ch7"></svg>
+    <input type="range" id="n7" min="1" max="10" value="2">
+    <div class="rlabel"><span>N = <b id="n7v"></b> (h = <b id="h7v"></b>)</span><span>результат <b id="s7v"></b></span></div>
+    <div class="tbl"><table id="t7"></table></div>
+    <p class="try"><b>Завдання:</b> при N = 4 порівняйте, наскільки пряма і парабола відхиляються від f(x) на першій парі смужок. Яка формула точніша і у скільки разів?</p>
+  </section>
+
+  <!-- 8 -->
+  <section class="card">
+    <h2>8. Похибка залежно від N</h2>
+    <svg id="ch8e"></svg>
+    <div class="chips"><label><span class="tag" style="background:var(--L1)"></span>δS1 (трапеції)</label><label><span class="tag" style="background:var(--L3)"></span>δS2 (Сімпсон)</label></div>
+    <h3>Замалий N</h3>
+    <p>При N = 10 крок h = 1000, а функція помітно відмінна від нуля лише до x ≈ 20…30. Уся крива потрапляє в першу смужку: трапеція з висотами f(0) = 1 і f(1000) ≈ 0 має площу 1000 · (1 + 0) / 2 = <b>500</b> замість 5,291. Формула «не бачить» кривої — крок більший за саму криву.</p>
+    <p>Тому важливий не сам крок h, а <b>k · h</b> — скільки кроків припадає на ділянку спаду кривої (≈ 1/k). Що більше k, то швидше спадає функція і то більше N потрібно для тієї самої точності.</p>
+    <h3>Достатній N</h3>
+    <p>Коли крок малий порівняно з кривою, похибка зменшується з кожним десятикратним збільшенням N: у методу трапецій — приблизно в 100 разів, у методу Сімпсона — приблизно в 10<sup>4</sup> разів.</p>
+    <h3>Чому немає «ями», як у похідної</h3>
+    <p>Похідна <b>віднімає</b> майже рівні числа і <b>ділить</b> на малий h — похибка заокруглення підсилюється. Інтеграл <b>додає</b> значення і <b>множить</b> на малий h — заокруглення не підсилюється. Лише при N = 10<sup>7</sup> у методу Сімпсона помітне накопичення заокруглень від мільйонів доданків, але на рівні 10<sup>−11</sup> %.</p>
+    <p class="try"><b>Завдання:</b> перевірте свою програму на відрізку [0; 10], де f(v) ≠ 0. Точне значення: (A / k) · (1 − e<sup>−10k</sup>). Чи збігається результат при великому N?</p>
+  </section>
+
+  <!-- 9 -->
+  <section class="card">
+    <h2>9. Аналітично чи чисельно</h2>
     <div class="tbl"><table>
       <tr><th></th><th>Аналітично</th><th>Чисельно</th></tr>
       <tr><th>Результат</th><td>формула, з неї точне число</td><td>наближене число в точці</td></tr>
@@ -131,9 +221,9 @@
     <p>Для функції цієї роботи відомі обидві відповіді — тому можна виміряти похибку чисельних методів.</p>
   </section>
 
-  <!-- 6 -->
+  <!-- 10 -->
   <section class="card">
-    <h2>6. Точні значення (п. 2 звіту)</h2>
+    <h2>10. Точні значення (п. 2 звіту)</h2>
     <h3>Похідна</h3>
     <p>(e<sup>a·x</sup>)′ = a · e<sup>a·x</sup>, тут a = −k:</p>
     <div class="formula">f′(x) = −A · k · e<sup>−k·x</sup>   →   f′(0) = −A · k</div>
@@ -145,66 +235,36 @@
     <p class="note"><b>Чому в програмі ∞ замінено на 10000.</b> Площа «хвоста» за межею дорівнює (A / k) · e<sup>−k·10000</sup>. У зразку це e<sup>−1890</sup> — у комп'ютері точно 0; навіть для k = 0,01 — близько 10<sup>−42</sup>. Для цих функцій 10000 фактично є нескінченністю.</p>
   </section>
 
-  <!-- 7 -->
   <section class="card">
-    <h2>7. Різницеві формули похідної</h2>
-    <p><b>Різницева формула</b> наближено обчислює похідну в точці через значення функції в кількох сусідніх точках, віддалених на крок h. Це означення похідної без границі: h мале, але не нульове.</p>
-    <div class="tbl"><table>
-      <tr><th>Формула</th><th>Точки</th><th>Порядок</th><th>У звіті</th></tr>
-      <tr><td class="mono">(f(x+h) − f(x)) / h</td><td>x, x+h</td><td>1</td><td>— (для порівняння)</td></tr>
-      <tr><td class="mono">(f(x+h) − f(x−h)) / (2h)</td><td>x−h, x+h</td><td><b>2</b></td><td>df/dx1</td></tr>
-      <tr><td class="mono">(−f(x+2h) + 8f(x+h) − 8f(x−h) + f(x−2h)) / (12h)</td><td>x−2h … x+2h</td><td><b>4</b></td><td>df/dx2</td></tr>
-    </table></div>
-    <p>Обидві формули роботи — <b>центральні</b>: точки беруться симетрично з обох боків від x. Тому програма обчислює f і при x &lt; 0.</p>
-    <h3>Порядок формули</h3>
-    <p>Похибка формули порядку p пропорційна h<sup>p</sup>: якщо h зменшити в 10 разів, похибка зменшиться в 10<sup>p</sup> разів. Відносна похибка на функції зразка:</p>
-    <div class="tbl"><table>
-      <tr><th>h</th><th>порядок 1</th><th>порядок 2</th><th>порядок 4</th></tr>
-      <tr><td class="num">1</td><td class="num">8,88 %</td><td class="num">0,596 %</td><td class="num">0,00427 %</td></tr>
-      <tr><td class="num">0,1</td><td class="num">0,939 %</td><td class="num">0,00595 %</td><td class="num">4,25·10⁻⁷ %</td></tr>
-      <tr><td class="num">0,01</td><td class="num">0,0944 %</td><td class="num">5,95·10⁻⁵ %</td><td class="num">4,39·10⁻¹¹ %</td></tr>
-    </table></div>
-    <p>h ÷ 10 → похибка ÷ 10, ÷ 100, ÷ 10 000 відповідно. Формула вищого порядку точніша при тому самому h, але обчислює f у більшій кількості точок.</p>
+    <h2>Висновки</h2>
+    <ul class="sum">
+      <li>Різницеві й квадратурні формули замінюють функцію поблизу вузлів прямою чи параболою і беруть нахил (похідна) або площу (інтеграл) уже цієї кривої.</li>
+      <li>Похибка похідної має «яму»: при великому h переважає похибка формули, при малому — похибка заокруглення. Оптимальний крок визначають за власними результатами.</li>
+      <li>Похибка інтеграла зменшується зі збільшенням N; заокруглення майже не заважає, бо значення додаються, а не віднімаються.</li>
+      <li>Крок має бути малим порівняно з ділянкою, на якій змінюється функція; інакше результат хибний (N = 10 → 500 замість 5,291).</li>
+      <li>Формули з більшою кількістю точок (п'ятиточкова, Сімпсон) точніші при тому самому кроці.</li>
+    </ul>
   </section>
-
-  <!-- 8 -->
-  <section class="card">
-    <h2>8. Від полінома Лагранжа до різницевої формули</h2>
-    <p><b>Ідея</b> (зв'язок із лабораторною роботою № 2): похідну функції замінюють похідною інтерполяційного полінома, що проходить через її точки поблизу x.</p>
-    <svg id="ch8"></svg>
-    <div class="chips"><label><span class="tag" style="background:var(--L1)"></span>f(x)</label><label><span class="tag" style="background:var(--L2)"></span>L2 через −h, 0, h</label><label><span class="tag" style="background:var(--accent)"></span>дотична до L2 у x = 0</label></div>
-    <input type="range" id="h8" min="0" max="100" value="80">
-    <div class="rlabel"><span>h = <b id="h8v"></b></span><span>нахил дотичної до L2 <b id="s8v"></b> · точна похідна <b>−0,189</b></span></div>
-
-    <h3>Центральна формула — з L2</h3>
-    <p>Для зручності x = 0. Три точки з кроком h:</p>
-    <div class="tbl"><table>
-      <tr><th>x</th><td class="num">−h</td><td class="num">0</td><td class="num">h</td></tr>
-      <tr><th>y</th><td class="num">y₋</td><td class="num">y₀</td><td class="num">y₊</td></tr>
-    </table></div>
-    <p><b>1. Поліном Лагранжа</b> через ці точки:</p>
-    <div class="formula">L2(x) = y₋·(x − 0)(x − h) / ((−h − 0)(−h − h)) + y₀·(x + h)(x − h) / ((0 + h)(0 − h)) + y₊·(x + h)(x − 0) / ((h + h)(h − 0))</div>
-    <p><b>2. Знаменники:</b> (−h)(−2h) = 2h², (h)(−h) = −h², (2h)(h) = 2h². Після розкриття дужок:</p>
-    <div class="formula">L2(x) = y₋·(x² − h·x) / (2h²) − y₀·(x² − h²) / h² + y₊·(x² + h·x) / (2h²)</div>
-    <p><b>3. Похідна</b> за x (h — стале число):</p>
-    <div class="formula">L2′(x) = y₋·(2x − h) / (2h²) − y₀·2x / h² + y₊·(2x + h) / (2h²)</div>
-    <p><b>4. Підстановка x = 0:</b></p>
-    <div class="formula">L2′(0) = y₋·(−h) / (2h²) − 0 + y₊·h / (2h²) = (y₊ − y₋) / (2h)</div>
-    <p>Отримано центральну формулу (f(x + h) − f(x − h)) / (2h). Середня точка y₀ скоротилася, тому у формулі лише дві точки.</p>
-    <p class="note"><b>Перевірка на зразку</b>, h = 1: y₋ = f(−1) = 1,2080, y₊ = f(1) = 0,8278 → (0,8278 − 1,2080) / 2 = −0,19013 — збігається з таблицею звіту при h = 1.</p>
-
-    <h3>П'ятиточкова формула — з L4</h3>
-    <p>Аналогічно, через п'ять точок −2h, −h, 0, h, 2h. Похідна кожного доданка Лагранжа в x = 0 дорівнює y цієї точки, помноженому на коефіцієнт:</p>
-    <div class="tbl"><table>
-      <tr><th>точка</th><td class="num">−2h</td><td class="num">−h</td><td class="num">0</td><td class="num">h</td><td class="num">2h</td></tr>
-      <tr><th>коефіцієнт × 1/(12h)</th><td class="num">1</td><td class="num">−8</td><td class="num">0</td><td class="num">8</td><td class="num">−1</td></tr>
-    </table></div>
-    <div class="formula">L4′(0) = (y₋₂ − 8y₋₁ + 8y₁ − y₂) / (12h)</div>
-    <p><b>Перевірка коефіцієнта точки h:</b> доданок Лагранжа y₁·(x + 2h)(x + h)(x − 0)(x − 2h) / ((3h)(2h)(h)(−h)). Похідна в x = 0 дорівнює добутку решти дужок у нулі: y₁·(2h)(h)(−2h) / (−6h⁴) = y₁·8 / (12h).</p>
-    <p class="note">Що більше точок, то точніше поліном повторює функцію поблизу x і то вищий порядок формули: 3 точки → порядок 2, 5 точок → порядок 4.</p>
+  <!-- Додаткова задача з машиною — тимчасово прихована (атрибут hidden) -->
+  <section class="card" hidden>
+    <h2>Додаткова задача. Чи перевищив водій швидкість?</h2>
+    <p>Автомобіль котиться з вимкненим двигуном, GPS записує його координату x кожні 0,5 с. У момент t = 3 с автомобіль проїжджає знак обмеження <b>50 км/год</b>. Чи порушив водій правила?</p>
+    <div class="tbl"><table id="tCar"></table></div>
+    <div class="seg" id="kCar"></div>
+    <div class="seg" id="hCar"></div>
+    <svg id="roadCar"></svg>
+    <div class="seg"><button id="playCar">▶ Пуск</button><button id="resetCar">⟲ На початок</button></div>
+    <svg id="vCarCh"></svg>
+    <div class="chips"><label><span class="tag" style="background:var(--L1)"></span>швидкість автомобіля v(t), км/год</label><label><span class="tag" style="background:var(--accent)"></span>результат обраного способу на його проміжку</label><label><span class="tag" style="background:#d62828"></span>обмеження</label></div>
+    <p class="big" id="vCar" style="margin:6px 0"></p>
+    <h3>Завдання</h3>
+    <ol>
+      <li>За таблицею обчисліть швидкість у момент t = 3 с двома способами для h = 0,5; 1; 2 с: <b>«на наступному відрізку»</b> (x(3 + h) − x(3)) / h і <b>центральною формулою</b> (x(3 + h) − x(3 − h)) / (2h). Переведіть у км/год (× 3,6).</li>
+      <li>Чи перевищив водій 50 км/год? Чи однакову відповідь дають обидва способи при всіх h?</li>
+      <li>Відомо, що координата змінюється за законом x(t) = (v<sub>0</sub> / k) · (1 − e<sup>−k·t</sup>), v<sub>0</sub> = 20 м/с, k = 0,1 с<sup>−1</sup>. Знайдіть точну швидкість v(3) як похідну і порівняйте. Який спосіб надійніший і чому?</li>
+    </ol>
+    <p class="note">Спосіб «на наступному відрізку» — це середня швидкість на ділянці після знака, а не швидкість у момент проїзду. Автомобіль гальмує, тому середня швидкість після знака менша за миттєву. Центральна формула бере точки симетрично з обох боків — помилки зліва і справа майже компенсуються.</p>
   </section>
-
-  <p class="muted">Розділи про вибір оптимального кроку та квадратурні формули інтеграла буде додано.</p>
 </main>
 
 <script>
@@ -346,23 +406,180 @@ function render4() {
 }
 document.getElementById("h4").addEventListener("input", render4);
 
-// ---------- 8. дотична до L2 ----------
-function render8() {
-  const h = Math.pow(10, -0.5 + 1 * document.getElementById("h8").value / 100);   // 0,32 … 3,2
-  const P = [[-h, f(-h)], [0, f(0)], [h, f(h)]];
-  const L2 = x => P.reduce((s, [xi, yi], i) => { let t = yi; P.forEach(([xj], j) => { if (j !== i) t *= (x - xj) / (xi - xj); }); return s + t; }, 0);
-  const slope = (f(h) - f(-h)) / (2 * h);
-  const ch = chart(document.getElementById("ch8"), { xmin: -3.5, xmax: 5, ymin: 0, ymax: 2, H: 320 });
-  curve(ch, f, -3.5, 5, { stroke: TH.L1 });
-  curve(ch, L2, -3.5, 5, { stroke: TH.L2, "stroke-width": 3, "stroke-dasharray": "10 7" });
-  curve(ch, x => 1 + slope * x, -3.5, 5, { stroke: TH.accent, "stroke-width": 3 });
+// ---------- 4. різницеві формули на графіку ----------
+const KINDS = {
+  fw: { name: "права різниця", pts: [0, 1], d: h => (f(h) - f(0)) / h },
+  c2: { name: "центральна (df/dx1)", pts: [-1, 0, 1], d: h => (f(h) - f(-h)) / (2 * h) },
+  c4: { name: "п'ятиточкова (df/dx2)", pts: [-2, -1, 0, 1, 2], d: h => (-f(2 * h) + 8 * f(h) - 8 * f(-h) + f(-2 * h)) / (12 * h) }
+};
+let kind = "c2";
+const lagr = P => x => P.reduce((s, [xi, yi], i) => { let t = yi; P.forEach(([xj], j) => { if (j !== i) t *= (x - xj) / (xi - xj); }); return s + t; }, 0);
+function render4d() {
+  seg("kind4", Object.keys(KINDS).map(k => [k, KINDS[k].name + " · " + KINDS[k].pts.length + " точ" + (KINDS[k].pts.length < 5 ? "ки" : "ок")]), kind, v => { kind = v; render4d(); });
+  const h = Math.pow(10, -0.7 + 1.2 * document.getElementById("h4d").value / 100);   // 0,2 … 3,2
+  const K = KINDS[kind], P = K.pts.map(m => [m * h, f(m * h)]), slope = K.d(h);
+  const ch = chart(document.getElementById("ch4d"), { xmin: -6.5, xmax: 6.5, ymin: 0, ymax: 3.6, H: 340 });
+  curve(ch, f, -6.5, 6.5, { stroke: TH.L1 });
+  curve(ch, x => 1 + D0 * x, -6.5, 6.5, { stroke: TH.L4, "stroke-width": 2.5, "stroke-dasharray": "8 6" });
+  curve(ch, lagr(P), -6.5, 6.5, { stroke: TH.L2, "stroke-width": 3, "stroke-dasharray": "10 7" });
+  curve(ch, x => 1 + slope * x, -6.5, 6.5, { stroke: TH.accent, "stroke-width": 3 });
   P.forEach(([x, y]) => el("circle", { cx: ch.X(x), cy: ch.Y(y), r: 7, fill: TH.L2, stroke: TH.halo, "stroke-width": 2.5 }, ch.g));
-  document.getElementById("h8v").textContent = c(h, 2);
-  document.getElementById("s8v").textContent = c(slope, 5);
+  document.getElementById("h4dv").textContent = c(h, 2);
+  document.getElementById("t4d").innerHTML = "<tr><th>Формула</th><th>Точок</th><th>Нахил</th><th>Відносна похибка</th></tr>" +
+    Object.keys(KINDS).map(k => { const v = KINDS[k].d(h); return `<tr${k === kind ? ` style="color:${TH.accent};font-weight:700"` : ""}><td>${KINDS[k].name}</td><td class="num">${KINDS[k].pts.length}</td><td class="num">${c(v, 6)}</td><td class="num">${sig(Math.abs((v - D0) / D0) * 100, 3)} %</td></tr>`; }).join("");
 }
-document.getElementById("h8").addEventListener("input", render8);
+document.getElementById("h4d").addEventListener("input", render4d);
 
-function renderAll() { render1(); render3(); render4(); render8(); }
+// ---------- 5. «яма» похибки ----------
+function render5e() {
+  const rows = [];
+  for (let p = 0; p <= 16; p++) {
+    const h = p === 0 ? 1 : Number("1e-" + p);
+    const d1 = (f(h) - f(-h)) / (2 * h), d2 = (-f(2 * h) + 8 * f(h) - 8 * f(-h) + f(-2 * h)) / (12 * h);
+    rows.push({ p, e1: Math.abs((d1 - D0) / D0) * 100, e2: Math.abs((d2 - D0) / D0) * 100 });
+  }
+  const svg = document.getElementById("ch5e"), W = 720, H = 360, Lm = 64, R = 14, T = 12, B = 40, lo = -13, hi = 3;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  const X = p => Lm + p / 16 * (W - Lm - R), Y = v => H - B - (Math.log10(Math.max(v, 1e-13)) - lo) / (hi - lo) * (H - T - B);
+  const sup = n => String(n).replace("-", "⁻").replace(/d/g, d => "⁰¹²³⁴⁵⁶⁷⁸⁹"[d]);
+  for (let e = lo; e <= hi; e += 2) { el("line", { x1: Lm, x2: W - R, y1: Y(10 ** e), y2: Y(10 ** e), stroke: TH.grid }, svg); txt(svg, Lm - 8, Y(10 ** e) + 5, "10" + sup(e) + " %", { "text-anchor": "end", "font-size": 13 }); }
+  for (let p = 0; p <= 16; p += 2) { el("line", { x1: X(p), x2: X(p), y1: T, y2: H - B, stroke: TH.grid, "stroke-dasharray": "3 4" }, svg); txt(svg, X(p), H - B + 22, p === 0 ? "1" : "10" + sup(-p), { "text-anchor": "middle", "font-size": 13 }); }
+  txt(svg, W - R, H - 4, "h", { "text-anchor": "end", "font-size": 13 });
+  el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B, fill: "none", stroke: TH.frame }, svg);
+  for (const [key, col] of [["e1", TH.L1], ["e2", TH.L3]]) {
+    el("path", { d: rows.map((r, i) => (i ? "L" : "M") + X(r.p).toFixed(1) + " " + Y(r[key]).toFixed(1)).join(" "), fill: "none", stroke: col, "stroke-width": 3.5, "stroke-linejoin": "round" }, svg);
+    rows.forEach(r => el("circle", { cx: X(r.p), cy: Y(r[key]), r: 4.5, fill: col }, svg));
+    const best = rows.reduce((a, b) => (b[key] < a[key] ? b : a));
+    el("circle", { cx: X(best.p), cy: Y(best[key]), r: 11, fill: "none", stroke: col, "stroke-width": 3 }, svg);
+    label(svg, X(best.p), Y(best[key]) + 30, "h = 10" + sup(-best.p), { "text-anchor": "middle", fill: col, "font-size": 14 });
+  }
+}
+
+// ---------- 7. трапеції і Сімпсон на графіку ----------
+const V7 = 20, EX7 = A / K * (1 - Math.exp(-K * V7));
+let kind7 = "trap";
+function quad(n) {
+  const h = V7 / n, y = i => f(i * h);
+  let t = (y(0) + y(n)) / 2, sp = y(0) + y(n);
+  for (let i = 1; i < n; i++) { t += y(i); sp += (i % 2 ? 4 : 2) * y(i); }
+  return { t: t * h, s: sp * h / 3 };
+}
+function render7() {
+  seg("kind7", [["trap", "трапеції · пряма через 2 точки"], ["simp", "Сімпсон · парабола через 3 точки"]], kind7, v => { kind7 = v; render7(); });
+  const n = 2 * Number(document.getElementById("n7").value), h = V7 / n, q = quad(n);
+  const ch = chart(document.getElementById("ch7"), { xmin: 0, xmax: V7, ymin: 0, ymax: 1.05, H: 320 });
+  const fill = { fill: TH.accent, "fill-opacity": 0.25, stroke: TH.accent, "stroke-width": 2 };
+  if (kind7 === "trap") {
+    for (let i = 0; i < n; i++) el("polygon", Object.assign({ points: [[i * h, 0], [i * h, f(i * h)], [(i + 1) * h, f((i + 1) * h)], [(i + 1) * h, 0]].map(([x, y]) => ch.X(x) + "," + ch.Y(y)).join(" ") }, fill), ch.g);
+  } else {
+    for (let i = 0; i < n; i += 2) {
+      const P = [0, 1, 2].map(m => [(i + m) * h, f((i + m) * h)]), p = lagr(P), pts = [[i * h, 0]];
+      for (let j = 0; j <= 40; j++) { const x = i * h + 2 * h * j / 40; pts.push([x, p(x)]); }
+      pts.push([(i + 2) * h, 0]);
+      el("polygon", Object.assign({ points: pts.map(([x, y]) => ch.X(x) + "," + ch.Y(y)).join(" ") }, fill), ch.g);
+    }
+  }
+  curve(ch, f, 0, V7, { stroke: TH.L1 });
+  for (let i = 0; i <= n; i++) el("circle", { cx: ch.X(i * h), cy: ch.Y(f(i * h)), r: 5, fill: TH.accent, stroke: TH.halo, "stroke-width": 2 }, ch.g);
+  const v = kind7 === "trap" ? q.t : q.s;
+  document.getElementById("ex7").textContent = c(EX7, 6);
+  document.getElementById("n7v").textContent = n;
+  document.getElementById("h7v").textContent = c(h, 2);
+  document.getElementById("s7v").textContent = c(v, 6);
+  const row = (name, val, on) => `<tr${on ? ` style="color:${TH.accent};font-weight:700"` : ""}><td>${name}</td><td class="num">${c(val, 6)}</td><td class="num">${sig(Math.abs(val - EX7) / EX7 * 100, 3)} %</td></tr>`;
+  document.getElementById("t7").innerHTML = "<tr><th>Формула</th><th>Площа</th><th>Відносна похибка</th></tr>" + row("трапеції", q.t, kind7 === "trap") + row("Сімпсон", q.s, kind7 === "simp");
+}
+document.getElementById("n7").addEventListener("input", render7);
+
+// ---------- 8. похибка інтеграла від N (результати програми зразка) ----------
+const NS8 = [10, 100, 1000, 10000, 100000, 1000000, 10000000];
+const E1 = [9350, 845.0, 28.13, 0.2975, 0.002977, 2.977e-5, 2.976e-7], E2 = [6200, 530.0, 4.902, 7.059e-4, 7.089e-8, 5.758e-12, 9.753e-12];
+function render8e() {
+  const svg = document.getElementById("ch8e"), W = 720, H = 340, Lm = 64, R = 14, T = 12, B = 40, lo = -13, hi = 5;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  const X = i => Lm + i / 6 * (W - Lm - R), Y = v => H - B - (Math.log10(v) - lo) / (hi - lo) * (H - T - B);
+  const sup = n => String(n).replace("-", "⁻").replace(/d/g, d => "⁰¹²³⁴⁵⁶⁷⁸⁹"[d]);
+  for (let e = lo + 1; e <= hi; e += 2) { el("line", { x1: Lm, x2: W - R, y1: Y(10 ** e), y2: Y(10 ** e), stroke: TH.grid }, svg); txt(svg, Lm - 8, Y(10 ** e) + 5, "10" + sup(e) + " %", { "text-anchor": "end", "font-size": 13 }); }
+  NS8.forEach((n, i) => { el("line", { x1: X(i), x2: X(i), y1: T, y2: H - B, stroke: TH.grid, "stroke-dasharray": "3 4" }, svg); txt(svg, X(i), H - B + 22, "10" + sup(i + 1), { "text-anchor": "middle", "font-size": 13 }); });
+  txt(svg, W - R, H - 4, "N", { "text-anchor": "end", "font-size": 13 });
+  el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B, fill: "none", stroke: TH.frame }, svg);
+  for (const [E, col] of [[E1, TH.L1], [E2, TH.L3]]) {
+    el("path", { d: E.map((v, i) => (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1)).join(" "), fill: "none", stroke: col, "stroke-width": 3.5, "stroke-linejoin": "round" }, svg);
+    E.forEach((v, i) => el("circle", { cx: X(i), cy: Y(v), r: 4.5, fill: col }, svg));
+  }
+}
+
+// ---------- додаткова задача: швидкість автомобіля за GPS ----------
+const CAR = { v0: 20, k: 0.1, t0: 3, limit: 50, tEnd: 6 };
+const xCar = t => CAR.v0 / CAR.k * (1 - Math.exp(-CAR.k * t));
+const vCar = t => CAR.v0 * Math.exp(-CAR.k * t);
+let carKind = "fw", carH = 2, carT = 0, carPlay = false, carLast = 0;
+function carEstimate() {
+  const h = carH, a = carKind === "fw" ? CAR.t0 : CAR.t0 - h, b = CAR.t0 + h;
+  return { a, b, v: (xCar(b) - xCar(a)) / (b - a) };
+}
+// дорога, вигляд зверху: машина, знак, позначки GPS кожні 0,5 с, ділянка формули
+function drawRoad() {
+  const svg = document.getElementById("roadCar"), W = 720, H = 190, L = 30, R = 20, X = x => L + x / 100 * (W - L - R), yRoad = 110;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  el("rect", { x: 0, y: yRoad - 32, width: W, height: 64, fill: TH.grid }, svg);
+  el("line", { x1: 0, x2: W, y1: yRoad, y2: yRoad, stroke: TH.tick, "stroke-width": 2, "stroke-dasharray": "18 14" }, svg);
+  for (let x = 0; x <= 100; x += 10) txt(svg, X(x), yRoad + 52, x + " м", { "text-anchor": "middle", "font-size": 12 });
+  const { a, b, v } = carEstimate();
+  // ділянка, яку бере формула
+  el("rect", { x: X(xCar(a)), y: yRoad - 32, width: X(xCar(b)) - X(xCar(a)), height: 64, fill: TH.accent, "fill-opacity": 0.22 }, svg);
+  label(svg, (X(xCar(a)) + X(xCar(b))) / 2, yRoad - 40, `Δx = ${c(xCar(b) - xCar(a), 2)} м за ${c(b - a, 1)} с`, { "text-anchor": "middle", "font-size": 13, fill: TH.accent });
+  // знак
+  const xs = X(xCar(CAR.t0));
+  el("line", { x1: xs, x2: xs, y1: 20, y2: yRoad - 32, stroke: TH.tick, "stroke-width": 3 }, svg);
+  el("circle", { cx: xs, cy: 22, r: 17, fill: "#fff", stroke: "#d62828", "stroke-width": 5 }, svg);
+  txt(svg, xs, 28, "50", { "text-anchor": "middle", "font-size": 15, "font-weight": 800, fill: "#111" });
+  // позначки GPS, записані до поточного моменту
+  for (let t = 0; t <= carT + 1e-9 && t <= CAR.tEnd; t += 0.5) el("circle", { cx: X(xCar(t)), cy: yRoad + 20, r: 4, fill: TH.L1 }, svg);
+  // машина
+  const cx = X(xCar(carT));
+  el("rect", { x: cx - 26, y: yRoad - 24, width: 26, height: 18, rx: 5, fill: TH.L3, stroke: TH.halo, "stroke-width": 2 }, svg);
+  el("rect", { x: cx - 18, y: yRoad - 21, width: 10, height: 12, rx: 2, fill: TH.halo, "fill-opacity": 0.6 }, svg);
+  txt(svg, 12, 16, `t = ${c(carT, 2)} с`, { "font-size": 14, "font-weight": 700, fill: TH.ink });
+}
+// швидкість від часу: оцінка формули — горизонтальний відрізок над її проміжком
+function drawSpeed() {
+  const { a, b, v } = carEstimate();
+  const ch = chart(document.getElementById("vCarCh"), { xmin: 0, xmax: CAR.tEnd, ymin: 30, ymax: 75, H: 280 });
+  el("line", { x1: ch.X(0), x2: ch.X(CAR.tEnd), y1: ch.Y(CAR.limit), y2: ch.Y(CAR.limit), stroke: "#d62828", "stroke-width": 2.5, "stroke-dasharray": "8 6" }, ch.g);
+  label(ch.svg, ch.X(0.1), ch.Y(CAR.limit) - 8, "обмеження 50 км/год", { "font-size": 13, fill: "#d62828" });
+  curve(ch, t => vCar(t) * 3.6, 0, CAR.tEnd, { stroke: TH.L1 });
+  el("line", { x1: ch.X(CAR.t0), x2: ch.X(CAR.t0), y1: ch.T, y2: ch.H - ch.B, stroke: TH.tick, "stroke-width": 2, "stroke-dasharray": "5 5" }, ch.g);
+  el("line", { x1: ch.X(a), x2: ch.X(b), y1: ch.Y(v * 3.6), y2: ch.Y(v * 3.6), stroke: TH.accent, "stroke-width": 5, "stroke-linecap": "round" }, ch.g);
+  el("circle", { cx: ch.X(carT), cy: ch.Y(vCar(carT) * 3.6), r: 7, fill: TH.L3, stroke: TH.halo, "stroke-width": 2.5 }, ch.g);
+  const kmh = v * 3.6, over = kmh > CAR.limit;
+  document.getElementById("vCar").innerHTML = `${c(v, 2)} м/с = <span style="color:${over ? TH.accent : TH.L4}">${c(kmh, 1)} км/год</span> → ${over ? "перевищив" : "не перевищив"}`;
+}
+function renderCar() {
+  const T = []; for (let t = 0; t <= CAR.tEnd; t += 0.5) T.push(t);
+  document.getElementById("tCar").innerHTML = "<tr><th>t, с</th>" + T.map(t => `<td class="num">${c(t, 1)}</td>`).join("") + "</tr>" +
+    "<tr><th>x, м</th>" + T.map(t => `<td class="num">${c(xCar(t), 2)}</td>`).join("") + "</tr>";
+  seg("kCar", [["fw", "на наступному відрізку"], ["c2", "центральна формула"]], carKind, v => { carKind = v; renderCar(); });
+  seg("hCar", [[0.5, "h = 0,5 с"], [1, "h = 1 с"], [2, "h = 2 с"]], carH, v => { carH = Number(v); renderCar(); });
+  drawRoad(); drawSpeed();
+}
+function carTick(now) {
+  if (!carPlay) return;
+  carT = Math.min(CAR.tEnd, carT + Math.min(0.1, (now - carLast) / 1000));
+  carLast = now;
+  if (carT >= CAR.tEnd) { carPlay = false; document.getElementById("playCar").textContent = "▶ Пуск"; }
+  drawRoad(); drawSpeed();
+  if (carPlay) requestAnimationFrame(carTick);
+}
+document.getElementById("playCar").addEventListener("click", () => {
+  if (carPlay) { carPlay = false; document.getElementById("playCar").textContent = "▶ Пуск"; return; }
+  if (carT >= CAR.tEnd) carT = 0;
+  carPlay = true; document.getElementById("playCar").textContent = "⏸ Пауза";
+  carLast = performance.now(); requestAnimationFrame(carTick);
+});
+document.getElementById("resetCar").addEventListener("click", () => { carPlay = false; carT = 0; document.getElementById("playCar").textContent = "▶ Пуск"; drawRoad(); drawSpeed(); });
+
+function renderAll() { render1(); render3(); render4(); render4d(); render5e(); render7(); render8e(); renderCar(); }
 applyTheme(); renderAll();
 </script>
 </body>
