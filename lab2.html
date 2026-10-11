@@ -50,6 +50,12 @@
   .big { font-size: 22px; font-weight: 700; font-family: Consolas, "Courier New", monospace; }
   ul.sum li { margin-bottom: 6px; }
   .z-in { color: var(--L4); } .z-ex { color: var(--accent); }
+  .tabs { display: flex; gap: 4px; margin: 12px 0 0; border-bottom: 1px solid var(--line); }
+  .tabs button { border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; padding: 8px 14px; font-size: 16px; font-weight: 600; color: var(--muted); }
+  .tabs button.on { color: var(--ink); border-bottom-color: var(--accent); }
+  h2.qtitle { font-size: 22px; margin: 18px 0 4px; }
+  a.pdf { display: inline-block; padding: 6px 14px; border-radius: 9px; border: 1px solid var(--ctrl-line); background: var(--ctrl); color: var(--ink); text-decoration: none; font-weight: 600; }
+  #tabQ ol { padding-left: 26px; } #tabQ li { margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -57,6 +63,8 @@
   <div class="top"><span class="muted">Лабораторна робота № 2 · Чисельні методи</span><button id="theme" title="Світла / темна тема">☀ / ☾</button></div>
   <h1>Інтерполяція поліномом Лагранжа</h1>
   <p class="muted">Усі приклади побудовано на даних зразка звіту. Результати свого варіанта отримайте власною програмою та порівняйте, чи спостерігаються ті самі ефекти.</p>
+  <div class="tabs" id="tabs"><button data-tab="m">Матеріал</button><button data-tab="q">Питання для підготовки</button></div>
+  <div id="tabMat">
 
   <!-- 1 -->
   <section class="card">
@@ -150,6 +158,43 @@
     </ul>
     <p class="muted">Перевірте на своєму варіанті: чи проходять ваші поліноми через свої вузли? Як вони поводяться на [X4; X5]? Яке значення дають при x = X1?</p>
   </section>
+  </div>
+  <div id="tabQ" hidden><!-- QUESTIONS:START -->
+  <h2 class="qtitle">Питання для підготовки до захисту</h2>
+  <p>Готуйтеся пояснювати <b>своїми словами</b> і <b>на своїх даних</b>: що вийшло у вашій роботі і чому. На захисті будуть і інші питання на розуміння.</p>
+  <p><a class="pdf" href="lab2_questions.pdf" download>Завантажити PDF</a></p>
+  <section class="card">
+    <h2>Рівень 1</h2>
+    <ol start="1">
+      <li>Що таке інтерполяція? Поясніть своїми словами і наведіть приклад з життя.</li>
+      <li>Чим інтерполяція відрізняється від апроксимації? У вас 100 вимірювань з датчика, і в них є шум. Що з цього оберете і чому?</li>
+      <li>Скільки точок потрібно для L1, L2, L3? Чому саме стільки?</li>
+      <li>Звідки ви взяли свої поліноми? Будьте готові показати це і перевірити поліном, підставивши в нього одну з точок.</li>
+      <li>Будьте готові вручну порахувати L1 через будь-які дві точки вашої таблиці.</li>
+      <li>Ваш L1 у точці X3 не дорівнює Y3. Це помилка? Чому?</li>
+    </ol>
+    <h3>По коду</h3>
+    <ol start="7">
+      <li>Що таке крок h у вашій програмі? Як він пов'язаний з кількістю точок, у яких обчислюється поліном?</li>
+      <li>Що зміниться, якщо зменшити крок у 10 разів? А збільшити? Чи стане від цього поліном точнішим?</li>
+      <li>Чим точки, у яких програма обчислює поліном, відрізняються від точок таблиці (вузлів)?</li>
+      <li>Як програма гарантує, що до обчислень потрапить і крайня точка X5?</li>
+      <li>Чому у виводі трапляються значення x на кшталт <code class="mono">0.036000000000000004</code>, хоча крок «круглий»?</li>
+      <li>Як змінити програму, щоб вона обчислювала ще й L4?</li>
+    </ol>
+  </section>
+  <section class="card">
+    <h2>Рівень 2</h2>
+    <ol start="1">
+      <li>Через які точки обов'язково проходять усі ваші графіки? Покажіть на своєму графіку.</li>
+      <li>Біля X1 ваші поліноми дають значення, далекі від табличного Y1. Це нормально? Чому так?</li>
+      <li>Що таке екстраполяція і чому їй менше довіри, ніж інтерполяції?</li>
+      <li>Чому для поліномів брали точки з кінця таблиці? Що змінилося б, якби брали з початку?</li>
+      <li>Навіщо програма обчислює 51 точку, якщо в таблиці їх лише 5?</li>
+      <li>Як поводитиметься поліном L4 (через усі 5 точок) біля X1? Спершу передбачте, потім перевірте.</li>
+    </ol>
+  </section>
+  <!-- QUESTIONS:END --></div>
 </main>
 
 <script>
@@ -427,6 +472,23 @@ function render7() {
 document.getElementById("h7").addEventListener("input", render7);
 
 function renderAll() { render1(); render2(); render3(); render4(); render5(); render6(); render7(); }
+// ---------- вкладки: матеріал / питання (#tab=q) ----------
+const DEFAULT_TAB = "m";
+const tabParam = () => { const t = new URLSearchParams(location.hash.slice(1)).get("tab"); return t === "q" || t === "m" ? t : DEFAULT_TAB; };
+function showTab(t) {
+  document.getElementById("tabMat").hidden = t === "q";
+  document.getElementById("tabQ").hidden = t !== "q";
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+}
+document.querySelectorAll("#tabs button").forEach(b => b.addEventListener("click", () => {
+  const p = new URLSearchParams(location.hash.slice(1)); p.set("tab", b.dataset.tab);
+  history.replaceState(null, "", "#" + p.toString());
+  showTab(b.dataset.tab);
+  if (window.parent !== window) parent.postMessage({ type: "chm-tab", tab: b.dataset.tab }, "*");
+}));
+window.addEventListener("hashchange", () => showTab(tabParam()));
+showTab(tabParam());
+
 applyTheme(); renderAll();
 </script>
 </body>

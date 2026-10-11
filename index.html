@@ -48,7 +48,7 @@
 // Оболонка: меню лаб; лаба — окрема сторінка в iframe, тема передається в хеші (lab2.html#theme=dark).
 // Пряме посилання на лабу: index.html#lab=2
 const LABS = [
-  { n: 1, title: "Похибки" },
+  { n: 1, title: "Похибки", file: "lab1.html" },
   { n: 2, title: "Лагранж", file: "lab2.html" },
   { n: 3, title: "Похідна й інтеграл", file: "lab3.html" },
   { n: 4, title: "СЛАР" },
@@ -77,18 +77,28 @@ nav.appendChild(btn);
 function applyTheme() {
   if (theme === "light") document.documentElement.setAttribute("data-theme", "light"); else document.documentElement.removeAttribute("data-theme");
 }
+// вкладка лаби: m — матеріал, q — питання; null — як задано на сторінці лаби
+let tab = null;
+const frameUrl = () => `${lab.file}#theme=${theme}` + (tab ? `&tab=${tab}` : "");
 function show() {
-  const want = Number(new URLSearchParams(location.hash.slice(1)).get("lab"));
+  const P = new URLSearchParams(location.hash.slice(1)), want = Number(P.get("lab"));
+  tab = P.get("tab") === "q" || P.get("tab") === "m" ? P.get("tab") : null;
   const l = ready.find(x => x.n === want) || ready.find(x => x.n === Number(store.get("lab", ""))) || ready[ready.length - 1];
   if (l.n !== want) { history.replaceState(null, "", `#lab=${l.n}`); }
   lab = l; store.set("lab", String(l.n));
   nav.querySelectorAll("a").forEach(a => a.classList.toggle("on", Number(a.dataset.n) === l.n));
-  frame.src = `${l.file}#theme=${theme}`;
+  frame.src = frameUrl();
   document.title = `ЛР${l.n} · ${l.title} — Чисельні методи`;
 }
 btn.addEventListener("click", () => {
   theme = theme === "dark" ? "light" : "dark"; store.set("theme", theme); applyTheme();
-  frame.src = `${lab.file}#theme=${theme}`;
+  frame.src = frameUrl();
+});
+// сторінка лаби повідомляє про зміну вкладки — оновлюємо адресу, щоб посилання вело туди ж
+window.addEventListener("message", e => {
+  if (!e.data || e.data.type !== "chm-tab") return;
+  tab = e.data.tab;
+  history.replaceState(null, "", `#lab=${lab.n}` + (tab === "q" ? "&tab=q" : ""));
 });
 window.addEventListener("hashchange", show);
 applyTheme(); show();

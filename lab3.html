@@ -53,6 +53,12 @@
   h3 { font-size: 17px; margin: 14px 0 4px; }
   ol { margin: 6px 0 10px; padding-left: 22px; }
   .tbl th { text-align: left; }
+  .tabs { display: flex; gap: 4px; margin: 12px 0 0; border-bottom: 1px solid var(--line); }
+  .tabs button { border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; padding: 8px 14px; font-size: 16px; font-weight: 600; color: var(--muted); }
+  .tabs button.on { color: var(--ink); border-bottom-color: var(--accent); }
+  h2.qtitle { font-size: 22px; margin: 18px 0 4px; }
+  a.pdf { display: inline-block; padding: 6px 14px; border-radius: 9px; border: 1px solid var(--ctrl-line); background: var(--ctrl); color: var(--ink); text-decoration: none; font-weight: 600; }
+  #tabQ ol { padding-left: 26px; } #tabQ li { margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -60,6 +66,8 @@
   <div class="top"><span class="muted">Лабораторна робота № 3 · Чисельні методи</span><button id="theme" title="Світла / темна тема">☀ / ☾</button></div>
   <h1>Чисельне визначення похідної та інтеграла</h1>
   <p class="muted">Усі приклади побудовано на функції зразка звіту. Для свого варіанта підставте власні A і k.</p>
+  <div class="tabs" id="tabs"><button data-tab="m">Матеріал</button><button data-tab="q">Питання для підготовки</button></div>
+  <div id="tabMat">
 
   <!-- 1 -->
   <section class="card">
@@ -265,6 +273,44 @@
     </ol>
     <p class="note">Спосіб «на наступному відрізку» — це середня швидкість на ділянці після знака, а не швидкість у момент проїзду. Автомобіль гальмує, тому середня швидкість після знака менша за миттєву. Центральна формула бере точки симетрично з обох боків — помилки зліва і справа майже компенсуються.</p>
   </section>
+  </div>
+  <div id="tabQ" hidden><!-- QUESTIONS:START -->
+  <h2 class="qtitle">Питання для підготовки до захисту</h2>
+  <p>Готуйтеся пояснювати <b>своїми словами</b> і <b>на своїх даних</b>: що вийшло у вашій роботі і чому. На захисті будуть і інші питання на розуміння.</p>
+  <p><a class="pdf" href="lab3_questions.pdf" download>Завантажити PDF</a></p>
+  <section class="card">
+    <h2>Рівень 1</h2>
+    <ol start="1">
+      <li>Що таке похідна? Поясніть своїми словами і наведіть приклад з життя. Чому ваша похідна в нулі від'ємна?</li>
+      <li>Що таке визначений інтеграл? Чи може ваш інтеграл вийти від'ємним?</li>
+      <li>Звідки ви взяли точні значення похідної та інтеграла? Будьте готові показати виведення для своєї функції і перевірити первісну.</li>
+      <li>Що геометрично обчислює формула df/dx1? Чому це наближає похідну?</li>
+      <li>Що таке відносна похибка? Навіщо рахувати саме відносну, а не абсолютну?</li>
+      <li>Інтеграл потрібен від 0 до ∞, а програма рахує до 10000. Чому так можна?</li>
+    </ol>
+    <h3>По коду</h3>
+    <ol start="7">
+      <li>Які значення x програма передає у функцію при h = 1? Чи визначена ваша функція в цих точках?</li>
+      <li>Скільки разів обчислюється f для одного значення df/dx2? А для інтеграла при N = 10⁷?</li>
+      <li>До якого i доходить кожен цикл у вашій програмі інтеграла? До якого i йде сума у формулі?</li>
+      <li>Чому для формули Сімпсона N має бути парним? Що зробить ваша програма з непарним N?</li>
+    </ol>
+  </section>
+  <section class="card">
+    <h2>Рівень 2</h2>
+    <ol start="1">
+      <li>Зі зменшенням h похибка похідної спершу зменшується, а потім зростає. Чому?</li>
+      <li>Чому при дуже малому h похідна стає рівною нулю? Покажіть, з якого h це відбувається у вас.</li>
+      <li>Який оптимальний крок для кожної з двох формул у вашій роботі? Чому для п'ятиточкової формули він більший?</li>
+      <li>Якщо h зменшити в 10 разів (з 1 до 0,1), у скільки разів зменшиться похибка df/dx1? А df/dx2? Спершу передбачте, потім перевірте за своєю таблицею.</li>
+      <li>Чому при N = 10 інтеграл виходить у сотні разів більшим за точне значення? Це помилка програми?</li>
+      <li>Від чого залежить, скільки інтервалів N потрібно для точного інтеграла? Чи однакове це число для всіх варіантів?</li>
+      <li>Чому для інтеграла немає «ями», як для похідної?</li>
+      <li>Функцію задано таблицею вимірів з кроком 0,1. Чи можна отримати точнішу похідну, якщо провести через точки поліном і рахувати по ньому з кроком 0,001?</li>
+      <li>Що спільного між різницевими формулами похідної, квадратурними формулами і лабораторною роботою № 2?</li>
+    </ol>
+  </section>
+  <!-- QUESTIONS:END --></div>
 </main>
 
 <script>
@@ -580,6 +626,23 @@ document.getElementById("playCar").addEventListener("click", () => {
 document.getElementById("resetCar").addEventListener("click", () => { carPlay = false; carT = 0; document.getElementById("playCar").textContent = "▶ Пуск"; drawRoad(); drawSpeed(); });
 
 function renderAll() { render1(); render3(); render4(); render4d(); render5e(); render7(); render8e(); renderCar(); }
+// ---------- вкладки: матеріал / питання (#tab=q) ----------
+const DEFAULT_TAB = "m";
+const tabParam = () => { const t = new URLSearchParams(location.hash.slice(1)).get("tab"); return t === "q" || t === "m" ? t : DEFAULT_TAB; };
+function showTab(t) {
+  document.getElementById("tabMat").hidden = t === "q";
+  document.getElementById("tabQ").hidden = t !== "q";
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+}
+document.querySelectorAll("#tabs button").forEach(b => b.addEventListener("click", () => {
+  const p = new URLSearchParams(location.hash.slice(1)); p.set("tab", b.dataset.tab);
+  history.replaceState(null, "", "#" + p.toString());
+  showTab(b.dataset.tab);
+  if (window.parent !== window) parent.postMessage({ type: "chm-tab", tab: b.dataset.tab }, "*");
+}));
+window.addEventListener("hashchange", () => showTab(tabParam()));
+showTab(tabParam());
+
 applyTheme(); renderAll();
 </script>
 </body>

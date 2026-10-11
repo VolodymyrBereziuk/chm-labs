@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ЛР1 · Сума послідовності циклічним додаванням</title>
+<style>
+  :root {
+    --bg: #11151c; --card: #1a2029; --ink: #e9edf3; --muted: #9aa5b4; --line: #2b3442; --chip: #232c38; --accent: #ffb26b;
+    --L1: #5aa7ff; --L2: #ffab4a; --L3: #d08cff; --L4: #4fd690;
+    --grid: #262f3c; --zero: #56627a; --frame: #3a4556; --tick: #a3adbb; --band: #2b2a1f;
+    --pt: #f4f1e8; --halo: #11151c; --ctrl: #232c38; --ctrl-line: #3a4556; --on: #2f3b4d;
+  }
+  :root[data-theme="light"] {
+    --bg: #f7f5ef; --card: #fffdf8; --ink: #1b2330; --muted: #5a6272; --line: #e2ddd0; --chip: #f0ece2; --accent: #b4501f;
+    --L1: #1f5fa8; --L2: #c9731a; --L3: #7a3e9d; --L4: #2e8a62;
+    --grid: #e7e2d6; --zero: #9a9384; --frame: #cfc9ba; --tick: #5a6272; --band: #efe8d6;
+    --pt: #1b2330; --halo: #fffdf8; --ctrl: #ffffff; --ctrl-line: #cfc9ba; --on: #f0ece2;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 "Segoe UI", system-ui, Arial, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 18px 16px 70px; }
+  .top { display: flex; align-items: center; gap: 12px; }
+  .top button { margin-left: auto; }
+  h1 { font-size: 26px; line-height: 1.25; margin: 6px 0 4px; }
+  h2 { font-size: 20px; margin: 0 0 6px; }
+  p { margin: 6px 0 10px; }
+  .muted { color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin: 18px 0; }
+  .try { background: var(--chip); border-radius: 10px; padding: 8px 12px; margin: 10px 0 0; font-size: 16px; }
+  .try b { color: var(--accent); }
+  .note { border-left: 3px solid var(--accent); padding: 2px 0 2px 12px; margin: 10px 0 0; font-size: 16px; }
+  button, select { font: inherit; font-size: 15px; padding: 6px 12px; border-radius: 9px; border: 1px solid var(--ctrl-line); background: var(--ctrl); color: var(--ink); cursor: pointer; }
+  button.on { background: var(--on); border-color: var(--accent); font-weight: 600; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .chips label { display: inline-flex; align-items: center; gap: 6px; margin: 0 14px 4px 0; cursor: pointer; white-space: nowrap; font-size: 16px; }
+  .tag { display: inline-block; width: 24px; height: 5px; border-radius: 3px; }
+  input[type=range] { width: 100%; margin: 8px 0 2px; accent-color: var(--accent); }
+  .rlabel { display: flex; justify-content: space-between; font-size: 15px; color: var(--muted); }
+  .rlabel b { color: var(--ink); font-family: Consolas, "Courier New", monospace; }
+  svg { width: 100%; height: auto; display: block; touch-action: pan-y; }
+  .drag { cursor: grab; touch-action: none; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; margin-top: 8px; }
+  th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; }
+  td.num { font-family: Consolas, "Courier New", monospace; text-align: right; white-space: nowrap; }
+  .tbl { overflow-x: auto; }
+  .mono { font-family: Consolas, "Courier New", monospace; }
+  .formula { font-family: Consolas, "Courier New", monospace; font-size: 15px; background: var(--chip); border-radius: 10px; padding: 8px 12px; overflow-x: auto; white-space: nowrap; margin-top: 8px; }
+  .big { font-size: 22px; font-weight: 700; font-family: Consolas, "Courier New", monospace; }
+  ul.sum li { margin-bottom: 6px; }
+  .z-in { color: var(--L4); } .z-ex { color: var(--accent); }
+  h3 { font-size: 17px; margin: 14px 0 4px; }
+  ol { margin: 6px 0 10px; padding-left: 22px; }
+  .tbl th { text-align: left; }
+  .tabs { display: flex; gap: 4px; margin: 12px 0 0; border-bottom: 1px solid var(--line); }
+  .tabs button { border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; padding: 8px 14px; font-size: 16px; font-weight: 600; color: var(--muted); }
+  .tabs button.on { color: var(--ink); border-bottom-color: var(--accent); }
+  h2.qtitle { font-size: 22px; margin: 18px 0 4px; }
+  a.pdf { display: inline-block; padding: 6px 14px; border-radius: 9px; border: 1px solid var(--ctrl-line); background: var(--ctrl); color: var(--ink); text-decoration: none; font-weight: 600; }
+  #tabQ ol { padding-left: 26px; } #tabQ li { margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><span class="muted">Лабораторна робота № 1 · Чисельні методи</span><button id="theme" title="Світла / темна тема">☀ / ☾</button></div>
+  <h1>Визначення суми послідовності на основі циклічного додавання</h1>
+  <p class="muted">Матеріал до роботи буде додано. Питання для підготовки до захисту — на вкладці «Питання для підготовки».</p>
+  <div class="tabs" id="tabs"><button data-tab="m">Матеріал</button><button data-tab="q">Питання для підготовки</button></div>
+  <div id="tabMat">
+  <section class="card">
+    <h2>Матеріал готується</h2>
+    <p class="muted">Інтерактивне пояснення до лабораторної роботи № 1 з'явиться згодом.</p>
+  </section>
+  </div>
+  <div id="tabQ" hidden><!-- QUESTIONS:START -->
+  <h2 class="qtitle">Питання для підготовки до захисту</h2>
+  <p>Готуйтеся пояснювати <b>своїми словами</b> і <b>на своїх даних</b>: що вийшло у вашій роботі і чому. На захисті будуть і інші питання на розуміння.</p>
+  <p><a class="pdf" href="lab1_questions.pdf" download>Завантажити PDF</a></p>
+  <section class="card">
+    <h2>Рівень 1</h2>
+    <ol start="1">
+      <li>Математично a + a + … + a = N·a. У вашій роботі S ≠ N·a. Чому, якщо це одне й те саме?</li>
+      <li>Що таке абсолютна і відносна похибка? Як ви їх рахували і навіщо відносна похибка?</li>
+      <li>Які види похибок бувають (див. методичку)? Яка з них досліджується у вашій роботі?</li>
+      <li>Як виглядав би графік похибки на «ідеальному» комп'ютері? Чому ваш графік не такий?</li>
+      <li>Скільки операцій робить ваша програма для одного N? А скільки треба, щоб порахувати N·a? Що з цього точніше і чому?</li>
+      <li>Похибка порядку 10⁻¹⁰ — це багато чи мало? Коли така похибка може стати важливою?</li>
+    </ol>
+    <h3>По коду</h3>
+    <ol start="7">
+      <li>Що робить ваша функція підсумовування? Вона повертає результат чи лише друкує його? Яка між цим різниця?</li>
+      <li>Які саме значення N перебирає ваш цикл? Чи є серед них N = 10000? Покажіть у коді.</li>
+      <li>Що зміниться у виводі, якщо крок N зробити 1000 замість 100?</li>
+      <li>Чому програма друкує числа на кшталт <code class="mono">18.900000000000002</code> замість <code class="mono">18.9</code>?</li>
+    </ol>
+  </section>
+  <section class="card">
+    <h2>Рівень 2</h2>
+    <ol start="1">
+      <li>Що буде з похибкою, якщо замінити a на 0,25? Спершу передбачте, потім перевірте програмою. Поясніть результат.</li>
+      <li>А для a = 0,5; 0,1; 0,375? Як заздалегідь зрозуміти, чи буде похибка?</li>
+      <li>На вашому графіку є точки, де похибка майже нуль. Чи означає це, що при цих N комп'ютер рахує точно?</li>
+      <li>Якщо взяти N до мільйона, похибка буде більша чи менша? Спершу передбачте, потім перевірте.</li>
+      <li>Скільки всього додавань робить ваша програма для всіх N від 100 до 10000? Як переписати її, щоб додавань було значно менше? Чи зміниться від цього результат?</li>
+    </ol>
+  </section>
+  <!-- QUESTIONS:END --></div>
+</main>
+<script>
+// ---------- тема: усередині сайту задає оболонка (#theme=dark) ----------
+const embedded = window.parent !== window;
+let theme = "dark";
+try { theme = localStorage.getItem("chm.theme") || "dark"; } catch (e) {}
+const hashTheme = () => { const t = new URLSearchParams(location.hash.slice(1)).get("theme"); return t === "light" || t === "dark" ? t : null; };
+if (hashTheme()) theme = hashTheme();
+if (embedded) document.getElementById("theme").style.display = "none";
+function applyTheme() { if (theme === "light") document.documentElement.setAttribute("data-theme", "light"); else document.documentElement.removeAttribute("data-theme"); }
+window.addEventListener("hashchange", () => { const t = hashTheme(); if (t && t !== theme) { theme = t; applyTheme(); } });
+document.getElementById("theme").addEventListener("click", () => {
+  theme = theme === "dark" ? "light" : "dark";
+  try { localStorage.setItem("chm.theme", theme); } catch (e) {}
+  applyTheme();
+});
+// ---------- вкладки: матеріал / питання (#tab=q) ----------
+const DEFAULT_TAB = "q";
+const tabParam = () => { const t = new URLSearchParams(location.hash.slice(1)).get("tab"); return t === "q" || t === "m" ? t : DEFAULT_TAB; };
+function showTab(t) {
+  document.getElementById("tabMat").hidden = t === "q";
+  document.getElementById("tabQ").hidden = t !== "q";
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+}
+document.querySelectorAll("#tabs button").forEach(b => b.addEventListener("click", () => {
+  const p = new URLSearchParams(location.hash.slice(1)); p.set("tab", b.dataset.tab);
+  history.replaceState(null, "", "#" + p.toString());
+  showTab(b.dataset.tab);
+  if (window.parent !== window) parent.postMessage({ type: "chm-tab", tab: b.dataset.tab }, "*");
+}));
+window.addEventListener("hashchange", () => showTab(tabParam()));
+showTab(tabParam());
+
+applyTheme();
+</script>
+</body>
+</html>
