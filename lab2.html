@@ -57,6 +57,7 @@
   a.pdf { display: inline-block; padding: 6px 14px; border-radius: 9px; border: 1px solid var(--ctrl-line); background: var(--ctrl); color: var(--ink); text-decoration: none; font-weight: 600; }
   #tabQ ol { padding-left: 26px; } #tabQ li { margin-bottom: 8px; }
 </style>
+<script data-goatcounter="https://volodymyrbereziuk.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 <main>
@@ -472,6 +473,13 @@ function render7() {
 document.getElementById("h7").addEventListener("input", render7);
 
 function renderAll() { render1(); render2(); render3(); render4(); render5(); render6(); render7(); }
+// лічильник відвідувань (GoatCounter): сторінка рахується сама, вкладка «Питання» — окремою подією
+function countTab(t) {
+  if (t !== "q") return;
+  const n = (location.pathname.match(/lab(\d)/) || [])[1];
+  const go = () => window.goatcounter && window.goatcounter.count && window.goatcounter.count({ path: `lab${n}-questions`, title: `ЛР${n} · питання`, event: true });
+  if (window.goatcounter && window.goatcounter.count) go(); else window.addEventListener("load", () => setTimeout(go, 500));
+}
 // ---------- вкладки: матеріал / питання (#tab=q) ----------
 const DEFAULT_TAB = "m";
 const tabParam = () => { const t = new URLSearchParams(location.hash.slice(1)).get("tab"); return t === "q" || t === "m" ? t : DEFAULT_TAB; };
@@ -484,10 +492,12 @@ document.querySelectorAll("#tabs button").forEach(b => b.addEventListener("click
   const p = new URLSearchParams(location.hash.slice(1)); p.set("tab", b.dataset.tab);
   history.replaceState(null, "", "#" + p.toString());
   showTab(b.dataset.tab);
+  countTab(b.dataset.tab);
   if (window.parent !== window) parent.postMessage({ type: "chm-tab", tab: b.dataset.tab }, "*");
 }));
 window.addEventListener("hashchange", () => showTab(tabParam()));
 showTab(tabParam());
+countTab(tabParam());
 
 applyTheme(); renderAll();
 </script>
