@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ЛР2 · Інтерполяція поліномом Лагранжа</title>
+<style>
+  :root {
+    --bg: #11151c; --card: #1a2029; --ink: #e9edf3; --muted: #9aa5b4; --line: #2b3442; --chip: #232c38; --accent: #ffb26b;
+    --L1: #5aa7ff; --L2: #ffab4a; --L3: #d08cff; --L4: #4fd690;
+    --grid: #262f3c; --zero: #56627a; --frame: #3a4556; --tick: #a3adbb; --band: #2b2a1f;
+    --pt: #f4f1e8; --halo: #11151c; --ctrl: #232c38; --ctrl-line: #3a4556; --on: #2f3b4d;
+  }
+  :root[data-theme="light"] {
+    --bg: #f7f5ef; --card: #fffdf8; --ink: #1b2330; --muted: #5a6272; --line: #e2ddd0; --chip: #f0ece2; --accent: #b4501f;
+    --L1: #1f5fa8; --L2: #c9731a; --L3: #7a3e9d; --L4: #2e8a62;
+    --grid: #e7e2d6; --zero: #9a9384; --frame: #cfc9ba; --tick: #5a6272; --band: #efe8d6;
+    --pt: #1b2330; --halo: #fffdf8; --ctrl: #ffffff; --ctrl-line: #cfc9ba; --on: #f0ece2;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 "Segoe UI", system-ui, Arial, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 18px 16px 70px; }
+  .top { display: flex; align-items: center; gap: 12px; }
+  .top button { margin-left: auto; }
+  h1 { font-size: 26px; line-height: 1.25; margin: 6px 0 4px; }
+  h2 { font-size: 20px; margin: 0 0 6px; }
+  p { margin: 6px 0 10px; }
+  .muted { color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin: 18px 0; }
+  .try { background: var(--chip); border-radius: 10px; padding: 8px 12px; margin: 10px 0 0; font-size: 16px; }
+  .try b { color: var(--accent); }
+  .note { border-left: 3px solid var(--accent); padding: 2px 0 2px 12px; margin: 10px 0 0; font-size: 16px; }
+  button, select { font: inherit; font-size: 15px; padding: 6px 12px; border-radius: 9px; border: 1px solid var(--ctrl-line); background: var(--ctrl); color: var(--ink); cursor: pointer; }
+  button.on { background: var(--on); border-color: var(--accent); font-weight: 600; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .chips label { display: inline-flex; align-items: center; gap: 6px; margin: 0 14px 4px 0; cursor: pointer; white-space: nowrap; font-size: 16px; }
+  .tag { display: inline-block; width: 24px; height: 5px; border-radius: 3px; }
+  input[type=range] { width: 100%; margin: 8px 0 2px; accent-color: var(--accent); }
+  .rlabel { display: flex; justify-content: space-between; font-size: 15px; color: var(--muted); }
+  .rlabel b { color: var(--ink); font-family: Consolas, "Courier New", monospace; }
+  svg { width: 100%; height: auto; display: block; touch-action: pan-y; }
+  .drag { cursor: grab; touch-action: none; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; margin-top: 8px; }
+  th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; }
+  td.num { font-family: Consolas, "Courier New", monospace; text-align: right; white-space: nowrap; }
+  .tbl { overflow-x: auto; }
+  .mono { font-family: Consolas, "Courier New", monospace; }
+  .formula { font-family: Consolas, "Courier New", monospace; font-size: 15px; background: var(--chip); border-radius: 10px; padding: 8px 12px; overflow-x: auto; white-space: nowrap; margin-top: 8px; }
+  .big { font-size: 22px; font-weight: 700; font-family: Consolas, "Courier New", monospace; }
+  ul.sum li { margin-bottom: 6px; }
+  .z-in { color: var(--L4); } .z-ex { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><span class="muted">Лабораторна робота № 2 · Чисельні методи</span><button id="theme" title="Світла / темна тема">☀ / ☾</button></div>
+  <h1>Інтерполяція поліномом Лагранжа</h1>
+  <p class="muted">Усі приклади побудовано на даних зразка звіту. Результати свого варіанта отримайте власною програмою та порівняйте, чи спостерігаються ті самі ефекти.</p>
+
+  <!-- 1 -->
+  <section class="card">
+    <h2>1. Таблично задана функція</h2>
+    <p>Функцію задано п'ятьма точками (x; y); її значення між ними невідомі. Щоб їх отримати, точки необхідно певним чином <b>з'єднати</b>.</p>
+    <div class="seg" id="joinSeg"></div>
+    <svg id="ch1"></svg>
+    <input type="range" id="x1" min="0" max="600" value="200">
+    <div class="rlabel"><span>x = <b id="x1v"></b></span><span>y між точками = <b id="y1v"></b></span></div>
+    <p class="try"><b>Завдання:</b> порівняйте способи з'єднання при x = 0,2. Точки однакові, а значення між ними щоразу інше.</p>
+    <p class="note">Точно відомі лише задані точки. Будь-яке значення між ними є <b>припущенням</b>, що залежить від способу з'єднання.</p>
+  </section>
+
+  <!-- 2 -->
+  <section class="card">
+    <h2>2. Поліноми L1–L4</h2>
+    <p>У роботі точки з'єднують <b>поліномами</b>: починають з двох останніх точок і щоразу додають ще одну зліва. Через 2 точки проходить пряма, через 3 — парабола: <b>n точок → степінь n−1</b>.</p>
+    <div class="chips" id="chips2"></div>
+    <svg id="ch2"></svg>
+    <input type="range" id="x2" min="0" max="600" value="504">
+    <div class="rlabel"><span>x = <b id="x2v"></b></span><span>значення поліномів у точці x</span></div>
+    <div class="tbl"><table id="t2"></table></div>
+    <p class="try"><b>Завдання:</b> встановіть x = 0,3. Чому L2 і L3 дають 0,34, а L1 — ні? Порівняйте значення L2 і L3 при x = 0 з табличним 0,03.</p>
+    <p class="note">Суцільна лінія — між вузлами полінома (<span class="z-in">інтерполяція</span>), пунктир — поза ними (<span class="z-ex">екстраполяція</span>). Так само працює програма: перебирає x із заданим кроком і для кожного обчислює y1, y2, y3.</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="card">
+    <h2>3. Як працює формула Лагранжа</h2>
+    <p>Поліном Лагранжа — це <b>сума доданків, по одному на кожну точку</b>. Доданок точки i дорівнює yᵢ у своїй точці і <b>нулю</b> в усіх інших вузлах. Тому сума проходить через кожну точку.</p>
+    <div class="seg" id="polySeg3"></div>
+    <div class="seg" id="termSeg3"></div>
+    <svg id="ch3"></svg>
+    <div class="formula" id="f3"></div>
+    <div class="tbl"><table id="t3"></table></div>
+    <p class="try"><b>Завдання:</b> оберіть доданок і перевірте за таблицею: у своїй точці він дорівнює y цієї точки, в інших вузлах — 0. Сума стовпця дорівнює табличному y.</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="card">
+    <h2>4. Чутливість до даних</h2>
+    <p>Точки можна переміщувати вертикально (мишею або дотиком). Спостерігайте, як змінюються поліноми.</p>
+    <div class="chips" id="chips4"></div>
+    <svg id="ch4"></svg>
+    <div class="seg"><button id="reset4">Повернути точки зразка</button></div>
+    <p class="try"><b>Завдання:</b> змістіть точку 3 на 0,1 вгору. Як змінився L1? А L3 і L4, зокрема поблизу x = 0?</p>
+    <p class="note">Поліном завжди проходить через свої вузли — так його побудовано. Проте поза ними поліноми високого степеня дуже чутливі до кожної точки.</p>
+  </section>
+
+  <!-- 5 -->
+  <section class="card">
+    <h2>5. Неоднозначність між вузлами</h2>
+    <p>Через ті самі п'ять точок проходить <b>безліч</b> різних кривих. Повзунок змінює криву, але жодна з них не відхиляється від заданих точок.</p>
+    <svg id="ch5"></svg>
+    <input type="range" id="c5" min="-100" max="100" value="60">
+    <div class="rlabel"><span>інша крива через ті самі точки</span><span>у x = 0,5: <b id="y5v"></b></span></div>
+    <p class="try"><b>Завдання:</b> змініть положення повзунка. Яка з кривих відповідає дійсній функції? Чи можна це визначити лише за п'ятьма точками?</p>
+    <p class="note">Інтерполяція є <b>обґрунтованим припущенням</b>: вона передбачає, що функція змінюється <b>плавно</b>. Для температури о 13:00 між вимірами о 12:00 і 15:00 таке припущення прийнятне, для курсу валют — ні.</p>
+  </section>
+
+  <!-- 6 -->
+  <section class="card">
+    <h2>6. Екстраполяція — поза точками</h2>
+    <p>Розширте межі графіка. Між вузлами поліном обмежений точками з обох боків, поза ними — нічим.</p>
+    <div class="chips" id="chips6"></div>
+    <svg id="ch6"></svg>
+    <input type="range" id="r6" min="0" max="40" value="10">
+    <div class="rlabel"><span>вихід за межі даних: <b id="r6v"></b></span><span>у x = <b id="x6v"></b></span></div>
+    <div class="tbl"><table id="t6"></table></div>
+    <p class="note">Приклад: дитина росте на 6 см на рік, отже у 40 років її зріст — 2,4 м. Формула справедлива лише для даних, за якими її побудовано. Що вищий степінь полінома, то швидше він віддаляється від даних.</p>
+  </section>
+
+  <!-- 7 -->
+  <section class="card">
+    <h2>7. Коли інтерполяція точна?</h2>
+    <p>Для відомої плавної функції sin x побудовано L2 через три її точки з кроком h. Похибку обчислено посередині між вузлами.</p>
+    <svg id="ch7"></svg>
+    <input type="range" id="h7" min="0" max="100" value="70">
+    <div class="rlabel"><span>крок h = <b id="h7v"></b></span><span>відносна похибка <b id="e7v"></b></span></div>
+    <p class="try"><b>Завдання:</b> зменште h у 10 разів (наприклад, з 0,5 до 0,05). У скільки разів зменшилась похибка?</p>
+    <p class="note">Для плавної функції і густих точок похибка мала. У лабораторній роботі навпаки: лише 5 точок зі значними перепадами (0,03 → 0,08 → 0,34 → 0,18 → 0,3), тому поліноми суттєво розходяться.</p>
+  </section>
+
+  <section class="card">
+    <h2>Висновки</h2>
+    <ul class="sum">
+      <li>Поліном Лагранжа завжди проходить через <b>свої</b> вузли. Це не гарантує правильних значень між ними.</li>
+      <li>Між вузлами — <b>інтерполяція</b>, обґрунтована здогадка для плавних функцій.</li>
+      <li>Поза вузлами — <b>екстраполяція</b>, ненадійна на віддалі від точок.</li>
+      <li>Вищий степінь не означає вищої точності. Точність забезпечують <b>густі точки</b> і <b>плавна функція</b>.</li>
+    </ul>
+    <p class="muted">Перевірте на своєму варіанті: чи проходять ваші поліноми через свої вузли? Як вони поводяться на [X4; X5]? Яке значення дають при x = X1?</p>
+  </section>
+</main>
+
+<script>
+// ---------- дані зразка і математика ----------
+const P0 = [[0, 0.03], [0.15, 0.08], [0.3, 0.34], [0.45, 0.18], [0.6, 0.3]];
+const DEFS = { L1: [3, 4], L2: [2, 3, 4], L3: [1, 2, 3, 4], L4: [0, 1, 2, 3, 4] };
+const IDS = ["L1", "L2", "L3", "L4"];
+// доданок точки i: yᵢ · Π (x − xⱼ)/(xᵢ − xⱼ) по інших вузлах
+function term(P, nodes, i, x) {
+  let t = P[i][1];
+  for (const j of nodes) if (j !== i) t *= (x - P[j][0]) / (P[i][0] - P[j][0]);
+  return t;
+}
+const lag = (P, nodes, x) => nodes.reduce((s, i) => s + term(P, nodes, i, x), 0);
+const L = (id, x, P = P0) => lag(P, DEFS[id], x);
+const c = (v, d = 3) => { const r = Number(v.toFixed(d)); return (r < 0 ? "−" : "") + String(Math.abs(r)).replace(".", ","); };
+
+// ---------- тема ----------
+let TH = {};
+function readTheme() {
+  const s = getComputedStyle(document.documentElement), v = n => s.getPropertyValue(n).trim();
+  TH = { L1: v("--L1"), L2: v("--L2"), L3: v("--L3"), L4: v("--L4"), grid: v("--grid"), zero: v("--zero"), frame: v("--frame"),
+    tick: v("--tick"), band: v("--band"), pt: v("--pt"), halo: v("--halo"), ink: v("--ink"), accent: v("--accent"), muted: v("--muted") };
+}
+// усередині сайту тему задає оболонка (#theme=dark), тоді своя кнопка не потрібна
+const embedded = window.parent !== window;
+let theme = "dark";
+try { theme = localStorage.getItem("chm.theme") || "dark"; } catch (e) {}
+function hashTheme() { const t = new URLSearchParams(location.hash.slice(1)).get("theme"); return t === "light" || t === "dark" ? t : null; }
+if (hashTheme()) theme = hashTheme();
+if (embedded) document.getElementById("theme").style.display = "none";
+window.addEventListener("hashchange", () => { const t = hashTheme(); if (t && t !== theme) { theme = t; applyTheme(); renderAll(); } });
+function applyTheme() {
+  if (theme === "light") document.documentElement.setAttribute("data-theme", "light"); else document.documentElement.removeAttribute("data-theme");
+  readTheme();
+}
+document.getElementById("theme").addEventListener("click", () => {
+  theme = theme === "dark" ? "light" : "dark";
+  try { localStorage.setItem("chm.theme", theme); } catch (e) {}
+  applyTheme(); renderAll();
+});
+
+// ---------- SVG-графік ----------
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const a in attrs) e.setAttribute(a, attrs[a]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(parent, x, y, s, attrs = {}) {
+  const t = el("text", Object.assign({ x, y, "font-size": 14, fill: TH.tick }, attrs), parent);
+  t.textContent = s; return t;
+}
+function label(parent, x, y, s, attrs = {}) {
+  return txt(parent, x, y, s, Object.assign({ "font-size": 15, "font-weight": 700, fill: TH.ink, stroke: TH.halo, "stroke-width": 5, "paint-order": "stroke", "stroke-linejoin": "round" }, attrs));
+}
+function niceTicks(min, max, count = 6) {
+  const span = max - min || 1;
+  let step = Math.pow(10, Math.floor(Math.log10(span / count)));
+  const err = span / count / step;
+  if (err >= 7.5) step *= 10; else if (err >= 3.5) step *= 5; else if (err >= 1.5) step *= 2;
+  const t = [];
+  for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) t.push(Number(v.toFixed(10)));
+  return t;
+}
+function chart(svg, o) {
+  const W = 720, H = o.H || 380, Lm = 54, R = 12, T = 12, B = 32;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  const X = v => Lm + (v - o.xmin) / (o.xmax - o.xmin) * (W - Lm - R);
+  const Y = v => H - B - (v - o.ymin) / (o.ymax - o.ymin) * (H - T - B);
+  const id = "c" + Math.random().toString(36).slice(2);
+  el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B }, el("clipPath", { id }, el("defs", {}, svg)));
+  if (o.band) el("rect", { x: X(o.band[0]), y: T, width: X(o.band[1]) - X(o.band[0]), height: H - T - B, fill: TH.band }, svg);
+  for (const v of niceTicks(o.ymin, o.ymax)) {
+    const zero = Math.abs(v) < 1e-12;
+    el("line", { x1: Lm, x2: W - R, y1: Y(v), y2: Y(v), stroke: zero ? TH.zero : TH.grid, "stroke-width": zero ? 2 : 1 }, svg);
+    txt(svg, Lm - 8, Y(v) + 5, c(v, 3), { "text-anchor": "end" });
+  }
+  for (const v of (o.xticks || niceTicks(o.xmin, o.xmax))) {
+    el("line", { x1: X(v), x2: X(v), y1: T, y2: H - B, stroke: TH.grid, "stroke-dasharray": "3 4" }, svg);
+    txt(svg, X(v), H - B + 21, c(v, 3), { "text-anchor": "middle" });
+  }
+  el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B, fill: "none", stroke: TH.frame }, svg);
+  const g = el("g", { "clip-path": `url(#${id})` }, svg);
+  return { X, Y, g, svg, W, H, T, B, o,
+    toData(evt) { const pt = svg.createSVGPoint(); pt.x = evt.clientX; pt.y = evt.clientY; const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      return [o.xmin + (p.x - Lm) / (W - Lm - R) * (o.xmax - o.xmin), o.ymin + (H - B - p.y) / (H - T - B) * (o.ymax - o.ymin)]; } };
+}
+function curve(ch, fn, a, b, attrs, n = 300) {
+  let d = "";
+  for (let i = 0; i <= n; i++) {
+    const x = a + (b - a) * i / n, y = Math.max(-1e4, Math.min(1e4, ch.Y(fn(x))));
+    d += (i ? "L" : "M") + ch.X(x).toFixed(1) + " " + y.toFixed(1);
+  }
+  return el("path", Object.assign({ d, fill: "none", "stroke-width": 4, "stroke-linecap": "round", "stroke-linejoin": "round" }, attrs), ch.g);
+}
+// поліном: суцільний між своїми вузлами, пунктир поза ними
+function polyCurve(ch, id, P, a, b, extra = {}) {
+  const nx = DEFS[id].map(i => P[i][0]), lo = Math.min(...nx), hi = Math.max(...nx), fn = x => L(id, x, P);
+  const st = Object.assign({ stroke: TH[id] }, extra);
+  if (a < lo) curve(ch, fn, a, lo, Object.assign({ "stroke-dasharray": "9 8" }, st));
+  curve(ch, fn, Math.max(a, lo), Math.min(b, hi), st);
+  if (b > hi) curve(ch, fn, hi, b, Object.assign({ "stroke-dasharray": "9 8" }, st));
+}
+function dots(ch, P, opts = {}) {
+  return P.map(([x, y], i) => {
+    const cx = ch.X(x), cy = ch.Y(y), g = el("g", {}, ch.g);
+    if (opts.ring && opts.ring.includes(i)) el("circle", { cx, cy, r: 18, fill: "none", stroke: opts.ringColor, "stroke-width": 3 }, g);
+    el("circle", { cx, cy, r: 12, fill: TH.pt, stroke: TH.halo, "stroke-width": 3 }, g);
+    txt(g, cx, cy + 5, String(i + 1), { fill: TH.halo, "font-size": 13, "font-weight": 800, "text-anchor": "middle" });
+    if (opts.labels !== false) {
+      const right = cx < ch.W - 170;
+      label(ch.svg, cx + (right ? 16 : -16), cy - 16, `(${c(x)}; ${c(y)})`, { "text-anchor": right ? "start" : "end", "font-size": 14 });
+    }
+    return g;
+  });
+}
+function vline(ch, x, color) {
+  el("line", { x1: ch.X(x), x2: ch.X(x), y1: ch.T, y2: ch.H - ch.B, stroke: color || TH.tick, "stroke-width": 2, "stroke-dasharray": "5 5" }, ch.g);
+}
+function chips(boxId, state, onChange) {
+  const box = document.getElementById(boxId);
+  box.innerHTML = IDS.map(id => `<label><input type="checkbox" data-id="${id}" ${state[id] ? "checked" : ""}><span class="tag" style="background:${TH[id]}"></span>${id}</label>`).join("");
+  box.querySelectorAll("input").forEach(cb => cb.addEventListener("change", () => { state[cb.dataset.id] = cb.checked; onChange(); }));
+}
+function seg(boxId, items, cur, onPick) {
+  const box = document.getElementById(boxId);
+  box.innerHTML = items.map(([v, t]) => `<button data-v="${v}" class="${String(v) === String(cur) ? "on" : ""}">${t}</button>`).join("");
+  box.querySelectorAll("button").forEach(b => b.addEventListener("click", () => onPick(b.dataset.v)));
+}
+const xticks = P0.map(p => p[0]);
+
+// ---------- 1. як з'єднати ----------
+let join = "line";
+const JOIN = {
+  none: ["нічим", null],
+  step: ["сходинками", x => P0.reduce((a, b) => Math.abs(b[0] - x) < Math.abs(a[0] - x) ? b : a)[1]],
+  line: ["відрізками", x => { for (let i = 0; i < 4; i++) if (x <= P0[i + 1][0]) { const [x0, y0] = P0[i], [x1, y1] = P0[i + 1]; return y0 + (y1 - y0) * (x - x0) / (x1 - x0); } return P0[4][1]; }],
+  smooth: ["плавною кривою (L4)", x => L("L4", x)]
+};
+function render1() {
+  seg("joinSeg", Object.keys(JOIN).map(k => [k, JOIN[k][0]]), join, v => { join = v; render1(); });
+  const x = document.getElementById("x1").value / 1000, fn = JOIN[join][1];
+  const ch = chart(document.getElementById("ch1"), { xmin: -0.03, xmax: 0.63, ymin: -0.12, ymax: 0.42, xticks, H: 340 });
+  if (fn) curve(ch, fn, 0, 0.6, { stroke: TH.accent }, join === "step" ? 1200 : 300);
+  vline(ch, x);
+  if (fn) { el("circle", { cx: ch.X(x), cy: ch.Y(fn(x)), r: 7, fill: TH.accent, stroke: TH.halo, "stroke-width": 2.5 }, ch.g); }
+  dots(ch, P0);
+  document.getElementById("x1v").textContent = c(x);
+  document.getElementById("y1v").textContent = fn ? c(fn(x)) : "невідомо";
+}
+document.getElementById("x1").addEventListener("input", render1);
+
+// ---------- 2. L1–L4 ----------
+const show2 = { L1: true, L2: true, L3: true, L4: false };
+function render2() {
+  chips("chips2", show2, render2);
+  const x = document.getElementById("x2").value / 1000;
+  const ch = chart(document.getElementById("ch2"), { xmin: -0.03, xmax: 0.63, ymin: -0.45, ymax: 0.85, xticks });
+  for (const id of IDS) if (show2[id]) polyCurve(ch, id, P0, -0.03, 0.63);
+  vline(ch, x);
+  for (const id of IDS) if (show2[id]) el("circle", { cx: ch.X(x), cy: ch.Y(L(id, x)), r: 6, fill: TH[id], stroke: TH.halo, "stroke-width": 2 }, ch.g);
+  dots(ch, P0);
+  document.getElementById("x2v").textContent = c(x);
+  const node = P0.findIndex(p => Math.abs(p[0] - x) < 1e-9);
+  document.getElementById("t2").innerHTML = "<tr><th>Поліном</th><th>Вузли</th><th>L(x)</th><th>Тут</th></tr>" + IDS.filter(id => show2[id]).map(id => {
+    const nx = DEFS[id].map(i => P0[i][0]), inNodes = DEFS[id].includes(node);
+    const zone = inNodes ? `<span class="z-in">вузол: = y${node + 1} = ${c(P0[node][1])}</span>` : x >= Math.min(...nx) ? '<span class="z-in">інтерполяція</span>' : '<span class="z-ex">екстраполяція</span>';
+    return `<tr><td><span class="tag" style="background:${TH[id]}"></span> <b>${id}</b></td><td>${DEFS[id].map(i => i + 1).join(", ")}</td><td class="num">${c(L(id, x), 4)}</td><td>${zone}</td></tr>`;
+  }).join("") + (node >= 0 ? `<tr><td colspan="4" class="muted" style="font-size:14px">x = ${c(x)} — точка ${node + 1} таблиці, y = ${c(P0[node][1])}</td></tr>` : "");
+}
+document.getElementById("x2").addEventListener("input", render2);
+
+// ---------- 3. доданки Лагранжа ----------
+let poly3 = "L2", term3 = 2;
+function render3() {
+  const nodes = DEFS[poly3];
+  if (!nodes.includes(term3)) term3 = nodes[0];
+  seg("polySeg3", IDS.map(id => [id, `${id} (${DEFS[id].length} ${DEFS[id].length < 5 ? "точки" : "точок"})`]), poly3, v => { poly3 = v; render3(); });
+  seg("termSeg3", nodes.map(i => [i, `доданок точки ${i + 1}`]), term3, v => { term3 = Number(v); render3(); });
+  const a = P0[nodes[0]][0] - 0.03, b = 0.63;
+  let lo = 0, hi = 0;
+  for (const i of nodes) for (let k = 0; k <= 200; k++) { const v = term(P0, nodes, i, a + (b - a) * k / 200); lo = Math.min(lo, v); hi = Math.max(hi, v); }
+  const pad = (hi - lo) * 0.08;
+  const ch = chart(document.getElementById("ch3"), { xmin: a, xmax: b, ymin: lo - pad, ymax: hi + pad, xticks: nodes.map(i => P0[i][0]) });
+  for (const i of nodes) if (i !== term3) curve(ch, x => term(P0, nodes, i, x), a, b, { stroke: TH.muted, "stroke-width": 2, "stroke-dasharray": "4 6" });
+  curve(ch, x => lag(P0, nodes, x), a, b, { stroke: TH[poly3], "stroke-width": 5 });
+  curve(ch, x => term(P0, nodes, term3, x), a, b, { stroke: TH.accent, "stroke-width": 3.5 });
+  for (const j of nodes) el("circle", { cx: ch.X(P0[j][0]), cy: ch.Y(term(P0, nodes, term3, P0[j][0])), r: 7, fill: TH.accent, stroke: TH.halo, "stroke-width": 2.5 }, ch.g);
+  dots(ch, nodes.map(i => P0[i]), { labels: false }).forEach((g, k) => { g.querySelector("text").textContent = String(nodes[k] + 1); });
+  const legend = `<span style="color:${TH[poly3]}">━ ${poly3} — сума</span> &nbsp; <span style="color:${TH.accent}">━ доданок точки ${term3 + 1}</span> &nbsp; <span style="color:${TH.muted}">┅ інші доданки</span>`;
+  const [xi, yi] = P0[term3], others = nodes.filter(j => j !== term3);
+  const num = others.map(j => `(x − ${c(P0[j][0])})`).join(""), den = others.map(j => `(${c(xi)} − ${c(P0[j][0])})`).join("");
+  document.getElementById("f3").innerHTML = `${legend}<br>доданок точки ${term3 + 1} = ${c(yi)} · ${num} / ${others.length > 1 ? "(" + den + ")" : den}`;
+  document.getElementById("t3").innerHTML = "<tr><th></th>" + nodes.map(j => `<th>x = ${c(P0[j][0])}</th>`).join("") + "</tr>" +
+    nodes.map(i => `<tr${i === term3 ? ` style="color:${TH.accent};font-weight:700"` : ""}><td>доданок ${i + 1}</td>` + nodes.map(j => `<td class="num">${c(term(P0, nodes, i, P0[j][0]) + 0, 3)}</td>`).join("") + "</tr>").join("") +
+    `<tr style="font-weight:700"><td>сума = ${poly3}</td>` + nodes.map(j => `<td class="num">${c(lag(P0, nodes, P0[j][0]), 3)}</td>`).join("") + "</tr>";
+}
+
+// ---------- 4. потягни точку ----------
+let P4 = P0.map(p => p.slice());
+const show4 = { L1: true, L2: true, L3: true, L4: true };
+let drag4 = null;
+function render4() {
+  chips("chips4", show4, render4);
+  const ch = chart(document.getElementById("ch4"), { xmin: -0.03, xmax: 0.63, ymin: -0.6, ymax: 1.0, xticks });
+  for (const id of IDS) if (show4[id]) polyCurve(ch, id, P4, -0.03, 0.63);
+  P0.forEach(([x, y], i) => { if (P4[i][1] !== y) el("circle", { cx: ch.X(x), cy: ch.Y(y), r: 8, fill: "none", stroke: TH.tick, "stroke-width": 2, "stroke-dasharray": "3 3" }, ch.g); });
+  dots(ch, P4).forEach((g, i) => {
+    el("circle", { cx: ch.X(P4[i][0]), cy: ch.Y(P4[i][1]), r: 26, fill: "transparent", class: "drag" }, g);
+    g.setAttribute("class", "drag");
+    g.addEventListener("pointerdown", e => { drag4 = { i, ch }; e.preventDefault(); });
+  });
+}
+document.getElementById("reset4").addEventListener("click", () => { P4 = P0.map(p => p.slice()); render4(); });
+// повторний render4 під час перетягування перестворює точки — ловимо рух на всьому графіку
+document.getElementById("ch4").addEventListener("pointermove", e => {
+  if (!drag4) return;
+  const y = Math.max(-0.5, Math.min(0.9, drag4.ch.toData(e)[1]));
+  const v = Math.round(y * 100) / 100;
+  if (v !== P4[drag4.i][1]) { P4[drag4.i][1] = v; render4(); }
+});
+window.addEventListener("pointerup", () => { drag4 = null; });
+
+// ---------- 5. безліч кривих через ті самі точки ----------
+const omega = x => P0.reduce((s, p) => s * (x - p[0]), 1);   // = 0 у кожній точці
+function render5() {
+  const cc = document.getElementById("c5").value * 9;
+  const fn = x => L("L4", x) + cc * omega(x);
+  const ch = chart(document.getElementById("ch5"), { xmin: -0.03, xmax: 0.63, ymin: -0.35, ymax: 0.7, xticks });
+  curve(ch, x => L("L4", x), 0, 0.6, { stroke: TH.muted, "stroke-width": 2, "stroke-dasharray": "4 6" });
+  curve(ch, fn, 0, 0.6, { stroke: TH.accent });
+  vline(ch, 0.5);
+  el("circle", { cx: ch.X(0.5), cy: ch.Y(fn(0.5)), r: 7, fill: TH.accent, stroke: TH.halo, "stroke-width": 2.5 }, ch.g);
+  dots(ch, P0, { labels: false });
+  document.getElementById("y5v").textContent = c(fn(0.5));
+}
+document.getElementById("c5").addEventListener("input", render5);
+
+// ---------- 6. екстраполяція ----------
+const show6 = { L1: true, L2: true, L3: true, L4: true };
+function render6() {
+  chips("chips6", show6, render6);
+  const r = document.getElementById("r6").value / 100, a = -r, b = 0.6 + r;
+  let lo = -0.1, hi = 0.4;
+  for (const id of IDS) if (show6[id]) for (let k = 0; k <= 200; k++) { const v = L(id, a + (b - a) * k / 200); lo = Math.min(lo, v); hi = Math.max(hi, v); }
+  const pad = (hi - lo) * 0.06;
+  const ch = chart(document.getElementById("ch6"), { xmin: a - 0.01, xmax: b + 0.01, ymin: lo - pad, ymax: hi + pad, band: [0, 0.6] });
+  for (const id of IDS) if (show6[id]) polyCurve(ch, id, P0, a, b);
+  dots(ch, P0, { labels: false });
+  document.getElementById("r6v").textContent = c(r, 2);
+  document.getElementById("x6v").textContent = c(b, 2);
+  document.getElementById("t6").innerHTML = "<tr><th>Поліном</th><th>у x = " + c(a, 2) + "</th><th>у x = " + c(b, 2) + "</th></tr>" +
+    IDS.filter(id => show6[id]).map(id => `<tr><td><span class="tag" style="background:${TH[id]}"></span> <b>${id}</b></td><td class="num">${c(L(id, a), 2)}</td><td class="num">${c(L(id, b), 2)}</td></tr>`).join("") +
+    `<tr><td colspan="3" class="muted" style="font-size:14px">Самі дані — від 0,03 до 0,34. Світла смуга — там, де точки є.</td></tr>`;
+}
+document.getElementById("r6").addEventListener("input", render6);
+
+// ---------- 7. sin x і крок h ----------
+const X7 = 1.2;
+function render7() {
+  const h = Math.pow(10, -2 + 2 * document.getElementById("h7").value / 100);    // 0,01 … 1
+  const nodes = [X7 - h, X7, X7 + h], Q = nodes.map(x => [x, Math.sin(x)]);
+  const p2 = x => lag(Q, [0, 1, 2], x), xm = X7 + h / 2, err = Math.abs(p2(xm) - Math.sin(xm)) / Math.sin(xm) * 100;
+  const ch = chart(document.getElementById("ch7"), { xmin: 0, xmax: 2.4, ymin: -0.1, ymax: 1.25, H: 320 });
+  curve(ch, Math.sin, 0, 2.4, { stroke: TH.muted, "stroke-width": 6 });
+  curve(ch, p2, 0, 2.4, { stroke: TH.L2, "stroke-width": 3 });
+  Q.forEach(([x, y]) => el("circle", { cx: ch.X(x), cy: ch.Y(y), r: 7, fill: TH.pt, stroke: TH.halo, "stroke-width": 2.5 }, ch.g));
+  vline(ch, xm, TH.accent);
+  label(ch.svg, 70, 36, "сіра — sin x, помаранчева — L2 через 3 точки", { "font-size": 14, "font-weight": 600 });
+  document.getElementById("h7v").textContent = c(h, h < 0.1 ? 3 : 2);
+  document.getElementById("e7v").innerHTML = err < 1e-3 ? err.toExponential(1).replace(".", ",").replace("e-", "·10<sup>−") + "</sup> %" : c(err, err < 0.1 ? 4 : 2) + " %";
+}
+document.getElementById("h7").addEventListener("input", render7);
+
+function renderAll() { render1(); render2(); render3(); render4(); render5(); render6(); render7(); }
+applyTheme(); renderAll();
+</script>
+</body>
+</html>
