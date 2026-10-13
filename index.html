@@ -26,6 +26,7 @@
   nav a.on { background: var(--active); box-shadow: inset 3px 0 0 var(--accent); font-weight: 600; }
   nav a.off { color: var(--muted); pointer-events: none; opacity: .55; }
   nav .soon { font-size: 12px; margin-left: auto; }
+  nav .sep { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; padding: 14px 10px 4px; border-top: 1px solid var(--line); margin-top: 8px; }
   nav button { margin-top: auto; font: inherit; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--ctrl-line); background: var(--ctrl); color: var(--ink); cursor: pointer; }
   iframe { border: 0; width: 100%; height: 100%; display: block; background: var(--bg); }
   @media (max-width: 760px) {
@@ -53,7 +54,9 @@ const LABS = [
   { n: 3, title: "Похідна й інтеграл", file: "lab3.html" },
   { n: 4, title: "СЛАР", file: "lab4.html" },
   { n: 5, title: "Рівняння" },
-  { n: 6, title: "ОДУ" }
+  { n: 6, title: "ОДУ" },
+  // окремі теми, не прив'язані до однієї лаби (посилання: #lab=O)
+  { n: "O", title: "Складність алгоритмів", file: "complexity.html", topic: true }
 ];
 const ready = LABS.filter(l => l.file);
 const store = {
@@ -64,6 +67,7 @@ let theme = store.get("theme", "dark"), lab = null;
 const nav = document.getElementById("nav"), frame = document.getElementById("frame");
 
 LABS.forEach(l => {
+  if (l.topic && !nav.querySelector(".sep")) { const d = document.createElement("div"); d.className = "sep"; d.textContent = "Теми"; nav.appendChild(d); }
   const a = document.createElement("a");
   a.href = l.file ? `#lab=${l.n}` : "#"; a.dataset.n = l.n;
   a.innerHTML = `<span class="n">${l.n}</span><span>${l.title}</span>` + (l.file ? "" : '<span class="soon">скоро</span>');
@@ -81,14 +85,14 @@ function applyTheme() {
 let tab = null;
 const frameUrl = () => `${lab.file}#theme=${theme}` + (tab ? `&tab=${tab}` : "");
 function show() {
-  const P = new URLSearchParams(location.hash.slice(1)), want = Number(P.get("lab"));
+  const P = new URLSearchParams(location.hash.slice(1)), want = String(P.get("lab"));
   tab = P.get("tab") === "q" || P.get("tab") === "m" ? P.get("tab") : null;
-  const l = ready.find(x => x.n === want) || ready.find(x => x.n === Number(store.get("lab", ""))) || ready[ready.length - 1];
-  if (l.n !== want) { history.replaceState(null, "", `#lab=${l.n}`); }
+  const l = ready.find(x => String(x.n) === want) || ready.find(x => String(x.n) === store.get("lab", "")) || ready.filter(x => !x.topic).pop();
+  if (String(l.n) !== want) { history.replaceState(null, "", `#lab=${l.n}`); }
   lab = l; store.set("lab", String(l.n));
-  nav.querySelectorAll("a").forEach(a => a.classList.toggle("on", Number(a.dataset.n) === l.n));
+  nav.querySelectorAll("a").forEach(a => a.classList.toggle("on", a.dataset.n === String(l.n)));
   frame.src = frameUrl();
-  document.title = `ЛР${l.n} · ${l.title} — Чисельні методи`;
+  document.title = (l.topic ? l.title : `ЛР${l.n} · ${l.title}`) + " — Чисельні методи";
 }
 btn.addEventListener("click", () => {
   theme = theme === "dark" ? "light" : "dark"; store.set("theme", theme); applyTheme();

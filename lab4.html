@@ -158,6 +158,32 @@
     <p>Для системи з мільйоном невідомих (моделювання міцності, теплопровідності) метод Гауса потребує близько 7·10<sup>17</sup> операцій — роки роботи комп'ютера, а Зейдель — секунди. Для 5×5 краще Гаус; Зейдель у роботі — щоб побачити ітераційний метод і його збіжність.</p>
   </section>
 
+  <!-- 6 — тимчасово приховано (hidden): чекає перегляду викладачем -->
+  <section class="card" hidden>
+    <h2>6. Де застосовують системи лінійних рівнянь</h2>
+    <p>Системи лінійних рівнянь — одна з найчастіших задач обчислювальної техніки: до них зводиться більшість інженерних розрахунків. Розміри — від кількох рівнянь до мільярдів.</p>
+    <div class="tbl"><table>
+      <tr><th>Галузь</th><th>Що невідоме</th><th>Рівнянь</th><th>Чим розв'язують</th></tr>
+      <tr><td>Електричні кола (симулятори схем)</td><td>струми й напруги у вузлах</td><td>10 – 10⁶</td><td>прямі методи (Гаус)</td></tr>
+      <tr><td>Хімія</td><td>коефіцієнти рівняння реакції</td><td>2 – 10</td><td>вручну / Гаус</td></tr>
+      <tr><td>Навігація (GPS)</td><td>координати приймача і похибка його годинника</td><td>4 і більше</td><td>найменші квадрати</td></tr>
+      <tr><td>Економіка (модель «витрати — випуск» Леонтьєва)</td><td>обсяги виробництва галузей</td><td>десятки – сотні</td><td>Гаус</td></tr>
+      <tr><td>Машинне навчання (лінійна регресія)</td><td>коефіцієнти моделі</td><td>десятки – тисячі</td><td>прямі й ітераційні</td></tr>
+      <tr><td>Розрахунок міцності (метод скінченних елементів)</td><td>зміщення вузлів сітки деталі, моста, крила</td><td>10⁵ – 10⁹</td><td>ітераційні</td></tr>
+      <tr><td>Теплопровідність, течії рідин і газів</td><td>температура / тиск у вузлах сітки</td><td>10⁵ – 10⁹</td><td>ітераційні (зокрема Зейдель)</td></tr>
+      <tr><td>Комп'ютерна томографія (КТ)</td><td>щільність тканини в кожному пікселі</td><td>10⁵ – 10⁷</td><td>ітераційні</td></tr>
+    </table></div>
+    <p class="note">Закономірність: малі системи розв'язують прямими методами (як Гаус), великі — ітераційними (як Зейдель). Саме тому в роботі обидва.</p>
+
+    <h3>Як це виглядає: Зейдель розраховує нагрів пластини</h3>
+    <p>Пластину поділено на клітинки — у кожній невідома температура, тобто <b>одна клітинка — одне рівняння</b>. Верхній край нагрітий до 100 °C, інші краї — 0 °C. Рівняння кожної клітинки: її температура дорівнює середньому чотирьох сусідів.</p>
+    <p>Кожна ітерація Зейделя проходить клітинки по черзі й ставить у кожну середнє сусідів — з уже оновленими значеннями. Натисніть «Пуск»:</p>
+    <svg id="heatSvg"></svg>
+    <div class="seg"><button id="heatPlay">▶ Пуск</button><button id="heatReset">⟲ Скинути</button><button id="heatHot">гаряча точка в центрі: вимк.</button></div>
+    <div class="rlabel"><span>ітерація <b id="heatIt">0</b> · невідомих <b id="heatN"></b></span><span>найбільша зміна за ітерацію <b id="heatD">—</b></span></div>
+    <p class="note">Тепло «розтікається» від гарячого краю, і з кожною ітерацією картина змінюється все менше — як значення a…e у роботі наближаються до розв'язку. Зупинка — коли найбільша зміна менша за 0,01 °C. У реальних розрахунках клітинок мільйони, але кожне рівняння так само містить лише кілька сусідів — тому й підходять ітераційні методи.</p>
+  </section>
+
   <section class="card">
     <h2>Висновки</h2>
     <ul class="sum">
@@ -373,7 +399,58 @@ function render4() {
     `<tr><td colspan="3" class="muted" style="font-size:14px">${ord4 === "bad" ? "Діагональні коефіцієнти 2 і 1 малі — похибка зростає в ~50 разів за ітерацію: розходиться." : "Діагональні коефіцієнти 10 і 10 великі — похибка зменшується в ~50 разів за ітерацію: збігається до x = 1, y = 1."}</td></tr>`;
 }
 
-function renderAll() { render1(); render2(); render3(); render4(); }
+// ---------- 6. анімація: Зейдель для теплопровідності пластини ----------
+const HEAT = { nx: 36, ny: 22, tol: 0.01, perFrame: 3 };
+let heatT = null, heatIt = 0, heatRun = false, heatHot = false, heatDelta = null, heatCells = null;
+function heatInit() {
+  const { nx, ny } = HEAT;
+  heatT = Array.from({ length: ny + 2 }, (_, j) => new Float64Array(nx + 2).fill(0));
+  for (let i = 0; i < nx + 2; i++) heatT[0][i] = 100;         // верхній край — 100 °C
+  heatIt = 0; heatDelta = null;
+}
+const heatFixed = (i, j) => heatHot && Math.abs(i - (HEAT.nx + 1) / 2) < 1.6 && Math.abs(j - (HEAT.ny + 1) / 2) < 1.6;
+function heatSweep() {
+  const { nx, ny } = HEAT; let dmax = 0;
+  for (let j = 1; j <= ny; j++) for (let i = 1; i <= nx; i++) {
+    if (heatFixed(i, j)) { heatT[j][i] = 100; continue; }
+    const v = (heatT[j - 1][i] + heatT[j + 1][i] + heatT[j][i - 1] + heatT[j][i + 1]) / 4;
+    dmax = Math.max(dmax, Math.abs(v - heatT[j][i])); heatT[j][i] = v;
+  }
+  heatIt++; heatDelta = dmax;
+}
+// колір: 0 °C — синій, 100 °C — червоний
+const heatColor = t => `hsl(${Math.round(230 - 230 * Math.min(1, Math.max(0, t / 100)))}, 85%, ${Math.round(38 + 14 * Math.min(1, t / 100))}%)`;
+function heatDraw() {
+  const { nx, ny } = HEAT, svg = document.getElementById("heatSvg"), s = 18, W = (nx + 2) * s, H = (ny + 2) * s;
+  if (!heatCells) {
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = ""; heatCells = [];
+    for (let j = 0; j < ny + 2; j++) { heatCells.push([]); for (let i = 0; i < nx + 2; i++) heatCells[j].push(el("rect", { x: i * s, y: j * s, width: s - 1, height: s - 1, rx: 2 }, svg)); }
+  }
+  for (let j = 0; j < ny + 2; j++) for (let i = 0; i < nx + 2; i++) heatCells[j][i].setAttribute("fill", heatColor(heatT[j][i]));
+  document.getElementById("heatIt").textContent = heatIt;
+  document.getElementById("heatN").textContent = nx * ny;
+  document.getElementById("heatD").textContent = heatDelta == null ? "—" : c(heatDelta, 3) + " °C" + (heatDelta < HEAT.tol ? " — розв'язок знайдено" : "");
+}
+function heatTick() {
+  if (!heatRun) return;
+  for (let k = 0; k < HEAT.perFrame; k++) { heatSweep(); if (heatDelta < HEAT.tol) { heatRun = false; break; } }
+  heatDraw();
+  document.getElementById("heatPlay").textContent = heatRun ? "⏸ Пауза" : "▶ Пуск";
+  if (heatRun) setTimeout(() => requestAnimationFrame(heatTick), 40);
+}
+document.getElementById("heatPlay").addEventListener("click", () => {
+  if (heatDelta != null && heatDelta < HEAT.tol) heatInit();
+  heatRun = !heatRun; document.getElementById("heatPlay").textContent = heatRun ? "⏸ Пауза" : "▶ Пуск";
+  if (heatRun) requestAnimationFrame(heatTick);
+});
+document.getElementById("heatReset").addEventListener("click", () => { heatRun = false; heatInit(); document.getElementById("heatPlay").textContent = "▶ Пуск"; heatDraw(); });
+document.getElementById("heatHot").addEventListener("click", () => {
+  heatHot = !heatHot; document.getElementById("heatHot").textContent = "гаряча точка в центрі: " + (heatHot ? "увімк." : "вимк.");
+  heatRun = false; heatInit(); document.getElementById("heatPlay").textContent = "▶ Пуск"; heatDraw();
+});
+function renderHeat() { if (!heatT) heatInit(); heatCells = null; heatDraw(); }
+
+function renderAll() { render1(); render2(); render3(); render4(); renderHeat(); }
 // лічильник відвідувань (GoatCounter): сторінка рахується сама, вкладка «Питання» — окремою подією
 function countTab(t) {
   if (t !== "q") return;
