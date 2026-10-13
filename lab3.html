@@ -119,7 +119,7 @@
       <tr><th>Формула</th><th>Точки</th><th>У звіті</th></tr>
       <tr><td class="mono">(f(x+h) − f(x)) / h</td><td>x, x+h</td><td>— (для порівняння)</td></tr>
       <tr><td class="mono">(f(x+h) − f(x−h)) / (2h)</td><td>x−h, x+h</td><td>df/dx1</td></tr>
-      <tr><td class="mono">(−f(x+2h) + 8f(x+h) − 8f(x−h) + f(x−2h)) / (12h)</td><td>x−2h … x+2h</td><td>df/dx2</td></tr>
+      <tr><td class="mono">(−f(x+2h) + 8f(x+h) − 8f(x−h) + f(x−2h)) / (12h)</td><td>x−2h, x−h, x+h, x+2h</td><td>df/dx2</td></tr>
     </table></div>
     <p>Обидві формули роботи — <b>центральні</b>: точки беруться симетрично з обох боків від x. Тому програма обчислює f і при x &lt; 0.</p>
   </section>
@@ -127,7 +127,8 @@
   <!-- 4 -->
   <section class="card">
     <h2>4. Різницеві формули на графіку</h2>
-    <p>Кожна різницева формула бере кілька точок функції навколо x, проводить через них криву і повертає <b>нахил цієї кривої в точці x</b>. Що більше точок, то ближче крива до функції — і то ближче нахил до точної похідної.</p>
+    <p>Кожна різницева формула відповідає кривій через кілька точок функції навколо x і повертає <b>нахил цієї кривої в точці x</b>. Що більше точок, то ближче крива до функції — і то ближче нахил до точної похідної.</p>
+    <p>У центральній і п'ятиточковій формулах середня точка f(x) входить з коефіцієнтом 0: крива через неї проходить, але обчислювати f(x) не потрібно (на графіку — порожній кружок). Тому df/dx1 бере <b>2</b> значення f, df/dx2 — <b>4</b>. (У літературі df/dx2 називають «п'ятиточковою» формулою — за кількістю точок кривої.)</p>
     <div class="seg" id="kind4"></div>
     <svg id="ch4d"></svg>
     <div class="chips"><label><span class="tag" style="background:var(--L1)"></span>f(x)</label><label><span class="tag" style="background:var(--L2)"></span>крива через точки формули</label><label><span class="tag" style="background:var(--accent)"></span>її нахил у x = 0 (результат формули)</label><label><span class="tag" style="background:var(--L4)"></span>точна дотична</label></div>
@@ -142,7 +143,7 @@
     <h2>5. Похибка похідної залежно від кроку h: оптимальний крок</h2>
     <p>Програма обчислює обидві формули для h = 1; 0,1; …; 10<sup>−16</sup>. Графік відносної похибки від h має форму <b>«ями»</b>: спершу похибка падає, потім знову зростає.</p>
     <svg id="ch5e"></svg>
-    <div class="chips"><label><span class="tag" style="background:var(--L1)"></span>df/dx1 (центральна)</label><label><span class="tag" style="background:var(--L3)"></span>df/dx2 (п'ятиточкова)</label></div>
+    <div class="chips"><label><span class="tag" style="background:var(--L1)"></span>df/dx1 (центральна)</label><label><span class="tag" style="background:var(--L3)"></span>df/dx2 (4 значення f)</label></div>
     <h3>Два джерела похибки</h3>
     <ol>
       <li><b>Похибка формули</b> (великий h): хорда не збігається з дотичною. Зменшення h її зменшує.</li>
@@ -157,7 +158,7 @@
     </table></div>
     <p>При h = 10<sup>−16</sup> зміна f менша за точність числа: обидва значення заокруглюються до 1, похідна дорівнює 0, похибка — 100 %.</p>
     <h3>Оптимальний крок</h3>
-    <p><b>Оптимальний h</b> — дно «ями», де похибка найменша. У зразку: <b>10<sup>−5</sup></b> для df/dx1 і <b>10<sup>−3</sup></b> для df/dx2. Для п'ятиточкової формули оптимум більший, бо похибка формули в неї зменшується швидше і похибка заокруглення починає переважати раніше.</p>
+    <p><b>Оптимальний h</b> — дно «ями», де похибка найменша. У зразку: <b>10<sup>−5</sup></b> для df/dx1 і <b>10<sup>−3</sup></b> для df/dx2. Для df/dx2 оптимум більший, бо похибка формули в неї зменшується швидше і похибка заокруглення починає переважати раніше.</p>
     <p class="note">Аналогія: нахил дороги визначають за висотою двох кілочків. Якщо кілочки далеко — вигин дороги пропущено; якщо на відстані 1 мм — різниця висот менша за похибку лінійки.</p>
     <p class="try"><b>Завдання:</b> визначте оптимальний крок для обох формул за власними результатами. Чи збігається він зі зразком?</p>
   </section>
@@ -215,7 +216,36 @@
 
   <!-- 9 -->
   <section class="card">
-    <h2>9. Аналітично чи чисельно</h2>
+    <h2>9. Симулятор: похідна хвилястої функції</h2>
+    <p>Функція зразка e<sup>−0,189x</sup> полога. Помножимо її на хвилю: <b>f(x) = e<sup>−0,189x</sup> · cos(b·x)</b>. При b = 0 — звична функція роботи; що більше b, то частіші хвилі. Похідна — у точці x = 0,3.</p>
+    <input type="range" id="bSimD" min="0" max="80" value="50">
+    <div class="rlabel"><span>хвилястість b = <b id="bSimDV"></b></span><span>період хвилі <b id="pSimDV"></b></span></div>
+    <input type="range" id="hSimD" min="0" max="100" value="60">
+    <div class="rlabel"><span>крок h = <b id="hSimDV"></b></span><span><button id="snapSimD">h = період хвилі</button></span></div>
+    <svg id="chSimD"></svg>
+    <div class="chips"><label><span class="tag" style="background:var(--L1)"></span>f(x)</label><label><span class="tag" style="background:var(--accent)"></span>хорда df/dx1 через x − h і x + h</label><label><span class="tag" style="background:var(--L4)"></span>точна дотична</label></div>
+    <div class="tbl"><table id="tSimD"></table></div>
+    <p class="try"><b>Завдання:</b> встановіть b = 5. (1) Натисніть «h = період хвилі» — чому похідна ≈ 0? (2) Поставте h = 1 — подивіться на знак похідної. (3) З якого кроку похідна стає правильною?</p>
+  </section>
+
+  <!-- 10 -->
+  <section class="card">
+    <h2>10. Симулятор: інтеграл хвилястої функції</h2>
+    <p>Та сама функція f(x) = e<sup>−0,189x</sup> · cos(b·x), інтеграл на [0; ∞). Точний інтеграл — площа зі знаком: частина над віссю додається, під віссю віднімається.</p>
+    <input type="range" id="bSimI" min="0" max="80" value="50">
+    <div class="rlabel"><span>хвилястість b = <b id="bSimIV"></b></span><span>період хвилі <b id="pSimIV"></b></span></div>
+    <input type="range" id="hSimI" min="0" max="100" value="60">
+    <div class="rlabel"><span>крок h = <b id="hSimIV"></b></span><span><button id="snapSimI">h = період хвилі</button></span></div>
+    <svg id="chSim"></svg>
+    <div class="chips"><label><span class="tag" style="background:var(--L1)"></span>точний інтеграл — блакитна площа (+) мінус червона (−)</label><label><span class="tag" style="background:var(--accent)"></span>вузли з кроком h і площа, яку рахує формула трапецій</label></div>
+    <div class="tbl"><table id="tSimI"></table></div>
+    <p class="try"><b>Завдання:</b> встановіть b = 5. (1) Натисніть «h = період хвилі» — чому інтеграл вийшов ≈ 5,3 замість 0,0075? (2) Зменшуйте h — з якого кроку результат стає правильним? (3) Як вибрати крок, якщо точної відповіді не знати?</p>
+    <p class="note">Формула бачить функцію лише в обраних точках. Якщо крок порівнянний з хвилею, точки «не помічають» коливань — як у лабораторній роботі № 2: між точками нічого не відомо. Крок має бути в багато разів меншим за найдрібнішу хвилю; без точної відповіді його зменшують, доки результат не перестане змінюватися.</p>
+  </section>
+
+  <!-- 11 -->
+  <section class="card">
+    <h2>11. Аналітично чи чисельно</h2>
     <div class="tbl"><table>
       <tr><th></th><th>Аналітично</th><th>Чисельно</th></tr>
       <tr><th>Результат</th><td>формула, з неї точне число</td><td>наближене число в точці</td></tr>
@@ -230,9 +260,9 @@
     <p>Для функції цієї роботи відомі обидві відповіді — тому можна виміряти похибку чисельних методів.</p>
   </section>
 
-  <!-- 10 -->
+  <!-- 12 -->
   <section class="card">
-    <h2>10. Точні значення (п. 2 звіту)</h2>
+    <h2>12. Точні значення (п. 2 звіту)</h2>
     <h3>Похідна</h3>
     <p>(e<sup>a·x</sup>)′ = a · e<sup>a·x</sup>, тут a = −k:</p>
     <div class="formula">f′(x) = −A · k · e<sup>−k·x</sup>   →   f′(0) = −A · k</div>
@@ -251,7 +281,7 @@
       <li>Похибка похідної має «яму»: при великому h переважає похибка формули, при малому — похибка заокруглення. Оптимальний крок визначають за власними результатами.</li>
       <li>Похибка інтеграла зменшується зі збільшенням N; заокруглення майже не заважає, бо значення додаються, а не віднімаються.</li>
       <li>Крок має бути малим порівняно з ділянкою, на якій змінюється функція; інакше результат хибний (N = 10 → 500 замість 5,291).</li>
-      <li>Формули з більшою кількістю точок (п'ятиточкова, Сімпсон) точніші при тому самому кроці.</li>
+      <li>Формули, що використовують більше точок (df/dx2, Сімпсон), точніші при тому самому кроці.</li>
     </ul>
   </section>
   <!-- Додаткова задача з машиною — тимчасово прихована (атрибут hidden) -->
@@ -302,7 +332,7 @@
     <ol start="1">
       <li>Зі зменшенням h похибка похідної спершу зменшується, а потім зростає. Чому?</li>
       <li>Чому при дуже малому h похідна стає рівною нулю? Покажіть, з якого h це відбувається у вас.</li>
-      <li>Який оптимальний крок для кожної з двох формул у вашій роботі? Чому для п'ятиточкової формули він більший?</li>
+      <li>Який оптимальний крок для кожної з двох формул у вашій роботі? Чому для df/dx2 він більший?</li>
       <li>Якщо h зменшити в 10 разів (з 1 до 0,1), у скільки разів зменшиться похибка df/dx1? А df/dx2? Спершу передбачте, потім перевірте за своєю таблицею.</li>
       <li>Чому при N = 10 інтеграл виходить у сотні разів більшим за точне значення? Це помилка програми?</li>
       <li>Від чого залежить, скільки інтервалів N потрібно для точного інтеграла? Чи однакове це число для всіх варіантів?</li>
@@ -434,14 +464,27 @@ document.getElementById("h3").addEventListener("input", render3);
 
 // ---------- 4. смужки ----------
 let mode = "trap";
-const MODES = { left: "за лівим краєм", right: "за правим краєм", trap: "трапеції" };
+const MODES = { left: "за лівим краєм", right: "за правим краєм", trap: "трапеції", simp: "Сімпсон" };
 function render4() {
   seg("mode4", Object.keys(MODES).map(k => [k, MODES[k]]), mode, v => { mode = v; render4(); });
   const h = Math.pow(10, -0.7 + 1.4 * document.getElementById("h4").value / 100);  // 0,2 … 5
   // суми до ∞ — геометрична прогресія зі знаменником q = e^(−k·h)
-  const q = Math.exp(-K * h), left = h / (1 - q), right = h * q / (1 - q), sum = { left, right, trap: (left + right) / 2 }[mode];
+  // Сімпсон: (h/3)·(y0 + 4y1 + 2y2 + 4y3 + …) — теж через прогресію
+  const q = Math.exp(-K * h), left = h / (1 - q), right = h * q / (1 - q);
+  const simp = h / 3 * (1 + (4 * q + 2 * q * q) / (1 - q * q));
+  const sum = { left, right, trap: (left + right) / 2, simp }[mode];
   const ch = chart(document.getElementById("ch4"), { xmin: 0, xmax: 25, ymin: 0, ymax: 1.08, H: 340 });
-  for (let x = 0; x < 25; x += h) {
+  if (mode === "simp") {
+    // на кожній парі смужок — парабола через 3 точки, площа під нею
+    for (let x = 0; x < 25; x += 2 * h) {
+      const P = [0, 1, 2].map(m => [x + m * h, f(x + m * h)]), p2 = lagr(P), pts = [[x, 0]];
+      for (let j = 0; j <= 30; j++) { const t = x + 2 * h * j / 30; pts.push([t, p2(t)]); }
+      pts.push([x + 2 * h, 0]);
+      el("polygon", { points: pts.map(([a, b]) => ch.X(a) + "," + ch.Y(b)).join(" "), fill: TH.accent, "fill-opacity": 0.28, stroke: TH.accent, "stroke-width": 1.5 }, ch.g);
+      el("line", { x1: ch.X(x + h), x2: ch.X(x + h), y1: ch.Y(0), y2: ch.Y(f(x + h)), stroke: TH.accent, "stroke-width": 1, "stroke-dasharray": "3 3" }, ch.g);
+    }
+  }
+  for (let x = 0; x < 25 && mode !== "simp"; x += h) {
     const yl = f(x), yr = f(x + h);
     const pts = mode === "trap" ? [[x, 0], [x, yl], [x + h, yr], [x + h, 0]]
       : [[x, 0], [x, mode === "left" ? yl : yr], [x + h, mode === "left" ? yl : yr], [x + h, 0]];
@@ -455,14 +498,14 @@ document.getElementById("h4").addEventListener("input", render4);
 
 // ---------- 4. різницеві формули на графіку ----------
 const KINDS = {
-  fw: { name: "права різниця", pts: [0, 1], d: h => (f(h) - f(0)) / h },
-  c2: { name: "центральна (df/dx1)", pts: [-1, 0, 1], d: h => (f(h) - f(-h)) / (2 * h) },
-  c4: { name: "п'ятиточкова (df/dx2)", pts: [-2, -1, 0, 1, 2], d: h => (-f(2 * h) + 8 * f(h) - 8 * f(-h) + f(-2 * h)) / (12 * h) }
+  fw: { name: "права різниця", nf: 2, pts: [0, 1], d: h => (f(h) - f(0)) / h },
+  c2: { name: "df/dx1", nf: 2, pts: [-1, 0, 1], d: h => (f(h) - f(-h)) / (2 * h) },
+  c4: { name: "df/dx2", nf: 4, pts: [-2, -1, 0, 1, 2], d: h => (-f(2 * h) + 8 * f(h) - 8 * f(-h) + f(-2 * h)) / (12 * h) }
 };
 let kind = "c2";
 const lagr = P => x => P.reduce((s, [xi, yi], i) => { let t = yi; P.forEach(([xj], j) => { if (j !== i) t *= (x - xj) / (xi - xj); }); return s + t; }, 0);
 function render4d() {
-  seg("kind4", Object.keys(KINDS).map(k => [k, KINDS[k].name + " · " + KINDS[k].pts.length + " точ" + (KINDS[k].pts.length < 5 ? "ки" : "ок")]), kind, v => { kind = v; render4d(); });
+  seg("kind4", Object.keys(KINDS).map(k => [k, KINDS[k].name + " · " + KINDS[k].nf + " значення f"]), kind, v => { kind = v; render4d(); });
   const h = Math.pow(10, -0.7 + 1.2 * document.getElementById("h4d").value / 100);   // 0,2 … 3,2
   const K = KINDS[kind], P = K.pts.map(m => [m * h, f(m * h)]), slope = K.d(h);
   const ch = chart(document.getElementById("ch4d"), { xmin: -6.5, xmax: 6.5, ymin: 0, ymax: 3.6, H: 340 });
@@ -470,10 +513,10 @@ function render4d() {
   curve(ch, x => 1 + D0 * x, -6.5, 6.5, { stroke: TH.L4, "stroke-width": 2.5, "stroke-dasharray": "8 6" });
   curve(ch, lagr(P), -6.5, 6.5, { stroke: TH.L2, "stroke-width": 3, "stroke-dasharray": "10 7" });
   curve(ch, x => 1 + slope * x, -6.5, 6.5, { stroke: TH.accent, "stroke-width": 3 });
-  P.forEach(([x, y]) => el("circle", { cx: ch.X(x), cy: ch.Y(y), r: 7, fill: TH.L2, stroke: TH.halo, "stroke-width": 2.5 }, ch.g));
+  P.forEach(([x, y]) => { const unused = kind !== "fw" && x === 0; el("circle", { cx: ch.X(x), cy: ch.Y(y), r: 7, fill: unused ? TH.halo : TH.L2, stroke: unused ? TH.L2 : TH.halo, "stroke-width": unused ? 3 : 2.5 }, ch.g); });
   document.getElementById("h4dv").textContent = c(h, 2);
-  document.getElementById("t4d").innerHTML = "<tr><th>Формула</th><th>Точок</th><th>Нахил</th><th>Відносна похибка</th></tr>" +
-    Object.keys(KINDS).map(k => { const v = KINDS[k].d(h); return `<tr${k === kind ? ` style="color:${TH.accent};font-weight:700"` : ""}><td>${KINDS[k].name}</td><td class="num">${KINDS[k].pts.length}</td><td class="num">${c(v, 6)}</td><td class="num">${sig(Math.abs((v - D0) / D0) * 100, 3)} %</td></tr>`; }).join("");
+  document.getElementById("t4d").innerHTML = "<tr><th>Формула</th><th>Значень f</th><th>Точок кривої</th><th>Нахил</th><th>Відносна похибка</th></tr>" +
+    Object.keys(KINDS).map(k => { const v = KINDS[k].d(h); return `<tr${k === kind ? ` style="color:${TH.accent};font-weight:700"` : ""}><td>${KINDS[k].name}</td><td class="num">${KINDS[k].nf}</td><td class="num">${KINDS[k].pts.length}</td><td class="num">${c(v, 6)}</td><td class="num">${sig(Math.abs((v - D0) / D0) * 100, 3)} %</td></tr>`; }).join("");
 }
 document.getElementById("h4d").addEventListener("input", render4d);
 
@@ -626,7 +669,70 @@ document.getElementById("playCar").addEventListener("click", () => {
 });
 document.getElementById("resetCar").addEventListener("click", () => { carPlay = false; carT = 0; document.getElementById("playCar").textContent = "▶ Пуск"; drawRoad(); drawSpeed(); });
 
-function renderAll() { render1(); render3(); render4(); render4d(); render5e(); render7(); render8e(); renderCar(); }
+// ---------- 9–10. симулятори: хвиляста функція (похідна й інтеграл — окремо) ----------
+const SIM = { a: 0.189, x0: 0.3, V: 200 };
+const simWave = b => x => Math.exp(-SIM.a * x) * Math.cos(b * x);
+const sliderB = id => Number(document.getElementById(id).value) / 10;                             // 0 … 8
+const sliderH = id => Math.pow(10, -1.7 + 2 * Number(document.getElementById(id).value) / 100);  // 0,02 … 2
+const simOverride = { D: null, I: null };
+const errPct = (v, e) => sig(Math.abs((v - e) / e) * 100, 3) + " %";
+const simRow = (name, v, e) => `<tr><td>${name}</td><td class="num">${c(v, 5)}</td><td class="num">${c(e, 5)}</td><td class="num">${errPct(v, e)}</td></tr>`;
+const simHead = "<tr><th></th><th>Чисельно</th><th>Точно</th><th>Відносна похибка</th></tr>";
+function simLabels(sfx, b, h) {
+  document.getElementById("bSim" + sfx + "V").textContent = c(b, 1) + (b === 0 ? " (полога функція роботи)" : "");
+  document.getElementById("pSim" + sfx + "V").textContent = b > 0 ? c(2 * Math.PI / b, 3) : "— (хвиль немає)";
+  document.getElementById("hSim" + sfx + "V").textContent = c(h, 3);
+}
+
+function renderSimD() {
+  const b = sliderB("bSimD"), h = simOverride.D != null ? simOverride.D : sliderH("hSimD"), a = SIM.a, x0 = SIM.x0, fw = simWave(b);
+  const dEx = Math.exp(-a * x0) * (-a * Math.cos(b * x0) - b * Math.sin(b * x0));
+  const d1 = (fw(x0 + h) - fw(x0 - h)) / (2 * h), d2 = (-fw(x0 + 2 * h) + 8 * fw(x0 + h) - 8 * fw(x0 - h) + fw(x0 - 2 * h)) / (12 * h);
+  const cd = chart(document.getElementById("chSimD"), { xmin: -2.1, xmax: 2.7, ymin: -1.6, ymax: 1.6, H: 340 });
+  curve(cd, fw, -2.1, 2.7, { stroke: TH.L1, "stroke-width": 3 }, 500);
+  el("line", { x1: cd.X(-2.1), y1: cd.Y(fw(x0) + dEx * (-2.1 - x0)), x2: cd.X(2.7), y2: cd.Y(fw(x0) + dEx * (2.7 - x0)), stroke: TH.L4, "stroke-width": 2.5, "stroke-dasharray": "8 6" }, cd.g);
+  const xa = x0 - h, xb = x0 + h, ya = fw(xa), yb = fw(xb);
+  el("line", { x1: cd.X(-2.1), y1: cd.Y(ya + d1 * (-2.1 - xa)), x2: cd.X(2.7), y2: cd.Y(ya + d1 * (2.7 - xa)), stroke: TH.accent, "stroke-width": 3 }, cd.g);
+  el("line", { x1: cd.X(x0), x2: cd.X(x0), y1: cd.T, y2: cd.H - cd.B, stroke: TH.tick, "stroke-width": 1.5, "stroke-dasharray": "4 4" }, cd.g);
+  el("circle", { cx: cd.X(x0), cy: cd.Y(fw(x0)), r: 5, fill: TH.L4, stroke: TH.halo, "stroke-width": 2 }, cd.g);
+  for (const [x, y, lbl] of [[xa, ya, "x − h"], [xb, yb, "x + h"]]) {
+    el("circle", { cx: cd.X(x), cy: cd.Y(y), r: 7, fill: TH.accent, stroke: TH.halo, "stroke-width": 2.5 }, cd.g);
+    label(cd.svg, cd.X(x), cd.Y(y) + (y > 0 ? -14 : 26), lbl, { "text-anchor": "middle", "font-size": 13, fill: TH.accent });
+  }
+  label(cd.svg, cd.X(x0) + 6, cd.T + 16, "x = 0,3", { "font-size": 13 });
+  simLabels("D", b, h);
+  document.getElementById("tSimD").innerHTML = simHead + simRow("df/dx1 у x = 0,3", d1, dEx) + simRow("df/dx2 у x = 0,3", d2, dEx);
+}
+
+function renderSimI() {
+  const b = sliderB("bSimI"), h = simOverride.I != null ? simOverride.I : sliderH("hSimI"), a = SIM.a, fw = simWave(b);
+  const sEx = a / (a * a + b * b);
+  let n = Math.round(SIM.V / h); n -= n % 2;
+  let t = (fw(0) + fw(n * h)) / 2, s = fw(0) + fw(n * h);
+  for (let i = 1; i < n; i++) { const y = fw(i * h); t += y; s += (i % 2 ? 4 : 2) * y; }
+  t *= h; s *= h / 3;
+  const ci = chart(document.getElementById("chSim"), { xmin: -0.4, xmax: 12.4, ymin: -1.3, ymax: 1.35, H: 380, xticks: [0, 2, 4, 6, 8, 10, 12] });
+  const area = (pts, fill, op) => el("path", { d: "M" + ci.X(pts[0][0]) + " " + ci.Y(0) + pts.map(([x, y]) => " L" + ci.X(x).toFixed(1) + " " + ci.Y(y).toFixed(1)).join("") + " L" + ci.X(pts[pts.length - 1][0]) + " " + ci.Y(0) + " Z", fill, "fill-opacity": op, stroke: "none" }, ci.g);
+  const nodes = []; for (let x = 0; x <= 12 + 1e-9; x += h) nodes.push([x, fw(x)]);
+  const cpts = []; for (let i = 0; i <= 800; i++) { const x = 12 * i / 800; cpts.push([x, fw(x)]); }
+  area(nodes, TH.accent, 0.28);
+  area(cpts.map(([x, y]) => [x, Math.max(y, 0)]), TH.L1, 0.3);
+  area(cpts.map(([x, y]) => [x, Math.min(y, 0)]), "#e05a5a", 0.3);
+  curve(ci, fw, 0, 12, { stroke: TH.L1, "stroke-width": 3 }, 800);
+  el("path", { d: nodes.map(([x, y], i) => (i ? "L" : "M") + ci.X(x).toFixed(1) + " " + ci.Y(y).toFixed(1)).join(" "), fill: "none", stroke: TH.accent, "stroke-width": 2, "stroke-dasharray": "6 5" }, ci.g);
+  if (nodes.length <= 300) nodes.forEach(([x, y]) => el("circle", { cx: ci.X(x), cy: ci.Y(y), r: 4.5, fill: TH.accent, stroke: TH.halo, "stroke-width": 1.5 }, ci.g));
+  simLabels("I", b, h);
+  document.getElementById("tSimI").innerHTML = simHead + simRow("трапеції", t, sEx) + simRow("Сімпсон", s, sEx);
+}
+
+function renderSim() { renderSimD(); renderSimI(); }
+for (const [sfx, render] of [["D", renderSimD], ["I", renderSimI]]) {
+  document.getElementById("bSim" + sfx).addEventListener("input", () => { simOverride[sfx] = null; render(); });
+  document.getElementById("hSim" + sfx).addEventListener("input", () => { simOverride[sfx] = null; render(); });
+  document.getElementById("snapSim" + sfx).addEventListener("click", () => { const b = sliderB("bSim" + sfx); if (b > 0) { simOverride[sfx] = 2 * Math.PI / b; render(); } });
+}
+
+function renderAll() { render1(); render3(); render4(); render4d(); render5e(); render7(); render8e(); renderCar(); renderSim(); }
 // лічильник відвідувань (GoatCounter): сторінка рахується сама, вкладка «Питання» — окремою подією
 function countTab(t) {
   if (t !== "q") return;

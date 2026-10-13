@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ЛР4 · Системи лінійних рівнянь</title>
+<style>
+  :root {
+    --bg: #11151c; --card: #1a2029; --ink: #e9edf3; --muted: #9aa5b4; --line: #2b3442; --chip: #232c38; --accent: #ffb26b;
+    --L1: #5aa7ff; --L2: #ffab4a; --L3: #d08cff; --L4: #4fd690;
+    --grid: #262f3c; --zero: #56627a; --frame: #3a4556; --tick: #a3adbb; --band: #2b2a1f;
+    --pt: #f4f1e8; --halo: #11151c; --ctrl: #232c38; --ctrl-line: #3a4556; --on: #2f3b4d;
+  }
+  :root[data-theme="light"] {
+    --bg: #f7f5ef; --card: #fffdf8; --ink: #1b2330; --muted: #5a6272; --line: #e2ddd0; --chip: #f0ece2; --accent: #b4501f;
+    --L1: #1f5fa8; --L2: #c9731a; --L3: #7a3e9d; --L4: #2e8a62;
+    --grid: #e7e2d6; --zero: #9a9384; --frame: #cfc9ba; --tick: #5a6272; --band: #efe8d6;
+    --pt: #1b2330; --halo: #fffdf8; --ctrl: #ffffff; --ctrl-line: #cfc9ba; --on: #f0ece2;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 "Segoe UI", system-ui, Arial, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 18px 16px 70px; }
+  .top { display: flex; align-items: center; gap: 12px; }
+  .top button { margin-left: auto; }
+  h1 { font-size: 26px; line-height: 1.25; margin: 6px 0 4px; }
+  h2 { font-size: 20px; margin: 0 0 6px; }
+  p { margin: 6px 0 10px; }
+  .muted { color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin: 18px 0; }
+  .try { background: var(--chip); border-radius: 10px; padding: 8px 12px; margin: 10px 0 0; font-size: 16px; }
+  .try b { color: var(--accent); }
+  .note { border-left: 3px solid var(--accent); padding: 2px 0 2px 12px; margin: 10px 0 0; font-size: 16px; }
+  button, select { font: inherit; font-size: 15px; padding: 6px 12px; border-radius: 9px; border: 1px solid var(--ctrl-line); background: var(--ctrl); color: var(--ink); cursor: pointer; }
+  button.on { background: var(--on); border-color: var(--accent); font-weight: 600; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .chips label { display: inline-flex; align-items: center; gap: 6px; margin: 0 14px 4px 0; cursor: pointer; white-space: nowrap; font-size: 16px; }
+  .tag { display: inline-block; width: 24px; height: 5px; border-radius: 3px; }
+  input[type=range] { width: 100%; margin: 8px 0 2px; accent-color: var(--accent); }
+  .rlabel { display: flex; justify-content: space-between; font-size: 15px; color: var(--muted); }
+  .rlabel b { color: var(--ink); font-family: Consolas, "Courier New", monospace; }
+  svg { width: 100%; height: auto; display: block; touch-action: pan-y; }
+  .drag { cursor: grab; touch-action: none; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; margin-top: 8px; }
+  th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; }
+  td.num { font-family: Consolas, "Courier New", monospace; text-align: right; white-space: nowrap; }
+  .tbl { overflow-x: auto; }
+  .mono { font-family: Consolas, "Courier New", monospace; }
+  .formula { font-family: Consolas, "Courier New", monospace; font-size: 15px; background: var(--chip); border-radius: 10px; padding: 8px 12px; overflow-x: auto; white-space: nowrap; margin-top: 8px; }
+  .big { font-size: 22px; font-weight: 700; font-family: Consolas, "Courier New", monospace; }
+  ul.sum li { margin-bottom: 6px; }
+  .z-in { color: var(--L4); } .z-ex { color: var(--accent); }
+  h3 { font-size: 17px; margin: 14px 0 4px; }
+  ol { margin: 6px 0 10px; padding-left: 22px; }
+  .tbl th { text-align: left; }
+  .tabs { display: flex; gap: 4px; margin: 12px 0 0; border-bottom: 1px solid var(--line); }
+  .tabs button { border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; padding: 8px 14px; font-size: 16px; font-weight: 600; color: var(--muted); }
+  .tabs button.on { color: var(--ink); border-bottom-color: var(--accent); }
+  h2.qtitle { font-size: 22px; margin: 18px 0 4px; }
+  a.pdf { display: inline-block; padding: 6px 14px; border-radius: 9px; border: 1px solid var(--ctrl-line); background: var(--ctrl); color: var(--ink); text-decoration: none; font-weight: 600; }
+  #tabQ ol { padding-left: 26px; } #tabQ li { margin-bottom: 8px; }
+  .big2 { font-size: 18px; font-weight: 700; margin: 10px 0 6px; min-height: 1.5em; }
+  table.mat td.num { font-size: 15px; }
+  table.mat tr.piv td { background: color-mix(in srgb, var(--L4) 22%, transparent); }
+  table.mat tr.tgt td { background: color-mix(in srgb, var(--accent) 24%, transparent); }
+  button:disabled { opacity: .45; cursor: default; }
+  table.numtab th, table.numtab td { text-align: right; }
+  table.numtab th:first-child, table.numtab td:first-child { text-align: center; width: 3em; }
+</style>
+<script data-goatcounter="https://volodymyrbereziuk.goatcounter.com/count" data-goatcounter-settings='{"allow_frame": true}' async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<main>
+  <div class="top"><span class="muted">Лабораторна робота № 4 · Чисельні методи</span><button id="theme" title="Світла / темна тема">☀ / ☾</button></div>
+  <h1>Чисельне розв'язування системи лінійних алгебраїчних рівнянь</h1>
+  <p class="muted">Усі приклади побудовано на системі зразка звіту. Свою систему розв'язуйте власною програмою.</p>
+  <div class="tabs" id="tabs"><button data-tab="m">Матеріал</button><button data-tab="q">Питання для підготовки</button></div>
+  <div id="tabMat">
+
+  <!-- 1 -->
+  <section class="card">
+    <h2>1. Система рівнянь</h2>
+    <p>Система з 5 лінійних рівнянь з 5 невідомими. Треба знайти значення, що задовольняють усі рівняння одночасно. <b>Лінійні</b> — змінні лише в першому степені, помножені на числа.</p>
+    <div class="tbl"><table class="numtab">
+      <tr><th></th><th>a</th><th>b</th><th>c</th><th>d</th><th>e</th><th>=</th></tr>
+      <tr><td>1</td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td class="num">15</td></tr>
+      <tr><td>2</td><td class="num">−0,5</td><td class="num">1,8</td><td class="num">−0,9</td><td class="num">−0,1</td><td class="num">−0,8</td><td class="num">−1,5</td></tr>
+      <tr><td>3</td><td class="num">0</td><td class="num">−0,3</td><td class="num">2,5</td><td class="num">−0,6</td><td class="num">−0,4</td><td class="num">3,6</td></tr>
+      <tr><td>4</td><td class="num">0</td><td class="num">−0,9</td><td class="num">−0,8</td><td class="num">1,4</td><td class="num">0</td><td class="num">−0,9</td></tr>
+      <tr><td>5</td><td class="num">0</td><td class="num">−0,5</td><td class="num">0</td><td class="num">−0,5</td><td class="num">1,5</td><td class="num">1,5</td></tr>
+    </table></div>
+    <p>Розв'язок зразка: a = b = c = d = e = 3. Матрична форма A·x = B — ті самі числа: коефіцієнти в матриці A, праві частини у стовпці B.</p>
+    <h3>Скільки розв'язків</h3>
+    <p>Для двох рівнянь із двома невідомими кожне рівняння — пряма, розв'язок — точка перетину.</p>
+    <div class="seg" id="lines1"></div>
+    <svg id="ch1"></svg>
+    <p class="note">Для 5 змінних — те саме в 5-вимірному просторі. Якщо визначник det A ≠ 0, розв'язок рівно один (у зразку det A = 10,02).</p>
+  </section>
+
+  <!-- 2 -->
+  <section class="card">
+    <h2>2. Метод Гауса</h2>
+    <p>Шкільне виключення змінних, записане як алгоритм:</p>
+    <ol>
+      <li><b>Прямий хід.</b> Змінні по черзі. Щоб прибрати змінну з рядка, від нього віднімають рядок-інструмент, помножений на <b>m = (коефіцієнт змінної в рядку) / (коефіцієнт змінної в інструменті)</b>. Множиться все рівняння — коефіцієнти і права частина; інструмент не змінюється.</li>
+      <li><b>Вибір інструмента.</b> Серед ще не оброблених рядків беруть той, де коефіцієнт змінної найбільший за модулем, і ставлять його на поточне місце. Так не ділять на нуль і не підсилюють похибку заокруглення.</li>
+      <li><b>Зворотний хід.</b> В останньому рядку лишається одна змінна; її знаходять і підставляють у рядки вище.</li>
+    </ol>
+    <p>Покроково — оберіть приклад і натискайте «Далі»:</p>
+    <div class="seg" id="ex2"></div>
+    <div class="seg"><button id="prev2">← Назад</button><button id="next2">Далі →</button><span class="muted" id="cnt2" style="align-self:center"></span></div>
+    <p class="big2" id="act2"></p>
+    <div class="tbl"><table class="mat numtab" id="mat2"></table></div>
+    <p class="muted" id="hint2"></p>
+  </section>
+
+  <!-- 3 -->
+  <section class="card">
+    <h2>3. Метод Гауса — Зейделя</h2>
+    <p>Ітераційний метод: з кожного рівняння виражають «свою» змінну і уточнюють наближення по колу.</p>
+    <div class="formula">a = 15 − b − c − d − e<br>b = (−1,5 + 0,5a + 0,9c + 0,1d + 0,8e) / 1,8<br>c = (3,6 + 0,3b + 0,6d + 0,4e) / 2,5<br>d = (−0,9 + 0,9b + 0,8c) / 1,4<br>e = (1,5 + 0,5b + 0,5d) / 1,5</div>
+    <ol>
+      <li>Початкове наближення — усі нулі.</li>
+      <li>Ітерація: перераховують a, b, c, d, e по черзі, <b>одразу підставляючи щойно отримані значення</b>.</li>
+      <li>Зупинка: коли найбільша зміна змінної за ітерацію (абсолютна й відносна) менша за δ = 10<sup>−10</sup>. Перевіряється не похибка, а зміна — точної відповіді програма не знає.</li>
+    </ol>
+    <svg id="ch3"></svg>
+    <div class="chips" id="leg3"></div>
+    <input type="range" id="k3" min="1" max="27" value="10">
+    <div class="rlabel"><span>показано ітерацій: <b id="k3v"></b></span><span>найбільша зміна за останню ітерацію <b id="d3v"></b></span></div>
+    <div class="tbl"><table class="numtab" id="t3"></table></div>
+    <p class="note">Значення коливаються навколо 3 і наближаються до нього: похибка зменшується приблизно в 2,7 раза за ітерацію. У зразку зупинка — на 27-й ітерації.</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="card">
+    <h2>4. Чи завжди Зейдель збігається? Діагональна перевага</h2>
+    <p><b>Діагональна перевага:</b> у кожному рівнянні |коефіцієнт «своєї» змінної| більший за суму модулів решти коефіцієнтів. Тоді похибки інших змінних діляться на великий коефіцієнт і гаснуть — метод збігається. Без переваги похибка може зростати — метод розходиться. Умова достатня, але не обов'язкова: у зразку перевага є лише в рядках 3 і 5, а метод збігся.</p>
+    <p>Приклад: та сама система з двох рівнянь у різному порядку (розв'язок x = 1, y = 1).</p>
+    <div class="seg" id="ord4"></div>
+    <div class="formula" id="f4"></div>
+    <svg id="ch4"></svg>
+    <div class="tbl"><table class="numtab" id="t4"></table></div>
+    <p class="note">Перестановка рівнянь не змінює розв'язок, але змінює, з якого рівняння виражається кожна змінна. Якщо Зейдель розійшовся — це нормальний результат роботи: його треба помітити (порівняти з Гаусом) і пояснити.</p>
+  </section>
+
+  <!-- 5 -->
+  <section class="card">
+    <h2>5. Гаус чи Зейдель</h2>
+    <div class="tbl"><table>
+      <tr><th></th><th>Гаус</th><th>Зейдель</th></tr>
+      <tr><th>Тип</th><td>прямий: скінченна кількість кроків</td><td>ітераційний: уточнює наближення</td></tr>
+      <tr><th>Відповідь</th><td>одразу (з точністю до заокруглення)</td><td>з заданою точністю δ</td></tr>
+      <tr><th>Чи завжди працює</th><td>так, якщо det A ≠ 0</td><td>ні — може розійтися</td></tr>
+      <tr><th>Де кращий</th><td>малі щільні системи (як 5×5)</td><td>великі розріджені системи (мільйони невідомих)</td></tr>
+      <tr><th>Пам'ять</th><td>перетворює всю матрицю</td><td>лише ненульові коефіцієнти</td></tr>
+    </table></div>
+    <p>Для системи з мільйоном невідомих (моделювання міцності, теплопровідності) метод Гауса потребує близько 7·10<sup>17</sup> операцій — роки роботи комп'ютера, а Зейдель — секунди. Для 5×5 краще Гаус; Зейдель у роботі — щоб побачити ітераційний метод і його збіжність.</p>
+  </section>
+
+  <section class="card">
+    <h2>Висновки</h2>
+    <ul class="sum">
+      <li>Метод Гауса — виключення змінних: прямий хід дає трикутну систему, зворотний — розв'язок. Працює завжди, якщо det A ≠ 0.</li>
+      <li>Метод Гауса — Зейделя уточнює наближення по колу і зупиняється, коли зміна стає меншою за δ.</li>
+      <li>Зейдель збігається не завжди: усе залежить від матриці (діагональна перевага). Результат ітераційного методу треба перевіряти.</li>
+    </ul>
+  </section>
+  </div>
+  <div id="tabQ" hidden><!-- QUESTIONS:START --><h2 class="qtitle">Питання для підготовки до захисту</h2><p class="muted">Питання буде додано.</p><!-- QUESTIONS:END --></div>
+</main>
+<script>
+// ---------- тема ----------
+let TH = {};
+function readTheme() {
+  const s = getComputedStyle(document.documentElement), v = n => s.getPropertyValue(n).trim();
+  TH = { L1: v("--L1"), L2: v("--L2"), L3: v("--L3"), L4: v("--L4"), grid: v("--grid"), zero: v("--zero"), frame: v("--frame"),
+    tick: v("--tick"), band: v("--band"), pt: v("--pt"), halo: v("--halo"), ink: v("--ink"), accent: v("--accent"), muted: v("--muted") };
+}
+// усередині сайту тему задає оболонка (#theme=dark), тоді своя кнопка не потрібна
+const embedded = window.parent !== window;
+let theme = "dark";
+try { theme = localStorage.getItem("chm.theme") || "dark"; } catch (e) {}
+function hashTheme() { const t = new URLSearchParams(location.hash.slice(1)).get("theme"); return t === "light" || t === "dark" ? t : null; }
+if (hashTheme()) theme = hashTheme();
+if (embedded) document.getElementById("theme").style.display = "none";
+window.addEventListener("hashchange", () => { const t = hashTheme(); if (t && t !== theme) { theme = t; applyTheme(); renderAll(); } });
+function applyTheme() {
+  if (theme === "light") document.documentElement.setAttribute("data-theme", "light"); else document.documentElement.removeAttribute("data-theme");
+  readTheme();
+}
+document.getElementById("theme").addEventListener("click", () => {
+  theme = theme === "dark" ? "light" : "dark";
+  try { localStorage.setItem("chm.theme", theme); } catch (e) {}
+  applyTheme(); renderAll();
+});
+
+// ---------- SVG-графік ----------
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const a in attrs) e.setAttribute(a, attrs[a]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(parent, x, y, s, attrs = {}) {
+  const t = el("text", Object.assign({ x, y, "font-size": 14, fill: TH.tick }, attrs), parent);
+  t.textContent = s; return t;
+}
+function label(parent, x, y, s, attrs = {}) {
+  return txt(parent, x, y, s, Object.assign({ "font-size": 15, "font-weight": 700, fill: TH.ink, stroke: TH.halo, "stroke-width": 5, "paint-order": "stroke", "stroke-linejoin": "round" }, attrs));
+}
+function niceTicks(min, max, count = 6) {
+  const span = max - min || 1;
+  let step = Math.pow(10, Math.floor(Math.log10(span / count)));
+  const err = span / count / step;
+  if (err >= 7.5) step *= 10; else if (err >= 3.5) step *= 5; else if (err >= 1.5) step *= 2;
+  const t = [];
+  for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) t.push(Number(v.toFixed(10)));
+  return t;
+}
+function chart(svg, o) {
+  const W = 720, H = o.H || 380, Lm = 54, R = 12, T = 12, B = 32;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  const X = v => Lm + (v - o.xmin) / (o.xmax - o.xmin) * (W - Lm - R);
+  const Y = v => H - B - (v - o.ymin) / (o.ymax - o.ymin) * (H - T - B);
+  const id = "c" + Math.random().toString(36).slice(2);
+  el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B }, el("clipPath", { id }, el("defs", {}, svg)));
+  if (o.band) el("rect", { x: X(o.band[0]), y: T, width: X(o.band[1]) - X(o.band[0]), height: H - T - B, fill: TH.band }, svg);
+  for (const v of niceTicks(o.ymin, o.ymax)) {
+    const zero = Math.abs(v) < 1e-12;
+    el("line", { x1: Lm, x2: W - R, y1: Y(v), y2: Y(v), stroke: zero ? TH.zero : TH.grid, "stroke-width": zero ? 2 : 1 }, svg);
+    txt(svg, Lm - 8, Y(v) + 5, c(v, 3), { "text-anchor": "end" });
+  }
+  for (const v of (o.xticks || niceTicks(o.xmin, o.xmax))) {
+    el("line", { x1: X(v), x2: X(v), y1: T, y2: H - B, stroke: TH.grid, "stroke-dasharray": "3 4" }, svg);
+    txt(svg, X(v), H - B + 21, c(v, 3), { "text-anchor": "middle" });
+  }
+  el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B, fill: "none", stroke: TH.frame }, svg);
+  const g = el("g", { "clip-path": `url(#${id})` }, svg);
+  return { X, Y, g, svg, W, H, T, B, o,
+    toData(evt) { const pt = svg.createSVGPoint(); pt.x = evt.clientX; pt.y = evt.clientY; const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      return [o.xmin + (p.x - Lm) / (W - Lm - R) * (o.xmax - o.xmin), o.ymin + (H - B - p.y) / (H - T - B) * (o.ymax - o.ymin)]; } };
+}
+function curve(ch, fn, a, b, attrs, n = 300) {
+  let d = "";
+  for (let i = 0; i <= n; i++) {
+    const x = a + (b - a) * i / n, y = Math.max(-1e4, Math.min(1e4, ch.Y(fn(x))));
+    d += (i ? "L" : "M") + ch.X(x).toFixed(1) + " " + y.toFixed(1);
+  }
+  return el("path", Object.assign({ d, fill: "none", "stroke-width": 4, "stroke-linecap": "round", "stroke-linejoin": "round" }, attrs), ch.g);
+}
+function vline(ch, x, color) {
+  el("line", { x1: ch.X(x), x2: ch.X(x), y1: ch.T, y2: ch.H - ch.B, stroke: color || TH.tick, "stroke-width": 2, "stroke-dasharray": "5 5" }, ch.g);
+}
+function seg(boxId, items, cur, onPick) {
+  const box = document.getElementById(boxId);
+  box.innerHTML = items.map(([v, t]) => `<button data-v="${v}" class="${String(v) === String(cur) ? "on" : ""}">${t}</button>`).join("");
+  box.querySelectorAll("button").forEach(b => b.addEventListener("click", () => onPick(b.dataset.v)));
+}
+
+
+const c = (v, d = 3) => { const r = Number(v.toFixed(d)); return (r < 0 ? "−" : "") + String(Math.abs(r)).replace(".", ","); };
+
+// ---------- 1. дві прямі ----------
+let case1 = "one";
+const CASES = { one: ["перетинаються", [1, 1, 5], [1, -1, 1]], par: ["паралельні", [1, 1, 5], [1, 1, 7]], same: ["збігаються", [1, 1, 5], [2, 2, 10]] };
+function render1() {
+  seg("lines1", Object.keys(CASES).map(k => [k, CASES[k][0]]), case1, v => { case1 = v; render1(); });
+  const [, p, q] = CASES[case1];
+  const ch = chart(document.getElementById("ch1"), { xmin: -1, xmax: 8, ymin: -1, ymax: 8, H: 300 });
+  const line = ([a, b, r], col, dash) => curve(ch, x => (r - a * x) / b, -1, 8, { stroke: col, "stroke-width": 3.5, "stroke-dasharray": dash || "" });
+  line(p, TH.L1); line(q, TH.L2, case1 === "same" ? "10 8" : "");
+  const t = (e) => `${e[0] === 1 ? "" : e[0]}x ${e[1] < 0 ? "−" : "+"} ${Math.abs(e[1]) === 1 ? "" : Math.abs(e[1])}y = ${e[2]}`;
+  label(ch.svg, 70, 36, t(p), { fill: TH.L1 }); label(ch.svg, 70, 58, t(q), { fill: TH.L2 });
+  if (case1 === "one") { el("circle", { cx: ch.X(3), cy: ch.Y(2), r: 8, fill: TH.accent, stroke: TH.halo, "stroke-width": 2.5 }, ch.g); label(ch.svg, ch.X(3) + 12, ch.Y(2) - 10, "(3; 2) — один розв'язок", { fill: TH.accent }); }
+  else label(ch.svg, 70, 80, case1 === "par" ? "розв'язків немає" : "розв'язків безліч", { fill: TH.accent });
+}
+
+// ---------- 2. метод Гауса покроково ----------
+const EX2 = {
+  small: { name: "приклад 3×3", vars: ["x", "y", "z"], A: [[1, 1, 1], [2, 3, 1], [1, 2, 3]], B: [6, 11, 14] },
+  sample: { name: "система зразка 5×5", vars: ["a", "b", "c", "d", "e"], A: [[1, 1, 1, 1, 1], [-0.5, 1.8, -0.9, -0.1, -0.8], [0, -0.3, 2.5, -0.6, -0.4], [0, -0.9, -0.8, 1.4, 0], [0, -0.5, 0, -0.5, 1.5]], B: [15, -1.5, 3.6, -0.9, 1.5] }
+};
+let ex2 = "small", pos2 = 0, frames2 = [];
+function buildFrames(E) {
+  const n = E.B.length, A = E.A.map(r => r.slice()), B = E.B.slice(), V = E.vars, F = [];
+  const snap = (text, hint, piv, tgt) => F.push({ A: A.map(r => r.slice()), B: B.slice(), text, hint, piv, tgt });
+  snap("Початкова система", "Мета прямого ходу — нулі під діагоналлю («сходинки»).", -1, -1);
+  for (let k = 0; k < n - 1; k++) {
+    let idx = k; for (let i = k + 1; i < n; i++) if (Math.abs(A[i][k]) > Math.abs(A[idx][k])) idx = i;
+    if (idx !== k) {
+      [A[k], A[idx]] = [A[idx], A[k]]; [B[k], B[idx]] = [B[idx], B[k]];
+      snap(`Міняємо рядки ${k + 1} і ${idx + 1}`, `У стовпці ${V[k]} найбільший за модулем коефіцієнт — у рядку ${idx + 1}; ставимо його інструментом.`, k, idx);
+    }
+    for (let i = k + 1; i < n; i++) {
+      if (A[i][k] === 0) continue;
+      const m = A[i][k] / A[k][k];
+      snap(`Прибираємо ${V[k]} з рядка ${i + 1}: рядок ${i + 1} − (${c(m, 4)}) × рядок ${k + 1}`, `m = ${c(A[i][k], 4)} / ${c(A[k][k], 4)} = ${c(m, 4)} — коефіцієнт при ${V[k]} у рядку ${i + 1}, поділений на коефіцієнт в інструменті (рядок ${k + 1}).`, k, i);
+      for (let j = k; j < n; j++) A[i][j] -= A[k][j] * m;
+      B[i] -= B[k] * m;
+      snap(`Рядок ${i + 1} без ${V[k]}`, `Під коефіцієнтом-інструментом у стовпці ${V[k]} з'явився нуль. Розв'язок системи не змінився.`, k, i);
+    }
+  }
+  // зворотний хід
+  const X = new Array(n).fill(null);
+  for (let i = n - 1; i >= 0; i--) {
+    let s = B[i]; for (let j = i + 1; j < n; j++) s -= A[i][j] * X[j];
+    X[i] = s / A[i][i];
+    const known = X.map((v, j) => v === null || j === i ? null : `${V[j]} = ${c(v, 4)}`).filter(Boolean).join(", ");
+    F.push({ A: A.map(r => r.slice()), B: B.slice(), text: `Зворотний хід: ${V[i]} = ${c(X[i], 6)}`, hint: i === n - 1 ? `Останній рядок: ${c(A[i][i], 4)}·${V[i]} = ${c(B[i], 4)}.` : `Рядок ${i + 1}, підставлено ${known}.`, piv: -1, tgt: i, X: X.slice() });
+  }
+  return F;
+}
+function render2() {
+  seg("ex2", Object.keys(EX2).map(k => [k, EX2[k].name]), ex2, v => { ex2 = v; pos2 = 0; frames2 = buildFrames(EX2[ex2]); render2(); });
+  if (!frames2.length) frames2 = buildFrames(EX2[ex2]);
+  const f = frames2[pos2], V = EX2[ex2].vars, d = ex2 === "small" ? 0 : 4;
+  document.getElementById("cnt2").textContent = `${pos2 + 1} / ${frames2.length}`;
+  document.getElementById("act2").textContent = f.text;
+  document.getElementById("hint2").textContent = f.hint;
+  document.getElementById("mat2").innerHTML = "<tr><th></th>" + V.map(v => `<th>${v}</th>`).join("") + "<th>=</th>" + (f.X ? "<th>розв'язок</th>" : "") + "</tr>" +
+    f.A.map((r, i) => `<tr class="${i === f.piv ? "piv" : i === f.tgt ? "tgt" : ""}"><td>${i + 1}</td>` + r.map(v => `<td class="num">${c(Math.abs(v) < 1e-12 ? 0 : v, d)}</td>`).join("") + `<td class="num">${c(f.B[i], d)}</td>` + (f.X ? `<td class="num">${f.X[i] === null ? "" : V[i] + " = " + c(f.X[i], 6)}</td>` : "") + "</tr>").join("");
+  document.getElementById("prev2").disabled = pos2 === 0;
+  document.getElementById("next2").disabled = pos2 === frames2.length - 1;
+}
+document.getElementById("prev2").addEventListener("click", () => { pos2 = Math.max(0, pos2 - 1); render2(); });
+document.getElementById("next2").addEventListener("click", () => { pos2 = Math.min(frames2.length - 1, pos2 + 1); render2(); });
+
+// ---------- 3. Зейдель на зразку ----------
+const A3 = EX2.sample.A, B3 = EX2.sample.B, ITER3 = (() => {
+  const X = [0, 0, 0, 0, 0], out = [X.slice()];
+  for (let k = 1; k <= 27; k++) { for (let i = 0; i < 5; i++) { let s = B3[i]; for (let j = 0; j < 5; j++) if (j !== i) s -= A3[i][j] * X[j]; X[i] = s / A3[i][i]; } out.push(X.slice()); }
+  return out;
+})();
+const COL3 = () => [TH.L1, TH.L2, TH.L3, TH.L4, TH.accent];
+function render3() {
+  const K = Number(document.getElementById("k3").value), its = ITER3.slice(0, K + 1), cols = COL3();
+  const ch = chart(document.getElementById("ch3"), { xmin: 0, xmax: 27, ymin: 0, ymax: 16, H: 320 });
+  curve(ch, () => 3, 0, 27, { stroke: TH.tick, "stroke-width": 2, "stroke-dasharray": "6 6" });
+  for (let j = 0; j < 5; j++) {
+    el("path", { d: its.map((x, i) => (i ? "L" : "M") + ch.X(i).toFixed(1) + " " + ch.Y(x[j]).toFixed(1)).join(" "), fill: "none", stroke: cols[j], "stroke-width": 2.5 }, ch.g);
+    its.forEach((x, i) => el("circle", { cx: ch.X(i), cy: ch.Y(x[j]), r: 3.5, fill: cols[j] }, ch.g));
+  }
+  document.getElementById("leg3").innerHTML = ["a", "b", "c", "d", "e"].map((v, j) => `<label><span class="tag" style="background:${cols[j]}"></span>${v}</label>`).join("") + '<label class="muted">пунктир — точне значення 3</label>';
+  const last = its[its.length - 1], prev = its[its.length - 2];
+  document.getElementById("k3v").textContent = K;
+  document.getElementById("d3v").textContent = c(Math.max(...last.map((v, j) => Math.abs(v - prev[j]))), 10).replace(/^0$/, "< 10⁻¹⁰");
+  document.getElementById("t3").innerHTML = "<tr><th>ітерація</th><th>a</th><th>b</th><th>c</th><th>d</th><th>e</th></tr>" +
+    ITER3.slice(0, 6).map((x, i) => `<tr><td class="num">${i}</td>` + x.map(v => `<td class="num">${c(v, 4)}</td>`).join("") + "</tr>").join("") +
+    '<tr><td colspan="6" class="muted" style="font-size:14px">Ітерація 1: a = 15 − 0 − 0 − 0 − 0 = 15; b = (−1,5 + 0,5 · 15) / 1,8 = 3,333 — уже з новим a.</td></tr>';
+}
+document.getElementById("k3").addEventListener("input", render3);
+
+// ---------- 4. діагональна перевага на 2×2 ----------
+let ord4 = "bad";
+const ORD = { bad: { name: "без переваги", A: [[2, 10], [10, 1]], B: [12, 11] }, good: { name: "з перевагою (рівняння переставлено)", A: [[10, 1], [2, 10]], B: [11, 12] } };
+function render4() {
+  seg("ord4", Object.keys(ORD).map(k => [k, ORD[k].name]), ord4, v => { ord4 = v; render4(); });
+  const { A, B } = ORD[ord4], X = [0, 0], its = [X.slice()];
+  for (let k = 0; k < 6; k++) { X[0] = (B[0] - A[0][1] * X[1]) / A[0][0]; X[1] = (B[1] - A[1][0] * X[0]) / A[1][1]; its.push(X.slice()); }
+  const eq = (r, b) => `${r[0]}x + ${r[1]}y = ${b}`;
+  document.getElementById("f4").innerHTML = `${eq(A[0], B[0])} → x = (${B[0]} − ${A[0][1]}y) / ${A[0][0]}<br>${eq(A[1], B[1])} → y = (${B[1]} − ${A[1][0]}x) / ${A[1][1]}`;
+  const lim = ord4 === "bad" ? 4 : 1.5;
+  const ch = chart(document.getElementById("ch4"), { xmin: 0, xmax: 6, ymin: -lim, ymax: lim + 0.3, H: 280 });
+  curve(ch, () => 1, 0, 6, { stroke: TH.tick, "stroke-width": 2, "stroke-dasharray": "6 6" });
+  [[0, TH.L1], [1, TH.L2]].forEach(([j, col]) => {
+    el("path", { d: its.map((x, i) => (i ? "L" : "M") + ch.X(i).toFixed(1) + " " + ch.Y(Math.max(-lim * 3, Math.min(lim * 3, x[j]))).toFixed(1)).join(" "), fill: "none", stroke: col, "stroke-width": 3 }, ch.g);
+    its.forEach((x, i) => el("circle", { cx: ch.X(i), cy: ch.Y(Math.max(-lim * 3, Math.min(lim * 3, x[j]))), r: 4.5, fill: col }, ch.g));
+  });
+  const fmt = v => Math.abs(v) >= 1e4 ? c(v / 10 ** Math.floor(Math.log10(Math.abs(v))), 2) + "·10" + String(Math.floor(Math.log10(Math.abs(v)))).replace(/\d/g, d => "⁰¹²³⁴⁵⁶⁷⁸⁹"[d]) : c(v, 4);
+  document.getElementById("t4").innerHTML = "<tr><th>ітерація</th><th>x</th><th>y</th></tr>" + its.map((x, i) => `<tr><td class="num">${i}</td><td class="num">${fmt(x[0])}</td><td class="num">${fmt(x[1])}</td></tr>`).join("") +
+    `<tr><td colspan="3" class="muted" style="font-size:14px">${ord4 === "bad" ? "Діагональні коефіцієнти 2 і 1 малі — похибка зростає в ~50 разів за ітерацію: розходиться." : "Діагональні коефіцієнти 10 і 10 великі — похибка зменшується в ~50 разів за ітерацію: збігається до x = 1, y = 1."}</td></tr>`;
+}
+
+function renderAll() { render1(); render2(); render3(); render4(); }
+// лічильник відвідувань (GoatCounter): сторінка рахується сама, вкладка «Питання» — окремою подією
+function countTab(t) {
+  if (t !== "q") return;
+  const n = (location.pathname.match(/lab(\d)/) || [])[1];
+  const go = () => window.goatcounter && window.goatcounter.count && window.goatcounter.count({ path: `lab${n}-questions`, title: `ЛР${n} · питання`, event: true });
+  if (window.goatcounter && window.goatcounter.count) go(); else window.addEventListener("load", () => setTimeout(go, 500));
+}
+// ---------- вкладки: матеріал / питання (#tab=q) ----------
+const DEFAULT_TAB = "m";
+const tabParam = () => { const t = new URLSearchParams(location.hash.slice(1)).get("tab"); return t === "q" || t === "m" ? t : DEFAULT_TAB; };
+function showTab(t) {
+  document.getElementById("tabMat").hidden = t === "q";
+  document.getElementById("tabQ").hidden = t !== "q";
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+}
+document.querySelectorAll("#tabs button").forEach(b => b.addEventListener("click", () => {
+  const p = new URLSearchParams(location.hash.slice(1)); p.set("tab", b.dataset.tab);
+  history.replaceState(null, "", "#" + p.toString());
+  showTab(b.dataset.tab);
+  countTab(b.dataset.tab);
+  if (window.parent !== window) parent.postMessage({ type: "chm-tab", tab: b.dataset.tab }, "*");
+}));
+window.addEventListener("hashchange", () => showTab(tabParam()));
+showTab(tabParam());
+countTab(tabParam());
+
+applyTheme(); renderAll();
+</script>
+</body>
+</html>
