@@ -56,6 +56,9 @@
   h2.qtitle { font-size: 22px; margin: 18px 0 4px; }
   a.pdf { display: inline-block; padding: 6px 14px; border-radius: 9px; border: 1px solid var(--ctrl-line); background: var(--ctrl); color: var(--ink); text-decoration: none; font-weight: 600; }
   #tabQ ol { padding-left: 26px; } #tabQ li { margin-bottom: 8px; }
+  h3 { font-size: 17px; margin: 14px 0 4px; }
+  .swSlider { position: sticky; top: 0; z-index: 3; background: var(--card); padding: 6px 0 4px; }
+  svg.swChart { margin-top: 4px; }
 </style>
 <script data-goatcounter="https://volodymyrbereziuk.goatcounter.com/count" data-goatcounter-settings='{"allow_frame": true}' async src="//gc.zgo.at/count.js"></script>
 </head>
@@ -147,6 +150,21 @@
     <div class="rlabel"><span>крок h = <b id="h7v"></b></span><span>відносна похибка <b id="e7v"></b></span></div>
     <p class="try"><b>Завдання:</b> зменште h у 10 разів (наприклад, з 0,5 до 0,05). У скільки разів зменшилась похибка?</p>
     <p class="note">Для плавної функції і густих точок похибка мала. У лабораторній роботі навпаки: лише 5 точок зі значними перепадами (0,03 → 0,08 → 0,34 → 0,18 → 0,3), тому поліноми суттєво розходяться.</p>
+  </section>
+
+  <!-- 8 -->
+  <section class="card">
+    <h2>8. Плавна функція проти хвилястої</h2>
+    <p>Інтерполяція спирається на припущення, що функція між точками змінюється плавно. Порівняйте дві функції з однаковим розмахом значень: через ті самі вузли проведено поліном Лагранжа (через усі точки).</p>
+    <div class="swSlider">
+      <input type="range" id="nSW" min="3" max="11" value="5">
+      <div class="rlabel"><span>кількість точок: <b id="nSWv"></b> · поліном степеня <b id="dSWv"></b></span><span>похибка: полога <b id="eSW1"></b> · хвиляста <b id="eSW2"></b></span></div>
+    </div>
+    <svg id="chSW1" class="swChart"></svg>
+    <svg id="chSW2" class="swChart"></svg>
+    <div class="chips"><label><span class="tag" style="background:var(--muted)"></span>справжня функція</label><label><span class="tag" style="background:var(--accent)"></span>поліном Лагранжа через точки</label></div>
+    <p class="try"><b>Завдання:</b> збільшуйте кількість точок. Що відбувається з похибкою для пологої функції? А для хвилястої — стає точніше чи гірше? Чому?</p>
+    <p class="note">Для плавної функції кожна нова точка робить інтерполяцію точнішою. Для хвилястої, поки точок замало, щоб «побачити» кожну хвилю, поліном вигадує свою криву між ними — і вищий степінь лише збільшує розгойдування. Дані лабораторної роботи — 5 точок, що «скачуть» (0,03 → 0,08 → 0,34 → 0,18 → 0,3): справжня функція може бути саме такою хвилястою, тому значенням між вузлами варто довіряти обережно.</p>
   </section>
 
   <section class="card">
@@ -472,7 +490,30 @@ function render7() {
 }
 document.getElementById("h7").addEventListener("input", render7);
 
-function renderAll() { render1(); render2(); render3(); render4(); render5(); render6(); render7(); }
+// ---------- 8. плавна функція проти хвилястої ----------
+const SW = { a: 0, b: 3, f1: x => 0.5 + 0.4 * Math.sin(x), f2: x => 0.5 + 0.4 * Math.sin(7 * x) };
+const lagAll = P => x => P.reduce((s, [xi, yi], i) => { let t = yi; P.forEach(([xj], j) => { if (j !== i) t *= (x - xj) / (xi - xj); }); return s + t; }, 0);
+function renderSWone(svgId, errId, f, n, title) {
+  const P = Array.from({ length: n }, (_, i) => { const x = SW.a + (SW.b - SW.a) * i / (n - 1); return [x, f(x)]; });
+  const p = lagAll(P);
+  let err = 0; for (let k = 0; k <= 600; k++) { const x = SW.a + (SW.b - SW.a) * k / 600; err = Math.max(err, Math.abs(p(x) - f(x))); }
+  const ch = chart(document.getElementById(svgId), { xmin: -0.1, xmax: 3.1, ymin: -0.6, ymax: 1.6, H: 230, xticks: [0, 0.5, 1, 1.5, 2, 2.5, 3] });
+  label(ch.svg, 66, 34, title, { "font-size": 15 });
+  curve(ch, f, SW.a, SW.b, { stroke: TH.muted, "stroke-width": 5 }, 600);
+  curve(ch, p, SW.a, SW.b, { stroke: TH.accent, "stroke-width": 3 }, 600);
+  P.forEach(([x, y]) => el("circle", { cx: ch.X(x), cy: ch.Y(y), r: 7, fill: TH.pt, stroke: TH.halo, "stroke-width": 2.5 }, ch.g));
+  document.getElementById(errId).textContent = err < 0.001 ? err.toExponential(1).replace(".", ",").replace(/e-(\d+)/, (m, e) => "·10⁻" + e.replace(/\d/g, d => "⁰¹²³⁴⁵⁶⁷⁸⁹"[d])) : c(err, 3);
+}
+function renderSW() {
+  const n = Number(document.getElementById("nSW").value);
+  document.getElementById("nSWv").textContent = n;
+  document.getElementById("dSWv").textContent = n - 1;
+  renderSWone("chSW1", "eSW1", SW.f1, n, "Полога функція");
+  renderSWone("chSW2", "eSW2", SW.f2, n, "Хвиляста функція");
+}
+document.getElementById("nSW").addEventListener("input", renderSW);
+
+function renderAll() { render1(); render2(); render3(); render4(); render5(); render6(); render7(); renderSW(); }
 // лічильник відвідувань (GoatCounter): сторінка рахується сама, вкладка «Питання» — окремою подією
 function countTab(t) {
   if (t !== "q") return;

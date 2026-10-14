@@ -58,6 +58,8 @@
   .tabs button.on { color: var(--ink); border-bottom-color: var(--accent); }
   h2.qtitle { font-size: 22px; margin: 18px 0 4px; }
   a.pdf { display: inline-block; padding: 6px 14px; border-radius: 9px; border: 1px solid var(--ctrl-line); background: var(--ctrl); color: var(--ink); text-decoration: none; font-weight: 600; }
+  .formula sub { font-size: 12px; }
+  .formula { white-space: normal; word-break: break-all; }
   #tabQ ol { padding-left: 26px; } #tabQ li { margin-bottom: 8px; }
 </style>
 <script data-goatcounter="https://volodymyrbereziuk.goatcounter.com/count" data-goatcounter-settings='{"allow_frame": true}' async src="//gc.zgo.at/count.js"></script>
@@ -66,12 +68,107 @@
 <main>
   <div class="top"><span class="muted">Лабораторна робота № 1 · Чисельні методи</span><button id="theme" title="Світла / темна тема">☀ / ☾</button></div>
   <h1>Визначення суми послідовності на основі циклічного додавання</h1>
-  <p class="muted">Матеріал до роботи буде додано. Питання для підготовки до захисту — на вкладці «Питання для підготовки».</p>
+  <p class="muted">Усі приклади побудовано на даних зразка звіту (a = 0,189) та кількох інших значеннях a. Результати свого варіанта отримайте власною програмою та порівняйте, чи спостерігаються ті самі ефекти.</p>
   <div class="tabs" id="tabs"><button data-tab="m">Матеріал</button><button data-tab="q">Питання для підготовки</button></div>
   <div id="tabMat">
+
+  <!-- 1 -->
   <section class="card">
-    <h2>Матеріал готується</h2>
-    <p class="muted">Інтерактивне пояснення до лабораторної роботи № 1 з'явиться згодом.</p>
+    <h2>1. Що обчислює програма</h2>
+    <p>Число a додають саме до себе N разів: S = a + a + … + a. Математично S = N·a, тому будь-яка різниця між ними — це похибка обчислення на комп'ютері.</p>
+    <div class="formula">s = 0<br>for i in range(N):<br>&nbsp;&nbsp;&nbsp;&nbsp;s += a</div>
+    <p>Для кожного N = 100, 200, …, 10000 обчислюють дві похибки:</p>
+    <div class="formula">Δ = |N·a − S| &nbsp;&nbsp;— абсолютна<br>δ = (N·a − S) / (N·a) · 100 % &nbsp;&nbsp;— відносна, зі знаком</div>
+    <p>Зразок, a = 0,189:</p>
+    <div class="tbl"><table id="t1"></table></div>
+    <p class="note">Щоб N = 10000 увійшло в перебір, верхня межа <span class="mono">range</span> має бути більшою за 10000: <span class="mono">range(100, 10001, 100)</span>.</p>
+  </section>
+
+  <!-- 2 -->
+  <section class="card">
+    <h2>2. Як комп'ютер зберігає число a</h2>
+    <p>Комп'ютер зберігає числа у <b>двійковій</b> системі, і для числа типу <span class="mono">float</span> є лише <b>53 значущі двійкові цифри</b>. Дріб, який у двійковій системі нескінченний, доводиться обрізати й округлювати — так само як 1/3 = 0,333… у десятковій.</p>
+    <div class="seg" id="aSeg2"></div>
+    <p class="muted" style="margin-bottom:0">Двійковий запис (після коми):</p>
+    <div class="formula" id="bin2"></div>
+    <p class="muted" style="margin-bottom:0">Що зберігається насправді:</p>
+    <div class="formula" id="dec2"></div>
+    <p id="verdict2"></p>
+    <p class="try"><b>Завдання:</b> перш ніж натискати, передбачте, які з чисел 0,25; 0,3; 0,375; 0,7 запишуться точно. Що спільного в тих, що записуються точно?</p>
+    <p class="note">Похибка запису однієї величини — приблизно 16-та значуща цифра. Проте в циклі ця величина і кожна проміжна сума беруть участь у тисячах операцій.</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="card">
+    <h2>3. Кожне додавання — ще одне округлення</h2>
+    <p>Сума S теж зберігається з 53 двійковими цифрами. Після кожного <span class="mono">s += a</span> результат округлюється, і маленькі похибки окремих додавань <b>накопичуються</b>.</p>
+    <input type="range" id="n3" min="1" max="20" value="12">
+    <div class="rlabel"><span>кількість додавань: <b id="n3v"></b></span><span>a = 0,189</span></div>
+    <div class="tbl"><table id="t3"></table></div>
+    <p class="try"><b>Завдання:</b> на якому кроці сума вперше відрізняється від N·a? Чи зникає різниця, коли вже з'явилась?</p>
+    <p class="note">Python друкує найкоротший запис, з якого число відновлюється однозначно. Тому <span class="mono">0.189</span> друкується без «хвоста», хоча зберігається неточно, а <span class="mono">1.1340000000000001</span> — з ним: це вже інше число, ніж 1,134.</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="card">
+    <h2>4. Як похибка змінюється з ростом N</h2>
+    <p>Графік абсолютної похибки Δ для N = 100, 200, …, 10000 — так само, як у звіті. На «ідеальному» комп'ютері це була б горизонтальна лінія на нулі.</p>
+    <div class="seg" id="aSeg4"></div>
+    <svg id="ch4"></svg>
+    <div class="chips"><label><input type="checkbox" id="pw4">межі S = 64, 128, 256, 512, 1024</label></div>
+    <p id="z4"></p>
+    <p class="try"><b>Завдання:</b> передбачте графік для a = 0,25, потім перевірте. Чи означає точка, де Δ ≈ 0, що при цьому N комп'ютер обчислює точно?</p>
+    <p class="note">Похибки окремих додавань мають різний знак: на одних ділянках сума відстає від N·a, на інших випереджає, тому похибка то зростає, то спадає. Злами графіка припадають на N, де сума S переходить через степінь двійки (64, 128, 256, …): там крок округлення подвоюється. Не кожна така межа дає злам, але злами — лише на них (увімкніть межі під графіком). Точки, де Δ ≈ 0, і проміжки, де похибка перетинає нуль, для кожного a свої.</p>
+  </section>
+
+  <!-- 5 -->
+  <section class="card">
+    <h2>5. Абсолютна чи відносна похибка</h2>
+    <p><b>Абсолютна</b> похибка Δ показує, <b>на скільки</b> результат відрізняється від точного, — в одиницях самої величини. <b>Відносна</b> δ показує, <b>яку частку</b> від величини становить похибка. Помилка в 1 мм на 1 м — це 0,1 %, а на 1 км — 0,0001 %: абсолютна однакова, відносна — у тисячу разів менша.</p>
+    <p>Порівняйте дві суми з однаковою кількістю додавань: a = 0,189 і a = 0,7. Масштаб обох графіків спільний.</p>
+    <div class="chips" id="chips5"></div>
+    <h3>Абсолютна похибка Δ = |N·a − S|</h3>
+    <svg id="ch5a"></svg>
+    <h3>Відносна похибка δ = (N·a − S) / (N·a) · 100 %</h3>
+    <svg id="ch5r"></svg>
+    <div class="tbl"><table id="t5"></table></div>
+    <p class="try"><b>Завдання:</b> у скільки разів відрізняються найбільші Δ для двох a? А найбільші δ? Чому Δ на графіку не опускається нижче нуля, а δ — опускається?</p>
+    <ul class="sum">
+      <li><b>Δ залежить від величини чисел:</b> що більші суми, то більший крок округлення і більша абсолютна похибка.</li>
+      <li><b>δ майже не залежить від величини:</b> для обох a вона одного порядку. Тому точність різних обчислень порівнюють за відносною похибкою.</li>
+      <li><b>Знак:</b> Δ береться за модулем і лише «торкається» нуля; δ зі знаком показує, сума <b>менша</b> (δ &gt; 0) чи <b>більша</b> (δ &lt; 0) за N·a, і перетинає нуль.</li>
+      <li><b>З ростом N</b> Δ зростає швидше, ніж δ: у δ похибку ділять на N·a, яке теж зростає.</li>
+    </ul>
+  </section>
+
+  <!-- 6 -->
+  <section class="card">
+    <h2>6. Де накопичення похибок має значення</h2>
+    <p>Похибка 10⁻¹⁰ здається мізерною. Вона стає важливою, коли операцій мільйони і мільярди, коли обчислення триває годинами або коли йдеться про гроші.</p>
+    <div class="tbl"><table>
+      <tr><th>Галузь</th><th>Що накопичується</th><th>Скільки операцій</th><th>Як уникають</th></tr>
+      <tr><td>Банки, бухгалтерія</td><td>суми, відсотки</td><td>мільйони транзакцій</td><td>рахують у копійках (цілі числа) або десятковим типом (<span class="mono">Decimal</span>)</td></tr>
+      <tr><td>Ігри, фізичні симуляції</td><td>час і положення: <span class="mono">t += dt</span></td><td>60 кадрів за секунду протягом годин</td><td>час обчислюють як k·dt, а не додаванням</td></tr>
+      <tr><td>Системи реального часу</td><td>час від запуску за лічильником тактів</td><td>мільйони тактів</td><td>точне представлення кроку, періодичний перезапуск</td></tr>
+      <tr><td>Наукові розрахунки (погода, клімат)</td><td>значення на кожному кроці за часом</td><td>мільярди операцій</td><td>подвійна точність, спеціальні алгоритми підсумовування</td></tr>
+    </table></div>
+    <h3>Зенітний комплекс Patriot, 1991 рік</h3>
+    <p>Комп'ютер комплексу рахував час від увімкнення як <b>кількість тактів × 0,1 с</b>. Число 0,1 у двійковій системі нескінченне (як 0,189 у розділі 2), і в 24-бітовому регістрі його записали з похибкою ≈ 0,000000095. Після 100 годин безперервної роботи (3,6 млн тактів) похибка часу досягла ≈ 0,34 с. За цей час ракета Scud пролітає понад 500 м, тож комплекс шукав ціль не там. 25 лютого 1991 року в Даграні (Саудівська Аравія) ракету не перехопили; загинули 28 військових. Причину розібрано у звіті Рахункової палати США (GAO, 1992).</p>
+    <h3>Біржовий індекс Ванкувера, 1982–1983 роки</h3>
+    <p>Новий індекс почали з 1000 і перераховували після кожної угоди — тисячі разів на день. Результат щоразу <b>відкидали</b> до трьох знаків після коми, а не округлювали, тож похибка кожного кроку мала той самий знак. За 22 місяці індекс «впав» до ≈ 524,8, хоча правильне значення було ≈ 1098,9.</p>
+    <p class="note">Накопичення під час покрокових обчислень трапиться й у курсі: у ЛР6 розв'язок диференціального рівняння будують крок за кроком, як суму в цій роботі.</p>
+  </section>
+
+  <section class="card">
+    <h2>Висновки</h2>
+    <ul class="sum">
+      <li>Більшість десяткових дробів (0,189; 0,1; 0,3) у двійковій системі нескінченні, тому комп'ютер зберігає їх <b>наближено</b>.</li>
+      <li>Кожне додавання округлює результат; похибки <b>накопичуються</b> з ростом N, але не рівномірно: мають різний знак, тому графік ламаний і перетинає нуль.</li>
+      <li>Точка, де похибка ≈ 0, — збіг, а не точне обчислення.</li>
+      <li><b>Абсолютна</b> похибка залежить від величини чисел, <b>відносна</b> — показує частку і дає змогу порівнювати точність різних обчислень.</li>
+      <li>Головна похибка в цій роботі — <b>похибка заокруглення</b>; одне множення N·a дає одне округлення замість N.</li>
+    </ul>
+    <p class="muted">Перевірте на своєму варіанті: на якому кроці S вперше відрізняється від N·a? Де ваша похибка перетинає нуль? Порівняйте свої Δ і δ з графіками зразка.</p>
   </section>
   </div>
   <div id="tabQ" hidden><!-- QUESTIONS:START -->
@@ -109,20 +206,245 @@
   <!-- QUESTIONS:END --></div>
 </main>
 <script>
-// ---------- тема: усередині сайту задає оболонка (#theme=dark) ----------
+// ---------- обчислення ----------
+const SAMPLE = 0.189;
+const c = (v, d = 3) => { const r = Number(v.toFixed(d)); return (r < 0 ? "−" : "") + String(Math.abs(r)).replace(".", ","); };
+const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+const sup = n => (n < 0 ? "⁻" : "") + String(Math.abs(n)).replace(/\d/g, d => SUP[d]);
+// 3.55e-15 → «3,55·10⁻¹⁵» (зі знаком)
+function sci(v, d = 2) {
+  if (v === 0) return "0";
+  const p = Math.floor(Math.log10(Math.abs(v)));
+  let m = v / Math.pow(10, p);
+  if (Math.abs(Number(m.toFixed(d))) >= 10) return sci(Math.sign(v) * Math.pow(10, p + 1), d);
+  return (m < 0 ? "−" : "") + Math.abs(m).toFixed(d).replace(".", ",") + "·10" + sup(p);
+}
+const py = v => String(v); // для цих чисел запис JS збігається з print у Python
+// сума циклічним додаванням для N = 100, 200, …, 10000
+const RUNS = {};
+function run(a) {
+  if (RUNS[a]) return RUNS[a];
+  const r = []; let s = 0;
+  for (let N = 1; N <= 10000; N++) {
+    s += a;
+    if (N % 100 === 0) { const na = N * a; r.push({ N, S: s, na, E: na - s, D: Math.abs(na - s), d: (na - s) / na * 100 }); }
+  }
+  return (RUNS[a] = r);
+}
+// проміжки N, де похибка змінює знак
+function crossings(r) {
+  const z = [];
+  for (let i = 1; i < r.length; i++) if (r[i - 1].E !== 0 && r[i].E !== 0 && Math.sign(r[i - 1].E) !== Math.sign(r[i].E)) z.push([r[i - 1].N, r[i].N]);
+  return z;
+}
+
+// ---------- тема ----------
+let TH = {};
+function readTheme() {
+  const s = getComputedStyle(document.documentElement), v = n => s.getPropertyValue(n).trim();
+  TH = { L1: v("--L1"), L2: v("--L2"), L3: v("--L3"), L4: v("--L4"), grid: v("--grid"), zero: v("--zero"), frame: v("--frame"),
+    tick: v("--tick"), band: v("--band"), pt: v("--pt"), halo: v("--halo"), ink: v("--ink"), accent: v("--accent"), muted: v("--muted") };
+}
+// усередині сайту тему задає оболонка (#theme=dark), тоді своя кнопка не потрібна
 const embedded = window.parent !== window;
 let theme = "dark";
 try { theme = localStorage.getItem("chm.theme") || "dark"; } catch (e) {}
 const hashTheme = () => { const t = new URLSearchParams(location.hash.slice(1)).get("theme"); return t === "light" || t === "dark" ? t : null; };
 if (hashTheme()) theme = hashTheme();
 if (embedded) document.getElementById("theme").style.display = "none";
-function applyTheme() { if (theme === "light") document.documentElement.setAttribute("data-theme", "light"); else document.documentElement.removeAttribute("data-theme"); }
-window.addEventListener("hashchange", () => { const t = hashTheme(); if (t && t !== theme) { theme = t; applyTheme(); } });
+function applyTheme() {
+  if (theme === "light") document.documentElement.setAttribute("data-theme", "light"); else document.documentElement.removeAttribute("data-theme");
+  readTheme();
+}
+window.addEventListener("hashchange", () => { const t = hashTheme(); if (t && t !== theme) { theme = t; applyTheme(); renderAll(); } });
 document.getElementById("theme").addEventListener("click", () => {
   theme = theme === "dark" ? "light" : "dark";
   try { localStorage.setItem("chm.theme", theme); } catch (e) {}
-  applyTheme();
+  applyTheme(); renderAll();
 });
+
+// ---------- SVG-графік ----------
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const a in attrs) e.setAttribute(a, attrs[a]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(parent, x, y, s, attrs = {}) {
+  const t = el("text", Object.assign({ x, y, "font-size": 14, fill: TH.tick }, attrs), parent);
+  t.textContent = s; return t;
+}
+function label(parent, x, y, s, attrs = {}) {
+  return txt(parent, x, y, s, Object.assign({ "font-size": 15, "font-weight": 700, fill: TH.ink, stroke: TH.halo, "stroke-width": 5, "paint-order": "stroke", "stroke-linejoin": "round" }, attrs));
+}
+function niceTicks(min, max, count = 6) {
+  const span = max - min || 1;
+  let step = Math.pow(10, Math.floor(Math.log10(span / count)));
+  const err = span / count / step;
+  if (err >= 7.5) step *= 10; else if (err >= 3.5) step *= 5; else if (err >= 1.5) step *= 2;
+  const t = [];
+  for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) t.push(Number(v.toFixed(10)));
+  return t;
+}
+// o.p — порядок: значення по y підписано в одиницях 10^p
+function chart(svg, o) {
+  const W = 720, H = o.H || 340, Lm = 54, R = 12, T = 30, B = 32, k = Math.pow(10, o.p || 0);
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  const X = v => Lm + (v - o.xmin) / (o.xmax - o.xmin) * (W - Lm - R);
+  const Y = v => H - B - (v / k - o.ymin) / (o.ymax - o.ymin) * (H - T - B);
+  const id = "c" + Math.random().toString(36).slice(2);
+  el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B }, el("clipPath", { id }, el("defs", {}, svg)));
+  for (const v of niceTicks(o.ymin, o.ymax)) {
+    const zero = Math.abs(v) < 1e-12;
+    el("line", { x1: Lm, x2: W - R, y1: Y(v * k), y2: Y(v * k), stroke: zero ? TH.zero : TH.grid, "stroke-width": zero ? 2 : 1 }, svg);
+    txt(svg, Lm - 8, Y(v * k) + 5, c(v, 3), { "text-anchor": "end" });
+  }
+  for (const v of niceTicks(o.xmin, o.xmax, 10)) {
+    el("line", { x1: X(v), x2: X(v), y1: T, y2: H - B, stroke: TH.grid, "stroke-dasharray": "3 4" }, svg);
+    txt(svg, X(v), H - B + 21, String(v), { "text-anchor": "middle" });
+  }
+  el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B, fill: "none", stroke: TH.frame }, svg);
+  if (o.title) txt(svg, Lm, 20, o.title + (o.p ? ", ×10" + sup(o.p) : ""), { fill: TH.muted, "font-size": 14 });
+  txt(svg, W - R, 20, "N", { fill: TH.muted, "font-size": 14, "text-anchor": "end" });
+  const g = el("g", { "clip-path": `url(#${id})` }, svg);
+  return { X, Y, g, svg, W, H, T, B };
+}
+function line(ch, pts, attrs) {
+  const d = pts.map(([x, y], i) => (i ? "L" : "M") + ch.X(x).toFixed(1) + " " + ch.Y(y).toFixed(1)).join("");
+  return el("path", Object.assign({ d, fill: "none", "stroke-width": 3, "stroke-linejoin": "round" }, attrs), ch.g);
+}
+function pts(ch, P, color, r = 4) { P.forEach(([x, y]) => el("circle", { cx: ch.X(x), cy: ch.Y(y), r, fill: color }, ch.g)); }
+// масштаб: порядок p і межі для максимуму |y|
+function scale(maxAbs, signed) {
+  if (!maxAbs) maxAbs = 1e-10;
+  const p = Math.floor(Math.log10(maxAbs)), m = maxAbs / Math.pow(10, p) * 1.12;
+  return { p, ymin: signed ? -m : 0, ymax: m };
+}
+function seg(boxId, items, cur, onPick) {
+  const box = document.getElementById(boxId);
+  box.innerHTML = items.map(([v, t]) => `<button data-v="${v}" class="${String(v) === String(cur) ? "on" : ""}">${t}</button>`).join("");
+  box.querySelectorAll("button").forEach(b => b.addEventListener("click", () => onPick(b.dataset.v)));
+}
+const A_ITEMS = [[0.189, "0,189 (зразок)"], [0.25, "0,25"], [0.3, "0,3"], [0.375, "0,375"], [0.7, "0,7"]];
+
+// ---------- 1. таблиця зразка ----------
+function render1() {
+  const r = run(SAMPLE);
+  const rows = [100, 1000, 5000, 10000].map(N => r[N / 100 - 1]);
+  document.getElementById("t1").innerHTML = "<tr><th>N</th><th>S (консоль)</th><th>N·a</th><th>Δ</th><th>δ, %</th></tr>" +
+    rows.map(o => `<tr><td class="num">${o.N}</td><td class="num">${py(o.S)}</td><td class="num">${py(o.na)}</td><td class="num">${sci(o.D)}</td><td class="num">${sci(o.d)}</td></tr>`).join("");
+}
+
+// ---------- 2. двійковий запис ----------
+let a2 = SAMPLE;
+// двійкові цифри десяткового дробу (точно, через цілі числа); n — скільки цифр після коми
+function binDigits(a, n) {
+  const str = String(a), k = (str.split(".")[1] || "").length;
+  let p = BigInt(str.replace(".", "")), q = 10n ** BigInt(k), out = "";
+  for (let i = 0; i < n && p !== 0n; i++) { p *= 2n; if (p >= q) { out += "1"; p -= q; } else out += "0"; }
+  return { digits: out, finite: p === 0n };
+}
+// точне десяткове значення числа float
+function exactDec(x) {
+  const b = new Float64Array([x]), u = new BigUint64Array(b.buffer)[0];
+  const e = Number((u >> 52n) & 2047n), m = (u & ((1n << 52n) - 1n)) | (1n << 52n), k = 1075 - e;
+  if (k <= 0) return String(x);
+  const s = (m * 5n ** BigInt(k)).toString().padStart(k + 1, "0");
+  return (s.slice(0, s.length - k) + "," + s.slice(s.length - k)).replace(/0+$/, "").replace(/,$/, "");
+}
+function render2() {
+  seg("aSeg2", A_ITEMS, a2, v => { a2 = Number(v); render2(); });
+  const { digits, finite } = binDigits(a2, 72);
+  const first = digits.indexOf("1"), keep = first + 53; // 53 значущі цифри від першої одиниці
+  document.getElementById("bin2").innerHTML = finite
+    ? `0,${digits}<sub>2</sub>`
+    : `0,${digits.slice(0, keep)}<span style="color:var(--muted);text-decoration:line-through">${digits.slice(keep)}</span>…<sub>2</sub>`;
+  const ex = exactDec(a2), dec = c(a2, 6);
+  let i = 0; while (i < ex.length && ex[i] === dec[i]) i++;
+  document.getElementById("dec2").innerHTML = ex === dec ? ex : `${ex.slice(0, i)}<span style="color:var(--accent);font-weight:700">${ex.slice(i)}</span>`;
+  document.getElementById("verdict2").innerHTML = finite
+    ? `<b class="z-in">Записується точно:</b> двійковий дріб скінченний (${digits.length} цифр після коми).`
+    : `<b class="z-ex">Записується наближено:</b> двійковий дріб нескінченний; після 53 значущих цифр (перекреслене) його округлено. Різниця зі значенням ${c(a2, 6)} — ${sci(exactErr(a2))}.`;
+}
+// різниця «збережене − задане», порахована точно через цілі числа
+function exactErr(a) {
+  const ex = exactDec(a).replace(",", "."), [ip, fp] = ex.split("."), k = fp.length;
+  const stored = BigInt(ip + fp), str = String(a), ka = (str.split(".")[1] || "").length;
+  const given = BigInt(str.replace(".", "")) * 10n ** BigInt(k - ka), diff = stored - given;
+  const ds = (diff < 0n ? -diff : diff).toString(), lead = ds.length;
+  return (diff < 0n ? -1 : 1) * Number(ds.slice(0, 3) + "e" + (lead - 3 - k));
+}
+
+// ---------- 3. перші додавання ----------
+function render3() {
+  const n = Number(document.getElementById("n3").value);
+  document.getElementById("n3v").textContent = n;
+  let s = 0, rows = "", firstDiff = 0;
+  for (let N = 1; N <= n; N++) {
+    s += SAMPLE; const na = N * SAMPLE, e = na - s;
+    if (e !== 0 && !firstDiff) firstDiff = N;
+    rows += `<tr${e !== 0 ? ' style="color:var(--accent)"' : ""}><td class="num">${N}</td><td class="num">${py(s)}</td><td class="num">${py(na)}</td><td class="num">${sci(e, 1)}</td></tr>`;
+  }
+  document.getElementById("t3").innerHTML = "<tr><th>N</th><th>S = S + a (консоль)</th><th>N·a</th><th>N·a − S</th></tr>" + rows;
+}
+
+// ---------- 4. Δ від N ----------
+let a4 = SAMPLE;
+function render4() {
+  seg("aSeg4", A_ITEMS, a4, v => { a4 = Number(v); render4(); });
+  const r = run(a4), sc = scale(Math.max(...r.map(o => o.D)));
+  const ch = chart(document.getElementById("ch4"), Object.assign({ xmin: 0, xmax: 10100, title: "Δ = |N·a − S|" }, sc));
+  if (document.getElementById("pw4").checked) {
+    for (let p = 1; p <= 8192; p *= 2) {
+      const N = p / a4; if (N < 100 || N > 10000) continue;
+      el("line", { x1: ch.X(N), x2: ch.X(N), y1: ch.T, y2: ch.H - ch.B, stroke: TH.L3, "stroke-width": 2, "stroke-dasharray": "6 5" }, ch.g);
+      label(ch.svg, ch.X(N) + 5, ch.T + 18, "S=" + p, { "font-size": 13, fill: TH.L3 });
+    }
+  }
+  const P = r.map(o => [o.N, o.D]);
+  line(ch, P, { stroke: TH.L1 });
+  pts(ch, P, TH.L1, 3.5);
+  const z = crossings(r);
+  z.forEach(([n1, n2]) => {
+    const o = r[n1 / 100 - 1].D < r[n2 / 100 - 1].D ? r[n1 / 100 - 1] : r[n2 / 100 - 1];
+    el("circle", { cx: ch.X(o.N), cy: ch.Y(o.D), r: 9, fill: TH.pt, stroke: TH.halo, "stroke-width": 3 }, ch.g);
+    label(ch.svg, ch.X(o.N), ch.Y(o.D) - 14, "N=" + o.N, { "text-anchor": "middle", "font-size": 14 });
+  });
+  const allZero = r.every(o => o.D === 0);
+  document.getElementById("z4").innerHTML = allZero
+    ? "Для цього a похибка дорівнює <b>нулю</b> при всіх N."
+    : `Найбільша Δ = <b class="mono">${sci(Math.max(...r.map(o => o.D)))}</b>. Похибка змінює знак (перетинає нуль) на проміжках N: ${z.map(([x, y]) => `<b class="mono">(${x}; ${y})</b>`).join(", ")}.`;
+}
+
+// ---------- 5. абсолютна і відносна ----------
+const A5 = [[0.189, "L1"], [0.7, "L2"]];
+const on5 = { 0.189: true, 0.7: true };
+function render5() {
+  const box = document.getElementById("chips5");
+  box.innerHTML = A5.map(([a, col]) => `<label><input type="checkbox" data-a="${a}" ${on5[a] ? "checked" : ""}><span class="tag" style="background:${TH[col]}"></span>a = ${c(a)}</label>`).join("");
+  box.querySelectorAll("input").forEach(cb => cb.addEventListener("change", () => { on5[cb.dataset.a] = cb.checked; render5(); }));
+  // масштаб — спільний для обох a, не змінюється при вимиканні
+  const all = A5.flatMap(([a]) => run(a));
+  const scA = scale(Math.max(...all.map(o => o.D))), scR = scale(Math.max(...all.map(o => Math.abs(o.d))), true);
+  const chA = chart(document.getElementById("ch5a"), Object.assign({ xmin: 0, xmax: 10100, H: 280, title: "Δ" }, scA));
+  const chR = chart(document.getElementById("ch5r"), Object.assign({ xmin: 0, xmax: 10100, H: 280, title: "δ, %" }, scR));
+  for (const [a, col] of A5) {
+    if (!on5[a]) continue;
+    const r = run(a);
+    line(chA, r.map(o => [o.N, o.D]), { stroke: TH[col] });
+    line(chR, r.map(o => [o.N, o.d]), { stroke: TH[col] });
+  }
+  const rows = [1000, 5000, 10000];
+  document.getElementById("t5").innerHTML = "<tr><th>N</th>" + A5.map(([a]) => `<th>Δ, a = ${c(a)}</th>`).join("") + A5.map(([a]) => `<th>δ, %, a = ${c(a)}</th>`).join("") + "</tr>" +
+    rows.map(N => "<tr><td class=\"num\">" + N + "</td>" + A5.map(([a]) => `<td class="num">${sci(run(a)[N / 100 - 1].D)}</td>`).join("") + A5.map(([a]) => `<td class="num">${sci(run(a)[N / 100 - 1].d)}</td>`).join("") + "</tr>").join("") +
+    "<tr><td>найбільша</td>" + A5.map(([a]) => `<td class="num"><b>${sci(Math.max(...run(a).map(o => o.D)))}</b></td>`).join("") + A5.map(([a]) => `<td class="num"><b>${sci(Math.max(...run(a).map(o => Math.abs(o.d))))}</b></td>`).join("") + "</tr>";
+}
+
+function renderAll() { render1(); render2(); render3(); render4(); render5(); }
+document.getElementById("n3").addEventListener("input", render3);
+document.getElementById("pw4").addEventListener("change", render4);
+
 // лічильник відвідувань (GoatCounter): сторінка рахується сама, вкладка «Питання» — окремою подією
 function countTab(t) {
   if (t !== "q") return;
@@ -131,7 +453,7 @@ function countTab(t) {
   if (window.goatcounter && window.goatcounter.count) go(); else window.addEventListener("load", () => setTimeout(go, 500));
 }
 // ---------- вкладки: матеріал / питання (#tab=q) ----------
-const DEFAULT_TAB = "q";
+const DEFAULT_TAB = "m";
 const tabParam = () => { const t = new URLSearchParams(location.hash.slice(1)).get("tab"); return t === "q" || t === "m" ? t : DEFAULT_TAB; };
 function showTab(t) {
   document.getElementById("tabMat").hidden = t === "q";
@@ -149,7 +471,7 @@ window.addEventListener("hashchange", () => showTab(tabParam()));
 showTab(tabParam());
 countTab(tabParam());
 
-applyTheme();
+applyTheme(); renderAll();
 </script>
 </body>
 </html>
