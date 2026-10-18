@@ -141,9 +141,17 @@
   <!-- 5 -->
   <section class="card">
     <h2>5. Похибка похідної залежно від кроку h: оптимальний крок</h2>
-    <p>Програма обчислює обидві формули для h = 1; 0,1; …; 10<sup>−16</sup>. Графік відносної похибки від h має форму <b>«ями»</b>: спершу похибка падає, потім знову зростає.</p>
+    <p>Програма обчислює обидві формули для h = 1; 0,1; …; 10<sup>−16</sup>. Графік відносної похибки від h має форму <b>«ями»</b>: спершу похибка падає, потім знову зростає. Ліворуч (затінено) додано кроки <b>h = 10 і 100</b>, яких у звіті немає, — щоб показати, як зростає похибка формули при великому кроці.</p>
     <svg id="ch5e"></svg>
     <div class="chips"><label><span class="tag" style="background:var(--L1)"></span>df/dx1 (центральна)</label><label><span class="tag" style="background:var(--L3)"></span>df/dx2 (4 значення f)</label></div>
+    <div class="tbl"><table>
+      <tr><th>h</th><th>df/dx1</th><th>похибка</th><th>df/dx2</th><th>похибка</th></tr>
+      <tr><td class="num">100</td><td class="num">−807 487</td><td class="num">4,3·10⁸ %</td><td class="num">+2,2·10¹³</td><td class="num">1,2·10¹⁶ %</td></tr>
+      <tr><td class="num">10</td><td class="num">−0,323</td><td class="num">71 %</td><td class="num">−0,066</td><td class="num">65 %</td></tr>
+      <tr><td class="num">1</td><td class="num">−0,1901</td><td class="num">0,6 %</td><td class="num">−0,18899</td><td class="num">0,004 %</td></tr>
+      <tr><td class="num">0,1</td><td class="num">−0,189011</td><td class="num">0,006 %</td><td class="num">−0,1889999992</td><td class="num">4·10⁻⁷ %</td></tr>
+    </table></div>
+    <p>Точна похідна — −0,189. При h = 100 формула бере f(±100) і f(±200), а e<sup>−0,189x</sup> між x = −100 і x = 100 змінюється в ≈ 10<sup>16</sup> разів: хорда вже не має нічого спільного з дотичною, df/dx2 дає навіть <b>неправильний знак</b>. Зменшення h у 10 разів (з 1 до 0,1) зменшує похибку df/dx1 у ≈ 100 разів, а df/dx2 — у ≈ 10 000 разів.</p>
     <h3>Два джерела похибки</h3>
     <ol>
       <li><b>Похибка формули</b> (великий h): хорда не збігається з дотичною. Зменшення h її зменшує.</li>
@@ -523,17 +531,20 @@ document.getElementById("h4d").addEventListener("input", render4d);
 // ---------- 5. «яма» похибки ----------
 function render5e() {
   const rows = [];
-  for (let p = 0; p <= 16; p++) {
-    const h = p === 0 ? 1 : Number("1e-" + p);
+  // p = −2, −1 — кроки 100 і 10: у звіті їх немає, додано, щоб показати ріст похибки формули
+  for (let p = -2; p <= 16; p++) {
+    const h = p < 0 ? 10 ** -p : p === 0 ? 1 : Number("1e-" + p);
     const d1 = (f(h) - f(-h)) / (2 * h), d2 = (-f(2 * h) + 8 * f(h) - 8 * f(-h) + f(-2 * h)) / (12 * h);
     rows.push({ p, e1: Math.abs((d1 - D0) / D0) * 100, e2: Math.abs((d2 - D0) / D0) * 100 });
   }
-  const svg = document.getElementById("ch5e"), W = 720, H = 360, Lm = 64, R = 14, T = 12, B = 40, lo = -13, hi = 3;
+  const svg = document.getElementById("ch5e"), W = 720, H = 420, Lm = 64, R = 14, T = 12, B = 40, lo = -13, hi = 17;
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
-  const X = p => Lm + p / 16 * (W - Lm - R), Y = v => H - B - (Math.log10(Math.max(v, 1e-13)) - lo) / (hi - lo) * (H - T - B);
+  const X = p => Lm + (p + 2) / 18 * (W - Lm - R), Y = v => H - B - (Math.log10(Math.max(v, 1e-13)) - lo) / (hi - lo) * (H - T - B);
   const sup = n => String(n).replace("-", "⁻").replace(/\d/g, d => "⁰¹²³⁴⁵⁶⁷⁸⁹"[d]);
-  for (let e = lo; e <= hi; e += 2) { el("line", { x1: Lm, x2: W - R, y1: Y(10 ** e), y2: Y(10 ** e), stroke: TH.grid }, svg); txt(svg, Lm - 8, Y(10 ** e) + 5, "10" + sup(e) + " %", { "text-anchor": "end", "font-size": 13 }); }
-  for (let p = 0; p <= 16; p += 2) { el("line", { x1: X(p), x2: X(p), y1: T, y2: H - B, stroke: TH.grid, "stroke-dasharray": "3 4" }, svg); txt(svg, X(p), H - B + 22, p === 0 ? "1" : "10" + sup(-p), { "text-anchor": "middle", "font-size": 13 }); }
+  el("rect", { x: X(-2), y: T, width: X(0) - X(-2), height: H - T - B, fill: TH.band }, svg);
+  label(svg, X(-1), T + 20, "h > 1", { "text-anchor": "middle", "font-size": 13, fill: TH.muted });
+  for (let e = lo + 1; e <= hi; e += 3) { el("line", { x1: Lm, x2: W - R, y1: Y(10 ** e), y2: Y(10 ** e), stroke: TH.grid }, svg); txt(svg, Lm - 8, Y(10 ** e) + 5, "10" + sup(e) + " %", { "text-anchor": "end", "font-size": 13 }); }
+  for (const p of [-2, -1, 0, 2, 4, 6, 8, 10, 12, 14, 16]) { el("line", { x1: X(p), x2: X(p), y1: T, y2: H - B, stroke: TH.grid, "stroke-dasharray": "3 4" }, svg); txt(svg, X(p), H - B + 22, p < 0 ? String(10 ** -p) : p === 0 ? "1" : "10" + sup(-p), { "text-anchor": "middle", "font-size": 13 }); }
   txt(svg, W - R, H - 4, "h", { "text-anchor": "end", "font-size": 13 });
   el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B, fill: "none", stroke: TH.frame }, svg);
   for (const [key, col] of [["e1", TH.L1], ["e2", TH.L3]]) {

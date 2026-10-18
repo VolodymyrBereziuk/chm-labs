@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ЛР5 · Нелінійне рівняння</title>
+<style>
+  :root {
+    --bg: #11151c; --card: #1a2029; --ink: #e9edf3; --muted: #9aa5b4; --line: #2b3442; --chip: #232c38; --accent: #ffb26b;
+    --L1: #5aa7ff; --L2: #ffab4a; --L3: #d08cff; --L4: #4fd690;
+    --grid: #262f3c; --zero: #56627a; --frame: #3a4556; --tick: #a3adbb; --band: #2b2a1f;
+    --pt: #f4f1e8; --halo: #11151c; --ctrl: #232c38; --ctrl-line: #3a4556; --on: #2f3b4d;
+  }
+  :root[data-theme="light"] {
+    --bg: #f7f5ef; --card: #fffdf8; --ink: #1b2330; --muted: #5a6272; --line: #e2ddd0; --chip: #f0ece2; --accent: #b4501f;
+    --L1: #1f5fa8; --L2: #c9731a; --L3: #7a3e9d; --L4: #2e8a62;
+    --grid: #e7e2d6; --zero: #9a9384; --frame: #cfc9ba; --tick: #5a6272; --band: #efe8d6;
+    --pt: #1b2330; --halo: #fffdf8; --ctrl: #ffffff; --ctrl-line: #cfc9ba; --on: #f0ece2;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 "Segoe UI", system-ui, Arial, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 18px 16px 70px; }
+  .top { display: flex; align-items: center; gap: 12px; }
+  .top button { margin-left: auto; }
+  h1 { font-size: 26px; line-height: 1.25; margin: 6px 0 4px; }
+  h2 { font-size: 20px; margin: 0 0 6px; }
+  p { margin: 6px 0 10px; }
+  .muted { color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin: 18px 0; }
+  .try { background: var(--chip); border-radius: 10px; padding: 8px 12px; margin: 10px 0 0; font-size: 16px; }
+  .try b { color: var(--accent); }
+  .note { border-left: 3px solid var(--accent); padding: 2px 0 2px 12px; margin: 10px 0 0; font-size: 16px; }
+  button, select { font: inherit; font-size: 15px; padding: 6px 12px; border-radius: 9px; border: 1px solid var(--ctrl-line); background: var(--ctrl); color: var(--ink); cursor: pointer; }
+  button.on { background: var(--on); border-color: var(--accent); font-weight: 600; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .chips label { display: inline-flex; align-items: center; gap: 6px; margin: 0 14px 4px 0; cursor: pointer; white-space: nowrap; font-size: 16px; }
+  .tag { display: inline-block; width: 24px; height: 5px; border-radius: 3px; }
+  input[type=range] { width: 100%; margin: 8px 0 2px; accent-color: var(--accent); }
+  .rlabel { display: flex; justify-content: space-between; font-size: 15px; color: var(--muted); }
+  .rlabel b { color: var(--ink); font-family: Consolas, "Courier New", monospace; }
+  svg { width: 100%; height: auto; display: block; touch-action: pan-y; }
+  .drag { cursor: grab; touch-action: none; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; margin-top: 8px; }
+  th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; }
+  td.num { font-family: Consolas, "Courier New", monospace; text-align: right; white-space: nowrap; }
+  .tbl { overflow-x: auto; }
+  .mono { font-family: Consolas, "Courier New", monospace; }
+  .formula { font-family: Consolas, "Courier New", monospace; font-size: 15px; background: var(--chip); border-radius: 10px; padding: 8px 12px; overflow-x: auto; white-space: nowrap; margin-top: 8px; }
+  .big { font-size: 22px; font-weight: 700; font-family: Consolas, "Courier New", monospace; }
+  ul.sum li { margin-bottom: 6px; }
+  .z-in { color: var(--L4); } .z-ex { color: var(--accent); }
+  h3 { font-size: 17px; margin: 14px 0 4px; }
+  ol { margin: 6px 0 10px; padding-left: 22px; }
+  .tbl th { text-align: left; }
+  .tabs { display: flex; gap: 4px; margin: 12px 0 0; border-bottom: 1px solid var(--line); }
+  .tabs button { border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; padding: 8px 14px; font-size: 16px; font-weight: 600; color: var(--muted); }
+  .tabs button.on { color: var(--ink); border-bottom-color: var(--accent); }
+  h2.qtitle { font-size: 22px; margin: 18px 0 4px; }
+  a.pdf { display: inline-block; padding: 6px 14px; border-radius: 9px; border: 1px solid var(--ctrl-line); background: var(--ctrl); color: var(--ink); text-decoration: none; font-weight: 600; }
+  .formula sub { font-size: 12px; }
+  .formula { white-space: normal; word-break: break-all; }
+  button:disabled { opacity: 0.45; cursor: default; }
+  #tB th, #tN th { text-align: right; }
+  #tabQ ol { padding-left: 26px; } #tabQ li { margin-bottom: 8px; }
+</style>
+<script data-goatcounter="https://volodymyrbereziuk.goatcounter.com/count" data-goatcounter-settings='{"allow_frame": true}' async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<main>
+  <div class="top"><span class="muted">Лабораторна робота № 5 · Чисельні методи</span><button id="theme" title="Світла / темна тема">☀ / ☾</button></div>
+  <h1>Розв'язування нелінійного рівняння: метод половинного ділення і метод Ньютона</h1>
+  <p class="muted">Усі приклади побудовано на рівнянні зі зразка звіту. Результати свого варіанта отримайте власною програмою та порівняйте, чи спостерігаються ті самі ефекти.</p>
+  <div class="tabs" id="tabs"><button data-tab="m">Матеріал</button><button data-tab="q">Питання для підготовки</button></div>
+  <div id="tabMat">
+
+  <!-- 1 -->
+  <section class="card">
+    <h2>1. Нелінійне рівняння</h2>
+    <div class="tbl"><table>
+      <tr><th>Рівняння</th><th>Вигляд</th><th>Графік</th><th>Як розв'язати</th></tr>
+      <tr><td><b>Лінійне</b></td><td>a·x + b = 0 — x лише в першому степені</td><td>пряма</td><td>одразу: x = −b/a</td></tr>
+      <tr><td><b>Квадратне</b></td><td>a·x² + b·x + c = 0</td><td>парабола</td><td>формула через дискримінант</td></tr>
+      <tr><td><b>Нелінійне</b></td><td>усе, що не лінійне: x³ − 2 = 0, cos x = x, e<sup>−x</sup> = 0,5</td><td>крива</td><td>загальної формули немає → чисельні методи</td></tr>
+    </table></div>
+    <p>Квадратне рівняння — окремий випадок нелінійного. У зразку</p>
+    <div class="formula big">f(x) = x² + 0,3x − 0,18 = 0</div>
+    <p>Точні корені (через дискримінант D = 0,81): x₁ = −0,6, x₂ = <b>0,3</b>. Програма шукає <b>додатний</b> корінь двома чисельними методами; точна відповідь потрібна, щоб перевірити, наскільки вони до неї наближаються.</p>
+    <svg id="ch1"></svg>
+    <p class="note">Корінь рівняння — точка, де графік f(x) перетинає вісь x. Обидва методи шукають цю точку кроками, використовуючи лише значення f (і для Ньютона — похідну f′(x) = 2x + 0,3).</p>
+  </section>
+
+  <!-- 2 -->
+  <section class="card">
+    <h2>2. Метод половинного ділення (бісекція)</h2>
+    <p>Якщо на кінцях відрізка [a; b] функція має <b>різні знаки</b>, графік мусить перетнути нуль між ними. Беремо середину c = (a + b)/2 і лишаємо ту половину, де знаки на кінцях досі різні. Так само грають у «вгадай число»: кожна відповідь «більше / менше» відкидає половину варіантів.</p>
+    <div class="seg" id="segB"></div>
+    <svg id="ch2"></svg>
+    <div class="seg"><button id="stepB">Наступний крок</button><button id="resetB">Спочатку</button></div>
+    <p id="infoB"></p>
+    <div class="tbl"><table id="tB"></table></div>
+    <p class="try"><b>Завдання:</b> виконайте кілька кроків на відрізку зразка. У скільки разів зменшується відрізок за крок? Оберіть [−1; 1] — чому метод не може почати, хоча коренів на відрізку два?</p>
+    <p class="note">Графік щоразу наближується до поточного відрізка. Відрізок довжиною 0,35 після 32 поділів стає коротшим за 10⁻¹⁰ — тому в консолі зразка рядки 0…32. Кількість кроків відома наперед і майже не залежить від ширини відрізка: [0; 1] — 34 кроки.</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="card">
+    <h2>3. Метод Ньютона</h2>
+    <p>У поточній точці x проводимо <b>дотичну</b> до графіка — пряму з нахилом f′(x). Наступне наближення — точка, де дотична перетинає вісь x:</p>
+    <div class="formula">xₙ₊₁ = xₙ − f(xₙ) / f′(xₙ)</div>
+    <p>Звідки формула: дотична y = f(xₙ) + f′(xₙ)·(x − xₙ); прирівнюємо y = 0 і виражаємо x. Біля точки дотику дотична майже збігається з кривою, тому її нуль близький до кореня.</p>
+    <div class="seg" id="segN"></div>
+    <svg id="ch3"></svg>
+    <div class="chips"><label><span class="tag" style="background:var(--L1)"></span>f(x)</label><label><span class="tag" style="background:var(--L2)"></span>дотична в точці xₙ</label><label><span class="tag" style="background:var(--L4)"></span>наступне наближення</label></div>
+    <div class="seg"><button id="stepN">Наступний крок</button><button id="resetN">Спочатку</button></div>
+    <div class="tbl"><table id="tN"></table></div>
+    <p class="try"><b>Завдання:</b> зі старту зразка x₀ = 0 перший крок «перестрибує» корінь. Чому? Порівняйте старти −0,15, −0,14 і −1: що відбувається і чому?</p>
+    <p class="note">Ньютон потребує похідної та стартової точки поблизу кореня. Якщо дотична майже горизонтальна (біля вершини параболи), наступна точка відлітає далеко; якщо f′ = 0 — ділення на нуль. Зі старту лівіше вершини метод знаходить інший корінь, −0,6.</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="card">
+    <h2>4. Порівняння швидкості</h2>
+    <p>Відстань поточного наближення до кореня 0,3 після кожного кроку (шкала логарифмічна: кожна поділка — у 100 разів менше).</p>
+    <svg id="ch4"></svg>
+    <div class="chips"><label><span class="tag" style="background:var(--L1)"></span>бісекція (середина c)</label><label><span class="tag" style="background:var(--L3)"></span>Ньютон</label></div>
+    <div class="tbl"><table>
+      <tr><th></th><th>Метод половинного ділення</th><th>Метод Ньютона</th></tr>
+      <tr><td>Що потрібно</td><td>відрізок, на кінцях якого знаки f різні</td><td>похідна f′(x) і стартова точка</td></tr>
+      <tr><td>Швидкість</td><td>похибка зменшується вдвічі за крок; у зразку 32 кроки</td><td>кількість правильних цифр приблизно подвоюється; у зразку 6 кроків</td></tr>
+      <tr><td>Надійність</td><td>завжди знаходить корінь, якщо знаки різні</td><td>може відлетіти, зламатися (f′ = 0) або знайти інший корінь</td></tr>
+      <tr><td>Умова зупинки в коді</td><td>довжина відрізка |a − b| &lt; 10⁻¹⁰</td><td>зміна |xₙ₊₁ − xₙ| &lt; 10⁻¹⁰ (або відносна)</td></tr>
+    </table></div>
+    <p class="note">На практиці методи поєднують: спершу грубо визначають проміжок, де корінь (графік, таблиця значень, бісекція), потім швидко уточнюють Ньютоном.</p>
+  </section>
+
+  <!-- 5 -->
+  <section class="card">
+    <h2>5. Де застосовують нелінійні рівняння</h2>
+    <div class="tbl"><table>
+      <tr><th>Галузь</th><th>Рівняння</th><th>Що невідоме</th><th>Метод</th></tr>
+      <tr><td>Вимірювання температури</td><td>опір давача PT100: R(T) = R₀(1 + A·T + B·T²)</td><td>температура T за виміряним опором</td><td>квадратне рівняння; нижче 0 °C — 4-го степеня, чисельно</td></tr>
+      <tr><td>Калькулятори, процесори</td><td>x² − a = 0</td><td>√a</td><td>метод Ньютона (метод Герона)</td></tr>
+      <tr><td>Фінанси</td><td>сума дисконтованих платежів = 0</td><td>ставка кредиту, дохідність вкладення</td><td>ітераційно (функції RATE, IRR в Excel)</td></tr>
+      <tr><td>Гідравліка, вентиляція</td><td>рівняння Колбрука для тертя в трубі</td><td>коефіцієнт тертя (невідоме і зліва, і справа)</td><td>ітераційно, Ньютон</td></tr>
+      <tr><td>Навігація (GPS)</td><td>відстані до супутників</td><td>координати приймача</td><td>система нелінійних рівнянь, ітераційно</td></tr>
+    </table></div>
+    <h3>Давач температури PT100</h3>
+    <p>Опір платинового давача зростає з температурою: R(T) = 100·(1 + 3,9083·10⁻³·T − 5,775·10⁻⁷·T²) Ом (стандарт IEC 60751, для T ≥ 0 °C). Прилад вимірює опір, а показати треба температуру — тобто розв'язати квадратне рівняння відносно T. Для R = 138,51 Ом: T ≈ 100,0 °C; другий корінь ≈ 6668 °C фізичного змісту не має — так само, як у роботі обирають лише додатний корінь.</p>
+    <h3>Квадратний корінь методом Ньютона</h3>
+    <p>Для рівняння x² − 2 = 0 формула Ньютона спрощується до xₙ₊₁ = (xₙ + 2/xₙ)/2 (метод Герона, відомий з античності). Від x₀ = 1: 1,5 → 1,41667 → 1,414216 → 1,4142135624 = √2. Чотири кроки — і всі цифри правильні.</p>
+  </section>
+
+  <section class="card">
+    <h2>Висновки</h2>
+    <ul class="sum">
+      <li>Нелінійні рівняння в загальному випадку не мають формули розв'язку; корінь знаходять <b>ітераційно</b> — кроками, поки зміна не стане меншою за задану точність.</li>
+      <li><b>Половинне ділення</b> надійне, але повільне: відрізок зменшується вдвічі за крок.</li>
+      <li><b>Метод Ньютона</b> швидкий (цифри подвоюються), але потребує похідної і доброго старту.</li>
+      <li>Обидва методи спершу потребують грубої оцінки, де корінь: відрізка з різними знаками або стартової точки поблизу.</li>
+    </ul>
+    <p class="muted">Перевірте на своєму варіанті: скільки рядків бісекції у вас вийшло і чому саме стільки? За скільки ітерацій зійшовся Ньютон? Чи збігається знайдений корінь з обчисленим через дискримінант?</p>
+  </section>
+  </div>
+  <div id="tabQ" hidden><!-- QUESTIONS:START -->
+  <h2 class="qtitle">Питання для підготовки до захисту</h2>
+  <p>Готуйтеся пояснювати <b>своїми словами</b> і <b>на своїх даних</b>: що вийшло у вашій роботі і чому. На захисті будуть і інші питання на розуміння.</p>
+  <p><a class="pdf" href="lab5_questions.pdf" download>Завантажити PDF</a></p>
+  <section class="card">
+    <h2>Рівень 1</h2>
+    <ol start="1">
+      <li>Ваше рівняння лінійне чи нелінійне? Чим лінійне рівняння відрізняється від нелінійного, а квадратне — від них обох?</li>
+      <li>Покажіть корені свого рівняння на графіку f(x). Скільки їх і який шукає програма?</li>
+      <li>Чому метод половинного ділення гарантовано знаходить корінь? На чому він тримається?</li>
+      <li>Звідки береться формула методу Ньютона? Що означає f′(xₙ) на графіку?</li>
+      <li>Скільки кроків зробила ваша бісекція і скільки ітерацій — метод Ньютона? Чому така різниця? Покажіть це у своїх таблицях.</li>
+    </ol>
+    <h3>По коду</h3>
+    <ol start="6">
+      <li>Яку умову зупинки перевіряє ваша бісекція? Чи це похибка знайденого кореня?</li>
+      <li>Що перевіряє умова зупинки методу Ньютона у вашому коді? Навіщо в знаменнику відносної зміни додано δ?</li>
+      <li>Як програма вирішує, яку половину відрізка залишити? Чому для цього досить знаків f(b) і f(c)?</li>
+    </ol>
+  </section>
+  <section class="card">
+    <h2>Рівень 2</h2>
+    <ol start="1">
+      <li>Що надрукує ваша програма, якщо межі бісекції взяти так, що знаки f на кінцях однакові? Спершу передбачте, потім перевірте. Як переконатися, що надрукований результат справді корінь?</li>
+      <li>Як ви вибрали межі відрізка для бісекції? Чи підійде відрізок, що містить обидва корені?</li>
+      <li>Скільки кроків зробить бісекція, якщо праву межу взяти 10? Передбачте, не запускаючи програму, потім перевірте.</li>
+      <li>Чому перший крок методу Ньютона з вашої стартової точки опиняється саме там? Покажіть на графіку з дотичною.</li>
+      <li>Що станеться з методом Ньютона, якщо стартувати з вершини параболи? А трохи поруч із нею? А лівіше від'ємного кореня? Спершу передбачте.</li>
+      <li>Який метод ви б обрали, якщо похідну обчислити важко? А якщо корінь потрібен дуже швидко?</li>
+      <li>Що спільного між методами цієї роботи і методом Гауса — Зейделя з ЛР4? Чому кількість кроків бісекції можна передбачити заздалегідь, а Ньютона — ні?</li>
+    </ol>
+  </section>
+  <!-- QUESTIONS:END --></div>
+</main>
+<script>
+// ---------- рівняння зразка ----------
+const f = x => x ** 2 + 0.3 * x - 0.18, df = x => 2 * x + 0.3, ROOT = 0.3, ROOT1 = -0.6;
+// число з комою; d — знаків після коми (зайві нулі відкидаються)
+const c = (v, d = 3) => { const r = Number(v.toFixed(d)); return (r < 0 ? "−" : "") + String(Math.abs(r)).replace(".", ","); };
+const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+const sup = n => (n < 0 ? "⁻" : "") + String(Math.abs(n)).replace(/\d/g, d => SUP[d]);
+function sci(v) {
+  if (v === 0) return "0";
+  const p = Math.floor(Math.log10(Math.abs(v))), m = v / 10 ** p;
+  return (m < 0 ? "−" : "") + Math.abs(m).toFixed(1).replace(".", ",") + "·10" + sup(p);
+}
+// для відстаней до кореня: звичайний запис, якщо не надто мале
+const val = v => (Math.abs(v) >= 1e-4 || v === 0 ? c(v, 6) : sci(v));
+// межа відрізка — стільки знаків, щоб a і b відрізнялися при довжині L
+const valL = (v, L) => c(v, Math.min(15, Math.max(6, Math.ceil(-Math.log10(L)) + 2)));
+
+// ---------- тема ----------
+let TH = {};
+function readTheme() {
+  const s = getComputedStyle(document.documentElement), v = n => s.getPropertyValue(n).trim();
+  TH = { L1: v("--L1"), L2: v("--L2"), L3: v("--L3"), L4: v("--L4"), grid: v("--grid"), zero: v("--zero"), frame: v("--frame"),
+    tick: v("--tick"), band: v("--band"), pt: v("--pt"), halo: v("--halo"), ink: v("--ink"), accent: v("--accent"), muted: v("--muted") };
+}
+// усередині сайту тему задає оболонка (#theme=dark), тоді своя кнопка не потрібна
+const embedded = window.parent !== window;
+let theme = "dark";
+try { theme = localStorage.getItem("chm.theme") || "dark"; } catch (e) {}
+const hashTheme = () => { const t = new URLSearchParams(location.hash.slice(1)).get("theme"); return t === "light" || t === "dark" ? t : null; };
+if (hashTheme()) theme = hashTheme();
+if (embedded) document.getElementById("theme").style.display = "none";
+function applyTheme() {
+  if (theme === "light") document.documentElement.setAttribute("data-theme", "light"); else document.documentElement.removeAttribute("data-theme");
+  readTheme();
+}
+window.addEventListener("hashchange", () => { const t = hashTheme(); if (t && t !== theme) { theme = t; applyTheme(); renderAll(); } });
+document.getElementById("theme").addEventListener("click", () => {
+  theme = theme === "dark" ? "light" : "dark";
+  try { localStorage.setItem("chm.theme", theme); } catch (e) {}
+  applyTheme(); renderAll();
+});
+
+// ---------- SVG-графік ----------
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const a in attrs) e.setAttribute(a, attrs[a]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(parent, x, y, s, attrs = {}) {
+  const t = el("text", Object.assign({ x, y, "font-size": 14, fill: TH.tick }, attrs), parent);
+  t.textContent = s; return t;
+}
+function label(parent, x, y, s, attrs = {}) {
+  return txt(parent, x, y, s, Object.assign({ "font-size": 15, "font-weight": 700, fill: TH.ink, stroke: TH.halo, "stroke-width": 5, "paint-order": "stroke", "stroke-linejoin": "round" }, attrs));
+}
+function ticks(min, max, count = 6) {
+  const span = max - min || 1;
+  let step = Math.pow(10, Math.floor(Math.log10(span / count)));
+  const err = span / count / step;
+  if (err >= 7.5) step *= 10; else if (err >= 3.5) step *= 5; else if (err >= 1.5) step *= 2;
+  const t = [], dec = Math.max(0, -Math.floor(Math.log10(step) + 1e-9));
+  for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) t.push(Number(v.toFixed(dec + 2)));
+  return { t, dec };
+}
+function chart(svg, o) {
+  const W = 720, H = o.H || 360, Lm = 64, R = 12, T = 12, B = 32;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  const X = v => Lm + (v - o.xmin) / (o.xmax - o.xmin) * (W - Lm - R);
+  const Y = v => H - B - (v - o.ymin) / (o.ymax - o.ymin) * (H - T - B);
+  const id = "c" + Math.random().toString(36).slice(2);
+  el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B }, el("clipPath", { id }, el("defs", {}, svg)));
+  const ty = ticks(o.ymin, o.ymax), tx = ticks(o.xmin, o.xmax, 8);
+  const base = tx.t[Math.floor(tx.t.length / 2)];
+  for (const v of ty.t) {
+    const zero = Math.abs(v) < 1e-12;
+    el("line", { x1: Lm, x2: W - R, y1: Y(v), y2: Y(v), stroke: zero ? TH.zero : TH.grid, "stroke-width": zero ? 2 : 1 }, svg);
+    txt(svg, Lm - 8, Y(v) + 5, ty.dec >= 5 ? sci(v) : c(v, ty.dec + 1), { "text-anchor": "end" });
+  }
+  for (const v of tx.t.filter(v => tx.dec < 5 || (X(v) > Lm + 30 && X(v) < W - R - 30))) {
+    el("line", { x1: X(v), x2: X(v), y1: T, y2: H - B, stroke: TH.grid, "stroke-dasharray": "3 4" }, svg);
+    // вузький відрізок: підпис — зсув від центру (довгі числа інакше накладаються)
+    txt(svg, X(v), H - B + 21, tx.dec >= 5 ? (v - base > 0 ? "+" : "") + sci(v - base) : c(v, tx.dec + 1), { "text-anchor": "middle" });
+  }
+  el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B, fill: "none", stroke: TH.frame }, svg);
+  const g = el("g", { "clip-path": `url(#${id})` }, svg);
+  if (tx.dec >= 5) label(svg, Lm + 8, T + 20, `x = ${c(base, Math.min(15, tx.dec + 2))} + значення на осі`, { "font-size": 13, fill: TH.ink });
+  return { X, Y, g, svg, W, H, T, B, Lm, R };
+}
+function curve(ch, fn, a, b, attrs, n = 300) {
+  let d = "";
+  for (let i = 0; i <= n; i++) {
+    const x = a + (b - a) * i / n, y = Math.max(-1e4, Math.min(1e4, ch.Y(fn(x))));
+    d += (i ? "L" : "M") + ch.X(x).toFixed(1) + " " + y.toFixed(1);
+  }
+  return el("path", Object.assign({ d, fill: "none", "stroke-width": 4, "stroke-linecap": "round", "stroke-linejoin": "round" }, attrs), ch.g);
+}
+function dot(ch, x, y, color, r = 9) { el("circle", { cx: ch.X(x), cy: ch.Y(y), r, fill: color, stroke: TH.halo, "stroke-width": 3 }, ch.g); }
+function seg(boxId, items, cur, onPick) {
+  const box = document.getElementById(boxId);
+  box.innerHTML = items.map(([v, t]) => `<button data-v="${v}" class="${String(v) === String(cur) ? "on" : ""}">${t}</button>`).join("");
+  box.querySelectorAll("button").forEach(b => b.addEventListener("click", () => onPick(b.dataset.v)));
+}
+// межі y для f на [a; b] з запасом
+function yRange(a, b, extra = []) {
+  let lo = Infinity, hi = -Infinity;
+  for (let i = 0; i <= 100; i++) { const v = f(a + (b - a) * i / 100); lo = Math.min(lo, v); hi = Math.max(hi, v); }
+  for (const v of extra) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+  lo = Math.min(lo, 0); hi = Math.max(hi, 0);
+  const p = (hi - lo || 1) * 0.12;
+  return [lo - p, hi + p];
+}
+
+// ---------- 1. графік рівняння ----------
+function render1() {
+  const ch = chart(document.getElementById("ch1"), { xmin: -1, xmax: 0.8, ymin: -0.25, ymax: 0.6, H: 340 });
+  curve(ch, f, -1, 0.8, { stroke: TH.L1 });
+  for (const r of [ROOT1, ROOT]) {
+    dot(ch, r, 0, TH.pt, 10);
+    label(ch.svg, ch.X(r), ch.Y(0) - 18, `(${c(r)}; 0)`, { "text-anchor": "middle" });
+  }
+  label(ch.svg, ch.X(0.55), ch.Y(f(0.55)) - 14, "f(x)", { fill: TH.L1 });
+}
+
+// ---------- 2. бісекція покроково ----------
+const B_SETS = { s: [0, 0.35, "[0; 0,35] (зразок)"], u: [0, 1, "[0; 1]"], n: [-1, 0, "[−1; 0]"], w: [-1, 1, "[−1; 1]"] };
+let bKey = "s", bRows = [];
+function bisReset() {
+  const [a, b] = B_SETS[bKey];
+  bRows = [{ a, b }];
+}
+function bisStep() {
+  const o = bRows[bRows.length - 1], m = (o.a + o.b) / 2;
+  if (Math.sign(f(o.a)) === Math.sign(f(o.b)) || Math.abs(o.a - o.b) < 1e-10) return;
+  bRows.push(Math.sign(f(m)) === Math.sign(f(o.b)) ? { a: o.a, b: m } : { a: m, b: o.b });
+}
+function render2() {
+  seg("segB", Object.entries(B_SETS).map(([k, v]) => [k, v[2]]), bKey, v => { bKey = v; bisReset(); render2(); });
+  const o = bRows[bRows.length - 1], L = o.b - o.a, m = (o.a + o.b) / 2, same = Math.sign(f(o.a)) === Math.sign(f(o.b));
+  const xmin = o.a - L * 0.3, xmax = o.b + L * 0.3, [ymin, ymax] = yRange(xmin, xmax);
+  const ch = chart(document.getElementById("ch2"), { xmin, xmax, ymin, ymax });
+  el("rect", { x: ch.X(o.a), y: ch.T, width: ch.X(o.b) - ch.X(o.a), height: ch.H - ch.T - ch.B, fill: TH.band }, ch.g);
+  el("line", { x1: ch.Lm, x2: ch.W - ch.R, y1: ch.Y(0), y2: ch.Y(0), stroke: TH.zero, "stroke-width": 2 }, ch.g);
+  curve(ch, f, xmin, xmax, { stroke: TH.L1 });
+  const sg = v => (f(v) < 0 ? "< 0" : "> 0");
+  const pts = [[o.a, "a", TH.L4], [o.b, "b", TH.L2]];
+  if (!same) pts.push([m, "c", TH.accent]);
+  pts.forEach(([x, n, col], i) => {
+    el("line", { x1: ch.X(x), x2: ch.X(x), y1: ch.Y(0), y2: ch.Y(f(x)), stroke: col, "stroke-width": 2, "stroke-dasharray": "5 4" }, ch.g);
+    dot(ch, x, f(x), col);
+    const up = f(x) < 0 ? 26 : -16;
+    label(ch.svg, ch.X(x) + (i === 0 ? -8 : i === 1 ? 8 : 0), ch.Y(f(x)) + up, `f(${n}) ${sg(x)}`, { "text-anchor": i === 0 ? "end" : i === 1 ? "start" : "middle", fill: col });
+  });
+  const k = bRows.length - 1;
+  document.getElementById("infoB").innerHTML = same
+    ? `<b class="z-ex">Знаки f на кінцях однакові</b> (f(${c(o.a)}) = ${c(f(o.a), 4)}, f(${c(o.b)}) = ${c(f(o.b), 4)}): метод не може визначити, у якій половині корінь, — і не починає.`
+    : `Крок <b>${k}</b>: відрізок [${valL(o.a, L)}; ${valL(o.b, L)}], довжина <b class="mono">${val(L)}</b>; середина c = ${valL(m, L)}, f(c) ${f(m) < 0 ? "&lt; 0" : "&gt; 0"} → лишаємо ${Math.sign(f(m)) === Math.sign(f(o.b)) ? "ліву" : "праву"} половину.`;
+  document.getElementById("stepB").disabled = same || L < 1e-10;
+  const last = bRows, off = 0;
+  document.getElementById("tB").innerHTML = "<tr><th>Крок</th><th>a</th><th>b</th><th>c = (a + b)/2</th><th>знак f(c)</th><th>довжина b − a</th></tr>" +
+    last.map((r, i) => { const mm = (r.a + r.b) / 2; return `<tr><td class="num">${off + i}</td><td class="num">${valL(r.a, r.b - r.a)}</td><td class="num">${valL(r.b, r.b - r.a)}</td><td class="num">${valL(mm, r.b - r.a)}</td><td class="num">${f(mm) < 0 ? "−" : "+"}</td><td class="num">${val(r.b - r.a)}</td></tr>`; }).join("");
+}
+document.getElementById("stepB").addEventListener("click", () => { bisStep(); render2(); });
+document.getElementById("resetB").addEventListener("click", () => { bisReset(); render2(); });
+
+// ---------- 3. Ньютон покроково ----------
+const N_SETS = { "0": "x₀ = 0 (зразок)", "1": "x₀ = 1", "-1": "x₀ = −1", "-0.15": "x₀ = −0,15", "-0.14": "x₀ = −0,14" };
+let nKey = "0", nRows = [];
+function nwReset() { nRows = [{ x: Number(nKey) }]; }
+function nwStep() {
+  const o = nRows[nRows.length - 1];
+  if (o.err || nRows.length > 12) return;
+  const d = df(o.x);
+  if (d === 0) { o.err = true; return; }
+  nRows.push({ x: o.x - f(o.x) / d });
+}
+function render3() {
+  seg("segN", Object.entries(N_SETS), nKey, v => { nKey = v; nwReset(); render3(); });
+  const o = nRows[nRows.length - 1], x = o.x, d = df(x), nx = d === 0 ? null : x - f(x) / d;
+  // вікно: поточна точка, наступна і корені поруч
+  const xs = [x, ROOT].concat(nx === null ? [] : [nx]);
+  let xmin = Math.min(...xs), xmax = Math.max(...xs); const pad = Math.max((xmax - xmin) * 0.25, 0.05);
+  xmin -= pad; xmax += pad;
+  const [ymin, ymax] = yRange(xmin, xmax);
+  const ch = chart(document.getElementById("ch3"), { xmin, xmax, ymin, ymax });
+  curve(ch, f, xmin, xmax, { stroke: TH.L1 });
+  curve(ch, t => f(x) + d * (t - x), xmin, xmax, { stroke: TH.L2, "stroke-width": 3 });
+  dot(ch, x, f(x), TH.L2);
+  label(ch.svg, ch.X(x), ch.Y(f(x)) + (f(x) < 0 ? 28 : -16), `xₙ = ${val(x)}`, { "text-anchor": "middle", fill: TH.L2 });
+  if (nx !== null) {
+    el("line", { x1: ch.X(nx), x2: ch.X(nx), y1: ch.Y(0), y2: ch.Y(f(nx)), stroke: TH.L4, "stroke-width": 2, "stroke-dasharray": "5 4" }, ch.g);
+    dot(ch, nx, 0, TH.L4);
+    label(ch.svg, ch.X(nx), ch.Y(0) + (f(x) > 0 ? 28 : -16), `xₙ₊₁ = ${val(nx)}`, { "text-anchor": "middle", fill: TH.L4 });
+  }
+  document.getElementById("stepN").disabled = d === 0 || nRows.length > 12 || (nRows.length > 1 && Math.abs(nRows[nRows.length - 1].x - nRows[nRows.length - 2].x) < 1e-10);
+  document.getElementById("tN").innerHTML = "<tr><th>n</th><th>xₙ</th><th>f(xₙ)</th><th>f′(xₙ)</th><th>xₙ₊₁ = xₙ − f/f′</th><th>до кореня 0,3</th></tr>" +
+    nRows.map((r, i) => { const dd = df(r.x), n1 = dd === 0 ? null : r.x - f(r.x) / dd;
+      return `<tr><td class="num">${i}</td><td class="num">${val(r.x)}</td><td class="num">${val(f(r.x))}</td><td class="num">${val(dd)}</td><td class="num">${n1 === null ? '<b class="z-ex">ділення на 0</b>' : val(n1)}</td><td class="num">${val(Math.abs(r.x - ROOT))}</td></tr>`; }).join("");
+}
+document.getElementById("stepN").addEventListener("click", () => { nwStep(); render3(); });
+document.getElementById("resetN").addEventListener("click", () => { nwReset(); render3(); });
+
+
+// ---------- 4. швидкість: |x − 0,3| від кроку (лог. шкала) ----------
+function render4() {
+  const eb = []; let a = 0, b = 0.35;
+  for (let i = 0; i <= 32; i++) { const m = (a + b) / 2; eb.push(Math.abs(m - ROOT)); if (Math.sign(f(m)) === Math.sign(f(b))) b = m; else a = m; }
+  const en = []; let x = 0;
+  for (let i = 0; i <= 6; i++) { en.push(Math.abs(x - ROOT)); x = x - f(x) / df(x); }
+  const svg = document.getElementById("ch4"), W = 720, H = 340, Lm = 64, R = 12, T = 12, B = 32, lo = -17, hi = 0;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  const X = i => Lm + i / 32 * (W - Lm - R), Y = v => H - B - (Math.log10(Math.max(v, 1e-17)) - lo) / (hi - lo) * (H - T - B);
+  for (let e = lo + 1; e <= hi; e += 2) { el("line", { x1: Lm, x2: W - R, y1: Y(10 ** e), y2: Y(10 ** e), stroke: TH.grid }, svg); txt(svg, Lm - 8, Y(10 ** e) + 5, "10" + sup(e), { "text-anchor": "end", "font-size": 13 }); }
+  for (let i = 0; i <= 32; i += 4) { el("line", { x1: X(i), x2: X(i), y1: T, y2: H - B, stroke: TH.grid, "stroke-dasharray": "3 4" }, svg); txt(svg, X(i), H - B + 21, String(i), { "text-anchor": "middle" }); }
+  txt(svg, W - R, H - 4, "крок", { "text-anchor": "end", "font-size": 13 });
+  el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B, fill: "none", stroke: TH.frame }, svg);
+  for (const [e, col] of [[eb, TH.L1], [en, TH.L3]]) {
+    el("path", { d: e.map((v, i) => (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1)).join(" "), fill: "none", stroke: col, "stroke-width": 3 }, svg);
+    e.forEach((v, i) => el("circle", { cx: X(i), cy: Y(v), r: 4.5, fill: col }, svg));
+  }
+  label(svg, X(5) + 10, Y(en[5]) - 4, "Ньютон: точно за 6 кроків", { fill: TH.L3, "font-size": 14 });
+  label(svg, X(32) - 6, Y(eb[32]) - 14, "бісекція: 32 кроки", { fill: TH.L1, "font-size": 14, "text-anchor": "end" });
+}
+
+function renderAll() { render1(); render2(); render3(); render4(); }
+bisReset(); nwReset();
+
+// лічильник відвідувань (GoatCounter): сторінка рахується сама, вкладка «Питання» — окремою подією
+function countTab(t) {
+  if (t !== "q") return;
+  const n = (location.pathname.match(/lab(\d)/) || [])[1];
+  const go = () => window.goatcounter && window.goatcounter.count && window.goatcounter.count({ path: `lab${n}-questions`, title: `ЛР${n} · питання`, event: true });
+  if (window.goatcounter && window.goatcounter.count) go(); else window.addEventListener("load", () => setTimeout(go, 500));
+}
+// ---------- вкладки: матеріал / питання (#tab=q) ----------
+const DEFAULT_TAB = "m";
+const tabParam = () => { const t = new URLSearchParams(location.hash.slice(1)).get("tab"); return t === "q" || t === "m" ? t : DEFAULT_TAB; };
+function showTab(t) {
+  document.getElementById("tabMat").hidden = t === "q";
+  document.getElementById("tabQ").hidden = t !== "q";
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+}
+document.querySelectorAll("#tabs button").forEach(b => b.addEventListener("click", () => {
+  const p = new URLSearchParams(location.hash.slice(1)); p.set("tab", b.dataset.tab);
+  history.replaceState(null, "", "#" + p.toString());
+  showTab(b.dataset.tab);
+  countTab(b.dataset.tab);
+  if (window.parent !== window) parent.postMessage({ type: "chm-tab", tab: b.dataset.tab }, "*");
+}));
+window.addEventListener("hashchange", () => showTab(tabParam()));
+showTab(tabParam());
+countTab(tabParam());
+
+applyTheme(); renderAll();
+</script>
+</body>
+</html>
