@@ -289,7 +289,7 @@ function niceTicks(min, max, count = 6) {
 }
 // o.p — порядок: значення по y підписано в одиницях 10^p
 function chart(svg, o) {
-  const W = 720, H = o.H || 340, Lm = 54, R = 12, T = 30, B = 32, k = Math.pow(10, o.p || 0);
+  const W = 720, H = o.H || 340, Lm = 54, R = 30, T = 30, B = 32, k = Math.pow(10, o.p || 0);
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
   const X = v => Lm + (v - o.xmin) / (o.xmax - o.xmin) * (W - Lm - R);
   const Y = v => H - B - (v / k - o.ymin) / (o.ymax - o.ymin) * (H - T - B);
@@ -306,7 +306,7 @@ function chart(svg, o) {
   }
   el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B, fill: "none", stroke: TH.frame }, svg);
   if (o.title) txt(svg, Lm, 20, o.title + (o.p ? ", ×10" + sup(o.p) : ""), { fill: TH.muted, "font-size": 14 });
-  txt(svg, W - R, 20, "N", { fill: TH.muted, "font-size": 14, "text-anchor": "end" });
+  txt(svg, W - 4, H - B + 21, "N", { "font-size": 14, "font-weight": 700, fill: TH.ink, "text-anchor": "end" });
   const g = el("g", { "clip-path": `url(#${id})` }, svg);
   return { X, Y, g, svg, W, H, T, B };
 }

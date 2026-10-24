@@ -201,7 +201,7 @@ function niceTicks(min, max, count = 6) {
   return t;
 }
 function chart(svg, o) {
-  const W = 720, H = o.H || 380, Lm = 54, R = 12, T = 12, B = 32;
+  const W = 720, H = o.H || 380, Lm = 54, R = o.xName ? 40 : 12, T = o.yName ? 32 : 12, B = 32;
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
   const X = v => Lm + (v - o.xmin) / (o.xmax - o.xmin) * (W - Lm - R);
   const Y = v => H - B - (v - o.ymin) / (o.ymax - o.ymin) * (H - T - B);
@@ -218,6 +218,9 @@ function chart(svg, o) {
     txt(svg, X(v), H - B + 21, c(v, 3), { "text-anchor": "middle" });
   }
   el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B, fill: "none", stroke: TH.frame }, svg);
+  // підписи осей: x — праворуч від міток унизу, y — над рамкою
+  if (o.xName) txt(svg, W - 4, H - B + 21, o.xName, { "text-anchor": "end", "font-size": 14, "font-weight": 700, fill: TH.ink });
+  if (o.yName) txt(svg, Lm, T - 10, o.yName, { "text-anchor": "middle", "font-size": 14, "font-weight": 700, fill: TH.ink });
   const g = el("g", { "clip-path": `url(#${id})` }, svg);
   return { X, Y, g, svg, W, H, T, B, o,
     toData(evt) { const pt = svg.createSVGPoint(); pt.x = evt.clientX; pt.y = evt.clientY; const p = pt.matrixTransform(svg.getScreenCTM().inverse());
@@ -292,10 +295,10 @@ function renderCxChart() {
   seg("axCx", [["lin", "лінійна вісь"], ["log", "логарифмічна вісь"]], axCx, v => { axCx = v; renderCxChart(); });
   const cols = [TH.L1, TH.L4, TH.L3, TH.accent], N = 30;
   if (axCx === "lin") {
-    const ch = chart(document.getElementById("chCx"), { xmin: 0, xmax: N, ymin: 0, ymax: 30000, H: 320 });
+    const ch = chart(document.getElementById("chCx"), { xName: "n", yName: "операцій", xmin: 0, xmax: N, ymin: 0, ymax: 30000, H: 320 });
     CURVES.forEach(([, , f], i) => curve(ch, n => Math.min(f(n), 40000), 1, N, { stroke: cols[i], "stroke-width": 3 }));
   } else {
-    const ch = chart(document.getElementById("chCx"), { xmin: 0, xmax: N, ymin: 0, ymax: 10, H: 320 });
+    const ch = chart(document.getElementById("chCx"), { xName: "n", yName: "операцій", xmin: 0, xmax: N, ymin: 0, ymax: 10, H: 320 });
     CURVES.forEach(([, , f], i) => curve(ch, n => Math.log10(f(n)), 1, N, { stroke: cols[i], "stroke-width": 3 }));
     // підписи осі Y як степені 10
     ch.svg.querySelectorAll("text").forEach(t => { if (t.getAttribute("text-anchor") === "end" && /^\d+$/.test(t.textContent)) t.textContent = "10" + supN(t.textContent); });

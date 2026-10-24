@@ -263,7 +263,7 @@ function ticks(min, max, count = 6) {
   return { t, dec };
 }
 function chart(svg, o) {
-  const W = 720, H = o.H || 360, Lm = 64, R = 12, T = 12, B = 32;
+  const W = 720, H = o.H || 360, Lm = 64, R = o.xName ? 40 : 12, T = o.yName ? 32 : 12, B = 32;
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
   const X = v => Lm + (v - o.xmin) / (o.xmax - o.xmin) * (W - Lm - R);
   const Y = v => H - B - (v - o.ymin) / (o.ymax - o.ymin) * (H - T - B);
@@ -282,6 +282,9 @@ function chart(svg, o) {
     txt(svg, X(v), H - B + 21, tx.dec >= 5 ? (v - base > 0 ? "+" : "") + sci(v - base) : c(v, tx.dec + 1), { "text-anchor": "middle" });
   }
   el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B, fill: "none", stroke: TH.frame }, svg);
+  // підписи осей: x — праворуч від міток унизу, y — над рамкою
+  if (o.xName) txt(svg, W - 4, H - B + 21, o.xName, { "text-anchor": "end", "font-size": 14, "font-weight": 700, fill: TH.ink });
+  if (o.yName) txt(svg, Lm, T - 10, o.yName, { "text-anchor": "middle", "font-size": 14, "font-weight": 700, fill: TH.ink });
   const g = el("g", { "clip-path": `url(#${id})` }, svg);
   if (tx.dec >= 5) label(svg, Lm + 8, T + 20, `x = ${c(base, Math.min(15, tx.dec + 2))} + значення на осі`, { "font-size": 13, fill: TH.ink });
   return { X, Y, g, svg, W, H, T, B, Lm, R };
@@ -312,7 +315,7 @@ function yRange(a, b, extra = []) {
 
 // ---------- 1. графік рівняння ----------
 function render1() {
-  const ch = chart(document.getElementById("ch1"), { xmin: -1, xmax: 0.8, ymin: -0.25, ymax: 0.6, H: 340 });
+  const ch = chart(document.getElementById("ch1"), { xName: "x", yName: "f(x)", xmin: -1, xmax: 0.8, ymin: -0.25, ymax: 0.6, H: 340 });
   curve(ch, f, -1, 0.8, { stroke: TH.L1 });
   for (const r of [ROOT1, ROOT]) {
     dot(ch, r, 0, TH.pt, 10);
@@ -337,7 +340,7 @@ function render2() {
   seg("segB", Object.entries(B_SETS).map(([k, v]) => [k, v[2]]), bKey, v => { bKey = v; bisReset(); render2(); });
   const o = bRows[bRows.length - 1], L = o.b - o.a, m = (o.a + o.b) / 2, same = Math.sign(f(o.a)) === Math.sign(f(o.b));
   const xmin = o.a - L * 0.3, xmax = o.b + L * 0.3, [ymin, ymax] = yRange(xmin, xmax);
-  const ch = chart(document.getElementById("ch2"), { xmin, xmax, ymin, ymax });
+  const ch = chart(document.getElementById("ch2"), { xName: "x", yName: "f(x)", xmin, xmax, ymin, ymax });
   el("rect", { x: ch.X(o.a), y: ch.T, width: ch.X(o.b) - ch.X(o.a), height: ch.H - ch.T - ch.B, fill: TH.band }, ch.g);
   el("line", { x1: ch.Lm, x2: ch.W - ch.R, y1: ch.Y(0), y2: ch.Y(0), stroke: TH.zero, "stroke-width": 2 }, ch.g);
   curve(ch, f, xmin, xmax, { stroke: TH.L1 });
@@ -381,7 +384,7 @@ function render3() {
   let xmin = Math.min(...xs), xmax = Math.max(...xs); const pad = Math.max((xmax - xmin) * 0.25, 0.05);
   xmin -= pad; xmax += pad;
   const [ymin, ymax] = yRange(xmin, xmax);
-  const ch = chart(document.getElementById("ch3"), { xmin, xmax, ymin, ymax });
+  const ch = chart(document.getElementById("ch3"), { xName: "x", yName: "f(x)", xmin, xmax, ymin, ymax });
   curve(ch, f, xmin, xmax, { stroke: TH.L1 });
   curve(ch, t => f(x) + d * (t - x), xmin, xmax, { stroke: TH.L2, "stroke-width": 3 });
   dot(ch, x, f(x), TH.L2);
@@ -406,12 +409,13 @@ function render4() {
   for (let i = 0; i <= 32; i++) { const m = (a + b) / 2; eb.push(Math.abs(m - ROOT)); if (Math.sign(f(m)) === Math.sign(f(b))) b = m; else a = m; }
   const en = []; let x = 0;
   for (let i = 0; i <= 6; i++) { en.push(Math.abs(x - ROOT)); x = x - f(x) / df(x); }
-  const svg = document.getElementById("ch4"), W = 720, H = 340, Lm = 64, R = 12, T = 12, B = 32, lo = -17, hi = 0;
+  const svg = document.getElementById("ch4"), W = 720, H = 360, Lm = 64, R = 50, T = 32, B = 32, lo = -17, hi = 0;
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
   const X = i => Lm + i / 32 * (W - Lm - R), Y = v => H - B - (Math.log10(Math.max(v, 1e-17)) - lo) / (hi - lo) * (H - T - B);
   for (let e = lo + 1; e <= hi; e += 2) { el("line", { x1: Lm, x2: W - R, y1: Y(10 ** e), y2: Y(10 ** e), stroke: TH.grid }, svg); txt(svg, Lm - 8, Y(10 ** e) + 5, "10" + sup(e), { "text-anchor": "end", "font-size": 13 }); }
   for (let i = 0; i <= 32; i += 4) { el("line", { x1: X(i), x2: X(i), y1: T, y2: H - B, stroke: TH.grid, "stroke-dasharray": "3 4" }, svg); txt(svg, X(i), H - B + 21, String(i), { "text-anchor": "middle" }); }
-  txt(svg, W - R, H - 4, "крок", { "text-anchor": "end", "font-size": 13 });
+  txt(svg, W - 4, H - 4, "крок", { "text-anchor": "end", "font-size": 14, "font-weight": 700, fill: TH.ink });
+  txt(svg, Lm, 12, "|x − 0,3|", { "text-anchor": "start", "font-size": 14, "font-weight": 700, fill: TH.ink });
   el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B, fill: "none", stroke: TH.frame }, svg);
   for (const [e, col] of [[eb, TH.L1], [en, TH.L3]]) {
     el("path", { d: e.map((v, i) => (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1)).join(" "), fill: "none", stroke: col, "stroke-width": 3 }, svg);

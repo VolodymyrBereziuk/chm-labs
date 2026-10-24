@@ -281,7 +281,7 @@ function niceTicks(min, max, count = 6) {
   return t;
 }
 function chart(svg, o) {
-  const W = 720, H = o.H || 380, Lm = 54, R = 12, T = 12, B = 32;
+  const W = 720, H = o.H || 380, Lm = 54, R = o.xName ? 40 : 12, T = o.yName ? 32 : 12, B = 32;
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
   const X = v => Lm + (v - o.xmin) / (o.xmax - o.xmin) * (W - Lm - R);
   const Y = v => H - B - (v - o.ymin) / (o.ymax - o.ymin) * (H - T - B);
@@ -298,6 +298,9 @@ function chart(svg, o) {
     txt(svg, X(v), H - B + 21, c(v, 3), { "text-anchor": "middle" });
   }
   el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B, fill: "none", stroke: TH.frame }, svg);
+  // підписи осей: x — праворуч від міток унизу, y — над рамкою
+  if (o.xName) txt(svg, W - 4, H - B + 21, o.xName, { "text-anchor": "end", "font-size": 14, "font-weight": 700, fill: TH.ink });
+  if (o.yName) txt(svg, Lm, T - 10, o.yName, { "text-anchor": "middle", "font-size": 14, "font-weight": 700, fill: TH.ink });
   const g = el("g", { "clip-path": `url(#${id})` }, svg);
   return { X, Y, g, svg, W, H, T, B, o,
     toData(evt) { const pt = svg.createSVGPoint(); pt.x = evt.clientX; pt.y = evt.clientY; const p = pt.matrixTransform(svg.getScreenCTM().inverse());
@@ -358,7 +361,7 @@ const JOIN = {
 function render1() {
   seg("joinSeg", Object.keys(JOIN).map(k => [k, JOIN[k][0]]), join, v => { join = v; render1(); });
   const x = document.getElementById("x1").value / 1000, fn = JOIN[join][1];
-  const ch = chart(document.getElementById("ch1"), { xmin: -0.03, xmax: 0.63, ymin: -0.12, ymax: 0.42, xticks, H: 340 });
+  const ch = chart(document.getElementById("ch1"), { xName: "x", yName: "y", xmin: -0.03, xmax: 0.63, ymin: -0.12, ymax: 0.42, xticks, H: 340 });
   if (fn) curve(ch, fn, 0, 0.6, { stroke: TH.accent }, join === "step" ? 1200 : 300);
   vline(ch, x);
   if (fn) { el("circle", { cx: ch.X(x), cy: ch.Y(fn(x)), r: 7, fill: TH.accent, stroke: TH.halo, "stroke-width": 2.5 }, ch.g); }
@@ -373,7 +376,7 @@ const show2 = { L1: true, L2: true, L3: true, L4: false };
 function render2() {
   chips("chips2", show2, render2);
   const x = document.getElementById("x2").value / 1000;
-  const ch = chart(document.getElementById("ch2"), { xmin: -0.03, xmax: 0.63, ymin: -0.45, ymax: 0.85, xticks });
+  const ch = chart(document.getElementById("ch2"), { xName: "x", yName: "y", xmin: -0.03, xmax: 0.63, ymin: -0.45, ymax: 0.85, xticks });
   for (const id of IDS) if (show2[id]) polyCurve(ch, id, P0, -0.03, 0.63);
   vline(ch, x);
   for (const id of IDS) if (show2[id]) el("circle", { cx: ch.X(x), cy: ch.Y(L(id, x)), r: 6, fill: TH[id], stroke: TH.halo, "stroke-width": 2 }, ch.g);
@@ -399,7 +402,7 @@ function render3() {
   let lo = 0, hi = 0;
   for (const i of nodes) for (let k = 0; k <= 200; k++) { const v = term(P0, nodes, i, a + (b - a) * k / 200); lo = Math.min(lo, v); hi = Math.max(hi, v); }
   const pad = (hi - lo) * 0.08;
-  const ch = chart(document.getElementById("ch3"), { xmin: a, xmax: b, ymin: lo - pad, ymax: hi + pad, xticks: nodes.map(i => P0[i][0]) });
+  const ch = chart(document.getElementById("ch3"), { xName: "x", yName: "y", xmin: a, xmax: b, ymin: lo - pad, ymax: hi + pad, xticks: nodes.map(i => P0[i][0]) });
   for (const i of nodes) if (i !== term3) curve(ch, x => term(P0, nodes, i, x), a, b, { stroke: TH.muted, "stroke-width": 2, "stroke-dasharray": "4 6" });
   curve(ch, x => lag(P0, nodes, x), a, b, { stroke: TH[poly3], "stroke-width": 5 });
   curve(ch, x => term(P0, nodes, term3, x), a, b, { stroke: TH.accent, "stroke-width": 3.5 });
@@ -420,7 +423,7 @@ const show4 = { L1: true, L2: true, L3: true, L4: true };
 let drag4 = null;
 function render4() {
   chips("chips4", show4, render4);
-  const ch = chart(document.getElementById("ch4"), { xmin: -0.03, xmax: 0.63, ymin: -0.6, ymax: 1.0, xticks });
+  const ch = chart(document.getElementById("ch4"), { xName: "x", yName: "y", xmin: -0.03, xmax: 0.63, ymin: -0.6, ymax: 1.0, xticks });
   for (const id of IDS) if (show4[id]) polyCurve(ch, id, P4, -0.03, 0.63);
   P0.forEach(([x, y], i) => { if (P4[i][1] !== y) el("circle", { cx: ch.X(x), cy: ch.Y(y), r: 8, fill: "none", stroke: TH.tick, "stroke-width": 2, "stroke-dasharray": "3 3" }, ch.g); });
   dots(ch, P4).forEach((g, i) => {
@@ -444,7 +447,7 @@ const omega = x => P0.reduce((s, p) => s * (x - p[0]), 1);   // = 0 у кожн�
 function render5() {
   const cc = document.getElementById("c5").value * 9;
   const fn = x => L("L4", x) + cc * omega(x);
-  const ch = chart(document.getElementById("ch5"), { xmin: -0.03, xmax: 0.63, ymin: -0.35, ymax: 0.7, xticks });
+  const ch = chart(document.getElementById("ch5"), { xName: "x", yName: "y", xmin: -0.03, xmax: 0.63, ymin: -0.35, ymax: 0.7, xticks });
   curve(ch, x => L("L4", x), 0, 0.6, { stroke: TH.muted, "stroke-width": 2, "stroke-dasharray": "4 6" });
   curve(ch, fn, 0, 0.6, { stroke: TH.accent });
   vline(ch, 0.5);
@@ -462,7 +465,7 @@ function render6() {
   let lo = -0.1, hi = 0.4;
   for (const id of IDS) if (show6[id]) for (let k = 0; k <= 200; k++) { const v = L(id, a + (b - a) * k / 200); lo = Math.min(lo, v); hi = Math.max(hi, v); }
   const pad = (hi - lo) * 0.06;
-  const ch = chart(document.getElementById("ch6"), { xmin: a - 0.01, xmax: b + 0.01, ymin: lo - pad, ymax: hi + pad, band: [0, 0.6] });
+  const ch = chart(document.getElementById("ch6"), { xName: "x", yName: "y", xmin: a - 0.01, xmax: b + 0.01, ymin: lo - pad, ymax: hi + pad, band: [0, 0.6] });
   for (const id of IDS) if (show6[id]) polyCurve(ch, id, P0, a, b);
   dots(ch, P0, { labels: false });
   document.getElementById("r6v").textContent = c(r, 2);
@@ -479,7 +482,7 @@ function render7() {
   const h = Math.pow(10, -2 + 2 * document.getElementById("h7").value / 100);    // 0,01 … 1
   const nodes = [X7 - h, X7, X7 + h], Q = nodes.map(x => [x, Math.sin(x)]);
   const p2 = x => lag(Q, [0, 1, 2], x), xm = X7 + h / 2, err = Math.abs(p2(xm) - Math.sin(xm)) / Math.sin(xm) * 100;
-  const ch = chart(document.getElementById("ch7"), { xmin: 0, xmax: 2.4, ymin: -0.1, ymax: 1.25, H: 320 });
+  const ch = chart(document.getElementById("ch7"), { xName: "x", yName: "y", xmin: 0, xmax: 2.4, ymin: -0.1, ymax: 1.25, H: 320 });
   curve(ch, Math.sin, 0, 2.4, { stroke: TH.muted, "stroke-width": 6 });
   curve(ch, p2, 0, 2.4, { stroke: TH.L2, "stroke-width": 3 });
   Q.forEach(([x, y]) => el("circle", { cx: ch.X(x), cy: ch.Y(y), r: 7, fill: TH.pt, stroke: TH.halo, "stroke-width": 2.5 }, ch.g));
@@ -497,7 +500,7 @@ function renderSWone(svgId, errId, f, n, title) {
   const P = Array.from({ length: n }, (_, i) => { const x = SW.a + (SW.b - SW.a) * i / (n - 1); return [x, f(x)]; });
   const p = lagAll(P);
   let err = 0; for (let k = 0; k <= 600; k++) { const x = SW.a + (SW.b - SW.a) * k / 600; err = Math.max(err, Math.abs(p(x) - f(x))); }
-  const ch = chart(document.getElementById(svgId), { xmin: -0.1, xmax: 3.1, ymin: -0.6, ymax: 1.6, H: 230, xticks: [0, 0.5, 1, 1.5, 2, 2.5, 3] });
+  const ch = chart(document.getElementById(svgId), { xName: "x", yName: "y", xmin: -0.1, xmax: 3.1, ymin: -0.6, ymax: 1.6, H: 230, xticks: [0, 0.5, 1, 1.5, 2, 2.5, 3] });
   label(ch.svg, 66, 34, title, { "font-size": 15 });
   curve(ch, f, SW.a, SW.b, { stroke: TH.muted, "stroke-width": 5 }, 600);
   curve(ch, p, SW.a, SW.b, { stroke: TH.accent, "stroke-width": 3 }, 600);
