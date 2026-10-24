@@ -66,6 +66,10 @@
   button:disabled { opacity: .45; cursor: default; }
   table.numtab th, table.numtab td { text-align: right; }
   table.numtab th:first-child, table.numtab td:first-child { text-align: center; width: 3em; }
+  table.femsys th, table.femsys td { padding: 3px 5px; font-size: 13px; font-family: Consolas, "Courier New", monospace; }
+  table.femsys tr.hl td { background: var(--chip); color: var(--accent); font-weight: 700; }
+  table.femsys tr.sol td { border-top: 2px solid var(--line); font-weight: 700; }
+  .mono { font-family: Consolas, "Courier New", monospace; overflow-x: auto; }
 </style>
 <script data-goatcounter="https://volodymyrbereziuk.goatcounter.com/count" data-goatcounter-settings='{"allow_frame": true}' async src="//gc.zgo.at/count.js"></script>
 </head>
@@ -175,13 +179,34 @@
     </table></div>
     <p class="note">Закономірність: малі системи розв'язують прямими методами (як Гаус), великі — ітераційними (як Зейдель). Саме тому в роботі обидва.</p>
 
-    <h3>Як це виглядає: Зейдель розраховує нагрів пластини</h3>
-    <p>Пластину поділено на клітинки — у кожній невідома температура, тобто <b>одна клітинка — одне рівняння</b>. Верхній край нагрітий до 100 °C, інші краї — 0 °C. Рівняння кожної клітинки: її температура дорівнює середньому чотирьох сусідів.</p>
-    <p>Кожна ітерація Зейделя проходить клітинки по черзі й ставить у кожну середнє сусідів — з уже оновленими значеннями. Натисніть «Пуск»:</p>
-    <svg id="heatSvg"></svg>
-    <div class="seg"><button id="heatPlay">▶ Пуск</button><button id="heatReset">⟲ Скинути</button><button id="heatHot">гаряча точка в центрі: вимк.</button></div>
-    <div class="rlabel"><span>ітерація <b id="heatIt">0</b> · невідомих <b id="heatN"></b></span><span>найбільша зміна за ітерацію <b id="heatD">—</b></span></div>
-    <p class="note">Тепло «розтікається» від гарячого краю, і з кожною ітерацією картина змінюється все менше — як значення a…e у роботі наближаються до розв'язку. Зупинка — коли найбільша зміна менша за 0,01 °C. У реальних розрахунках клітинок мільйони, але кожне рівняння так само містить лише кілька сусідів — тому й підходять ітераційні методи.</p>
+    <h3>Приклад: розрахунок міцності деталі в САПР</h3>
+    <p>Інженер накреслив кронштейн у САПР (SOLIDWORKS, Autodesk Inventor, Fusion) і хоче знати, чи витримає він навантаження. Програма робить так:</p>
+    <ul>
+      <li><b>Ділить деталь на сітку</b> з маленьких елементів; їхні вершини — вузли. Звичайна сітка — десятки–сотні тисяч вузлів.</li>
+      <li><b>Невідомі</b> — на скільки зміститься кожен вузол під навантаженням: 3 числа на вузол (уздовж x, y, z). 100 000 вузлів — 300 000 невідомих.</li>
+      <li><b>Рівняння</b> — рівновага кожного вузла: сили, з якими на нього діють сусідні елементи, врівноважують навантаження. Кожне рівняння лінійне і містить лише змінні сусідніх вузлів. Виходить A·x = B, як у роботі, тільки розміром 300 000 × 300 000.</li>
+      <li><b>Розв'язок</b> — зміщення всіх вузлів. З них програма обчислює напруження й розфарбовує деталь: синє — запас міцності є, червоне — небезпечне місце.</li>
+    </ul>
+    <div class="tbl"><table>
+      <tr><th></th><th>Лабораторна робота № 4</th><th>Розрахунок у САПР</th></tr>
+      <tr><td>Невідомі</td><td>a, b, c, d, e — 5</td><td>зміщення вузлів — 10⁵–10⁶</td></tr>
+      <tr><td>Коефіцієнти в рівнянні</td><td>майже всі ненульові</td><td>кілька десятків ненульових із сотень тисяч</td></tr>
+      <tr><td>Метод</td><td>Гаус і Зейдель</td><td>на вибір: прямий або ітераційний</td></tr>
+    </table></div>
+    <p class="note">У SOLIDWORKS Simulation розв'язувач обирає користувач: прямий <b>Direct Sparse</b> (як Гаус) або ітераційний <b>FFEPlus</b> (уточнює наближення, поки похибка не стане прийнятною, — як Зейдель). Довідка програми радить ітераційний для моделей понад 100 000 невідомих: він швидший і потребує приблизно в 10 разів менше пам'яті.</p>
+    <h3>Спробуйте: міні-САПР</h3>
+    <p>Сталевий кронштейн 100 × 20 мм, товщина 10 мм, лівий край закріплено, на правий діє сила 1000 Н. Програма ділить його на трикутники, складає систему A·x = B для зміщень вузлів і розв'язує її <b>методом Гауса з роботи</b>. Прогин збільшено в 40 разів, колір — напруження.</p>
+    <div class="seg" id="femMesh"></div>
+    <svg id="femSvg"></svg>
+    <div class="rlabel" id="femInfo" style="flex-wrap: wrap; gap: 4px 16px"></div>
+    <p class="note">Що густіша сітка, то більше невідомих — і то ближче результат до теоретичного (прогин 0,25 мм, напруження біля закріплення 150 МПа). Як із кроком h у роботі № 3: менший крок — точніше, але більше обчислень.</p>
+    <h3>Система рівнянь для сітки 4 × 1</h3>
+    <p>Виберіть сітку 4 × 1: вільних вузлів 8 (на рисунку — номери), у кожного два невідомі зміщення: <b>u</b> — уздовж x, <b>v</b> — уздовж y. Разом 16 невідомих і 16 рівнянь — по два на вузол (рівновага сил уздовж x і вздовж y).</p>
+    <div class="tbl"><table class="numtab femsys" id="femSys"></table></div>
+    <p>Коефіцієнти — у Н/мкм (скільки ньютонів потрібно, щоб змістити вузол на 1 мкм), праві частини B — у Н, розв'язок x — у мкм. Порожні клітинки — нулі: кожен вузол «бачить» лише сусідів.</p>
+    <p><b>Приклад рівняння</b> (виділений рядок) — рівновага правого нижнього вузла 4 по вертикалі. Сили від сусідніх вузлів 3 і 8 та від самого зміщення вузла 4 врівноважують половину навантаження (−500 Н):</p>
+    <p id="femEq" class="mono"></p>
+    <p class="note">Перевірка: підставимо розв'язок. Ліва частина дає <span id="femChk"></span> ≈ −500: різниця — від заокруглення чисел у записі (як у роботі № 1). Програма підставляє точні значення — і отримує −500,0.</p>
   </section>
 
   <section class="card">
@@ -436,58 +461,120 @@ function render4() {
     `<tr><td colspan="3" class="muted" style="font-size:14px">${ord4 === "bad" ? "Діагональні коефіцієнти 2 і 1 малі — похибка зростає в ~50 разів за ітерацію: розходиться." : "Діагональні коефіцієнти 10 і 10 великі — похибка зменшується в ~50 разів за ітерацію: збігається до x = 1, y = 1."}</td></tr>`;
 }
 
-// ---------- 6. анімація: Зейдель для теплопровідності пластини ----------
-const HEAT = { nx: 36, ny: 22, tol: 0.01, perFrame: 3 };
-let heatT = null, heatIt = 0, heatRun = false, heatHot = false, heatDelta = null, heatCells = null;
-function heatInit() {
-  const { nx, ny } = HEAT;
-  heatT = Array.from({ length: ny + 2 }, (_, j) => new Float64Array(nx + 2).fill(0));
-  for (let i = 0; i < nx + 2; i++) heatT[0][i] = 100;         // верхній край — 100 °C
-  heatIt = 0; heatDelta = null;
-}
-const heatFixed = (i, j) => heatHot && Math.abs(i - (HEAT.nx + 1) / 2) < 1.6 && Math.abs(j - (HEAT.ny + 1) / 2) < 1.6;
-function heatSweep() {
-  const { nx, ny } = HEAT; let dmax = 0;
-  for (let j = 1; j <= ny; j++) for (let i = 1; i <= nx; i++) {
-    if (heatFixed(i, j)) { heatT[j][i] = 100; continue; }
-    const v = (heatT[j - 1][i] + heatT[j + 1][i] + heatT[j][i - 1] + heatT[j][i + 1]) / 4;
-    dmax = Math.max(dmax, Math.abs(v - heatT[j][i])); heatT[j][i] = v;
+// ---------- 6. міні-САПР: кронштейн, метод скінченних елементів (трикутники) ----------
+// Кронштейн L × H мм, товщина t, сталь; лівий край закріплено, на правий діє сила F (вниз).
+// Невідомі — зміщення вузлів (u, v); рівняння — рівновага кожного вузла: K·x = B, розв'язок — методом Гауса.
+const FEM = { L: 100, H: 20, t: 10, E: 2e5, nu: 0.3 };   // мм, МПа
+function femSolve(nx, ny, F) {
+  const { L, H, t, E, nu } = FEM, nodes = [], tris = [];
+  for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) nodes.push([L * i / nx, H * j / ny]);
+  const id = (i, j) => j * (nx + 1) + i;
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+    tris.push([id(i, j), id(i + 1, j), id(i + 1, j + 1)], [id(i, j), id(i + 1, j + 1), id(i, j + 1)]);
   }
-  heatIt++; heatDelta = dmax;
+  // невідомі: u, v кожного вузла, крім закріплених (лівий край, i = 0)
+  const dof = [], free = [];
+  nodes.forEach((p, k) => { const fixed = k % (nx + 1) === 0; dof.push(fixed ? -1 : free.length, fixed ? -1 : free.length + 1); if (!fixed) free.push(2 * k, 2 * k + 1); });
+  const n = free.length, A = Array.from({ length: n }, () => new Array(n).fill(0)), B = new Array(n).fill(0);
+  const D = [[1, nu, 0], [nu, 1, 0], [0, 0, (1 - nu) / 2]].map(r => r.map(v => v * E / (1 - nu * nu)));
+  const Bmat = tri => {
+    const [p1, p2, p3] = tri.map(k => nodes[k]), area = ((p2[0] - p1[0]) * (p3[1] - p1[1]) - (p3[0] - p1[0]) * (p2[1] - p1[1])) / 2;
+    const b = [p2[1] - p3[1], p3[1] - p1[1], p1[1] - p2[1]], c = [p3[0] - p2[0], p1[0] - p3[0], p2[0] - p1[0]];
+    const Bm = [[], [], []];
+    for (let a = 0; a < 3; a++) { Bm[0].push(b[a], 0); Bm[1].push(0, c[a]); Bm[2].push(c[a], b[a]); }
+    return { Bm: Bm.map(r => r.map(v => v / (2 * area))), area };
+  };
+  // складаємо рівняння: внесок кожного трикутника в рівновагу його трьох вузлів
+  tris.forEach(tri => {
+    const { Bm, area } = Bmat(tri), map = tri.flatMap(k => [dof[2 * k], dof[2 * k + 1]]);
+    for (let r = 0; r < 6; r++) for (let s = 0; s < 6; s++) {
+      if (map[r] < 0 || map[s] < 0) continue;
+      let k = 0;
+      for (let p = 0; p < 3; p++) for (let q = 0; q < 3; q++) k += Bm[p][r] * D[p][q] * Bm[q][s];
+      A[map[r]][map[s]] += k * area * t;
+    }
+  });
+  // сила F — порівну на вузли правого краю (вниз)
+  const right = []; for (let j = 0; j <= ny; j++) right.push(id(nx, j));
+  right.forEach((k, m) => { B[dof[2 * k + 1]] -= F / ny * (m === 0 || m === ny ? 0.5 : 1); });
+  const nnz = A.reduce((s, r) => s + r.filter(v => v !== 0).length, 0);
+  const x = gaussSolve(A.map(r => r.slice()), B.slice());
+  const disp = nodes.map((_, k) => [dof[2 * k] < 0 ? 0 : x[dof[2 * k]], dof[2 * k + 1] < 0 ? 0 : x[dof[2 * k + 1]]]);
+  // напруження в кожному трикутнику (еквівалентне за Мізесом, МПа)
+  const stress = tris.map(tri => {
+    const { Bm } = Bmat(tri), u = tri.flatMap(k => disp[k]);
+    const e = Bm.map(r => r.reduce((s, v, i) => s + v * u[i], 0)), sg = D.map(r => r.reduce((s, v, i) => s + v * e[i], 0));
+    return Math.sqrt(sg[0] * sg[0] - sg[0] * sg[1] + sg[1] * sg[1] + 3 * sg[2] * sg[2]);
+  });
+  return { nodes, tris, disp, stress, n, nnz, A };
 }
-// колір: 0 °C — синій, 100 °C — червоний
-const heatColor = t => `hsl(${Math.round(230 - 230 * Math.min(1, Math.max(0, t / 100)))}, 85%, ${Math.round(38 + 14 * Math.min(1, t / 100))}%)`;
-function heatDraw() {
-  const { nx, ny } = HEAT, svg = document.getElementById("heatSvg"), s = 18, W = (nx + 2) * s, H = (ny + 2) * s;
-  if (!heatCells) {
-    svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = ""; heatCells = [];
-    for (let j = 0; j < ny + 2; j++) { heatCells.push([]); for (let i = 0; i < nx + 2; i++) heatCells[j].push(el("rect", { x: i * s, y: j * s, width: s - 1, height: s - 1, rx: 2 }, svg)); }
+// метод Гауса з вибором головного елемента — як у роботі
+function gaussSolve(A, b) {
+  const n = b.length;
+  for (let k = 0; k < n - 1; k++) {
+    let p = k; for (let i = k + 1; i < n; i++) if (Math.abs(A[i][k]) > Math.abs(A[p][k])) p = i;
+    [A[p], A[k]] = [A[k], A[p]]; [b[p], b[k]] = [b[k], b[p]];
+    for (let i = k + 1; i < n; i++) { const m = A[i][k] / A[k][k]; if (!m) continue; for (let j = k; j < n; j++) A[i][j] -= m * A[k][j]; b[i] -= m * b[k]; }
   }
-  for (let j = 0; j < ny + 2; j++) for (let i = 0; i < nx + 2; i++) heatCells[j][i].setAttribute("fill", heatColor(heatT[j][i]));
-  document.getElementById("heatIt").textContent = heatIt;
-  document.getElementById("heatN").textContent = nx * ny;
-  document.getElementById("heatD").textContent = heatDelta == null ? "—" : c(heatDelta, 3) + " °C" + (heatDelta < HEAT.tol ? " — розв'язок знайдено" : "");
+  const x = new Array(n);
+  for (let i = n - 1; i >= 0; i--) { let s = b[i]; for (let j = i + 1; j < n; j++) s -= A[i][j] * x[j]; x[i] = s / A[i][i]; }
+  return x;
 }
-function heatTick() {
-  if (!heatRun) return;
-  for (let k = 0; k < HEAT.perFrame; k++) { heatSweep(); if (heatDelta < HEAT.tol) { heatRun = false; break; } }
-  heatDraw();
-  document.getElementById("heatPlay").textContent = heatRun ? "⏸ Пауза" : "▶ Пуск";
-  if (heatRun) setTimeout(() => requestAnimationFrame(heatTick), 40);
+const FEM_MESH = { "4x1": [4, 1], "8x2": [8, 2], "20x4": [20, 4], "40x8": [40, 8] }, FEM_F = 1000, FEM_SCALE = 40;
+let femMesh = "8x2";
+// колір напруження: 0 МПа — синій, 150 МПа і більше — червоний
+const femColor = s => `hsl(${Math.round(230 - 230 * Math.min(1, s / 150))}, 80%, 48%)`;
+function renderFem() {
+  const [nx, ny] = FEM_MESH[femMesh], r = femSolve(nx, ny, FEM_F);
+  const svg = document.getElementById("femSvg"), W = 720, H = 290, L = 70, Y0 = 90, k = 5.6;   // 1 мм = 5,6 px
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  const X = x => L + x * k, Yp = y => Y0 + (FEM.H - y) * k;
+  // закріплення (стіна)
+  el("rect", { x: L - 16, y: Yp(FEM.H) - 20, width: 16, height: FEM.H * k + 40, fill: TH.band, stroke: TH.frame }, svg);
+  // контур до навантаження
+  el("rect", { x: X(0), y: Yp(FEM.H), width: FEM.L * k, height: FEM.H * k, fill: "none", stroke: TH.tick, "stroke-dasharray": "5 5" }, svg);
+  // деформована сітка, кольори — напруження
+  const P = r.nodes.map((p, i) => [X(p[0] + FEM_SCALE * r.disp[i][0]), Yp(p[1] + FEM_SCALE * r.disp[i][1])]);
+  r.tris.forEach((tri, i) => el("polygon", { points: tri.map(q => P[q].map(v => v.toFixed(1)).join(",")).join(" "), fill: femColor(r.stress[i]), stroke: TH.halo, "stroke-width": 1 }, svg));
+  if (nx === 4) P.forEach((p, i) => { if (i % 5) label(svg, p[0] + 8, p[1] + (i < 5 ? 22 : -10), String(i < 5 ? i : i - 1)); });
+  if (nx <= 20) P.forEach(p => el("circle", { cx: p[0], cy: p[1], r: nx <= 8 ? 5 : 3, fill: TH.pt, stroke: TH.halo, "stroke-width": 1.5 }, svg));
+  // сила
+  const tx = X(FEM.L) + 22, ty = Yp(FEM.H / 2) + FEM_SCALE * r.disp[r.disp.length - 1][1] * -k;
+  el("line", { x1: tx, x2: tx, y1: ty - 60, y2: ty - 8, stroke: TH.accent, "stroke-width": 4 }, svg);
+  el("polygon", { points: `${tx - 8},${ty - 14} ${tx + 8},${ty - 14} ${tx},${ty}`, fill: TH.accent }, svg);
+  label(svg, tx + 10, Yp(FEM.H) - 22, "F = 1000 Н", { fill: TH.accent, "text-anchor": "end" });
+  // осі в мм
+  [0, 25, 50, 75, 100].forEach(x => txt(svg, X(x), H - 30, String(x), { "text-anchor": "middle" }));
+  txt(svg, W - 4, H - 30, "x, мм", { "text-anchor": "end", "font-weight": 700, fill: TH.ink });
+  // шкала кольорів
+  for (let i = 0; i < 30; i++) el("rect", { x: 380 + i * 8, y: H - 14, width: 8, height: 10, fill: femColor(150 * i / 29) }, svg);
+  txt(svg, 374, H - 4, "0", { "text-anchor": "end" }); txt(svg, 626, H - 4, "150 МПа", {});
+  txt(svg, 370, H - 4, "напруження:", { "text-anchor": "end", fill: TH.ink, dx: -14 });
+  const tipV = -r.disp[r.disp.length - 1][1], theory = FEM_F * FEM.L ** 3 / (3 * FEM.E * FEM.t * FEM.H ** 3 / 12);
+  document.getElementById("femInfo").innerHTML =
+    `<span>вузлів <b>${r.nodes.length}</b> · невідомих <b>${r.n}</b> · ненульових у рядку A — до <b>${Math.max(...r.A.map(row => row.filter(v => v).length))}</b> з ${r.n}</span>` +
+    `<span>прогин кінця <b>${c(tipV, 3)} мм</b> (теорія ${c(theory, 2)}) · найбільше напруження <b>${c(Math.max(...r.stress), 0)} МПа</b></span>`;
+  seg("femMesh", Object.keys(FEM_MESH).map(m => [m, "сітка " + m.replace("x", " × ")]), femMesh, v => { femMesh = v; renderFem(); });
 }
-document.getElementById("heatPlay").addEventListener("click", () => {
-  if (heatDelta != null && heatDelta < HEAT.tol) heatInit();
-  heatRun = !heatRun; document.getElementById("heatPlay").textContent = heatRun ? "⏸ Пауза" : "▶ Пуск";
-  if (heatRun) requestAnimationFrame(heatTick);
-});
-document.getElementById("heatReset").addEventListener("click", () => { heatRun = false; heatInit(); document.getElementById("heatPlay").textContent = "▶ Пуск"; heatDraw(); });
-document.getElementById("heatHot").addEventListener("click", () => {
-  heatHot = !heatHot; document.getElementById("heatHot").textContent = "гаряча точка в центрі: " + (heatHot ? "увімк." : "вимк.");
-  heatRun = false; heatInit(); document.getElementById("heatPlay").textContent = "▶ Пуск"; heatDraw();
-});
-function renderHeat() { if (!heatT) heatInit(); heatCells = null; heatDraw(); }
 
-function renderAll() { render1(); render2(); render3(); render4(); renderHeat(); }
+// система для сітки 4 × 1: 8 вільних вузлів (знизу 1–4, зверху 5–8), невідомі u, v кожного
+function renderFemSys() {
+  const r = femSolve(4, 1, FEM_F), x = r.disp.filter((_, k) => k % 5).flat().map(v => v * 1000);   // мкм
+  const name = j => (j % 2 ? "v" : "u") + "₁₂₃₄₅₆₇₈"[j >> 1], B = new Array(16).fill(0); B[7] = B[15] = -500;
+  let h = "<tr><th></th>" + x.map((_, j) => `<th>${name(j)}</th>`).join("") + "<th>B</th></tr>";
+  r.A.forEach((row, i) => {
+    h += `<tr${i === 7 ? ' class="hl"' : ""}><td>${name(i)}</td>` + row.map(v => v ? `<td>${c(v / 1000, 0)}</td>` : "<td></td>").join("") + `<td>${c(B[i], 0)}</td></tr>`;
+  });
+  h += `<tr class="sol"><td>x</td>` + x.map(v => `<td>${c(v, 1)}</td>`).join("") + "<td></td></tr>";
+  document.getElementById("femSys").innerHTML = h;
+  const row = r.A[7], idx = row.map((v, j) => v ? j : -1).filter(j => j >= 0);
+  const sgn = (v, first) => (v < 0 ? (first ? "−" : " − ") : (first ? "" : " + "));
+  document.getElementById("femEq").innerHTML = idx.map((j, m) => sgn(row[j], !m) + c(Math.abs(row[j] / 1000), 1) + "·" + name(j)).join("") + " = −500";
+  const chk = idx.reduce((s, j) => s + +(row[j] / 1000).toFixed(1) * +x[j].toFixed(3), 0);
+  document.getElementById("femChk").textContent = c(chk, 1);
+}
+
+function renderAll() { render1(); render2(); render3(); render4(); renderFem(); renderFemSys(); }
 // лічильник відвідувань (GoatCounter): сторінка рахується сама, вкладка «Питання» — окремою подією
 function countTab(t) {
   if (t !== "q") return;
