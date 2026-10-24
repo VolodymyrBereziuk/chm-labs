@@ -201,6 +201,12 @@
     <div class="rlabel"><span>h = <b id="h4v"></b></span><span>сума <b id="s4v"></b> · точна площа <b>5,291</b></span></div>
     <p class="try"><b>Завдання:</b> встановіть h = 1 і оберіть трапеції. Порівняйте результат із рядком N = 10000 у таблиці інтеграла зразка звіту.</p>
     <p class="note">Похідна — відношення різниць (ділення на h), інтеграл — сума (множення на h).</p>
+    <h3>Приклад: скільки проїхав автомобіль</h3>
+    <p>Спідометр записував швидкість кожні 10 с. Формули v(t) немає — лише таблиця. Пройдений шлях — це площа під графіком швидкості. Кожну смужку замінимо <b>трапецією</b>: площа = крок · (v₁ + v₂) / 2.</p>
+    <svg id="chTrip"></svg>
+    <div class="seg"><button id="tripStep">Наступний крок</button><button id="tripReset">Спочатку</button></div>
+    <div class="tbl"><table id="tTrip"></table></div>
+    <p class="note">Так комп'ютер обчислює інтеграл за таблицею значень. Що частіше записано швидкість, то точніше трапеції повторюють справжній графік.</p>
   </section>
 
   <!-- 7 -->
@@ -761,7 +767,33 @@ for (const [sfx, render] of [["D", renderSimD], ["I", renderSimI]]) {
   document.getElementById("snapSim" + sfx).addEventListener("click", () => { const b = sliderB("bSim" + sfx); if (b > 0) { simOverride[sfx] = 2 * Math.PI / b; render(); } });
 }
 
-function renderAll() { render1(); render3(); render4(); render4d(); render5e(); render7(); render8e(); renderCar(); renderSim(); }
+// ---------- 6. приклад: шлях автомобіля за таблицею швидкостей (трапеції) ----------
+const TRIP_T = [0, 10, 20, 30, 40, 50, 60], TRIP_V = [0, 5, 9, 12, 14, 15, 15];   // с, м/с
+let tripK = 0;   // скільки трапецій уже порахували
+function renderTrip() {
+  const svg = document.getElementById("chTrip"), W = 720, H = 300, L = 54, R = 44, T = 32, B = 32;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  const X = t => L + t / 64 * (W - L - R), Y = v => H - B - v / 17 * (H - T - B);
+  for (let v = 0; v <= 16; v += 2) { el("line", { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: TH.grid }, svg); txt(svg, L - 8, Y(v) + 5, String(v), { "text-anchor": "end" }); }
+  TRIP_T.forEach(t => txt(svg, X(t), H - B + 21, String(t), { "text-anchor": "middle" }));
+  el("rect", { x: L, y: T, width: W - L - R, height: H - T - B, fill: "none", stroke: TH.frame }, svg);
+  txt(svg, W - 4, H - B + 21, "t, с", { "text-anchor": "end", "font-weight": 700, fill: TH.ink });
+  txt(svg, L, T - 10, "v, м/с", { "text-anchor": "middle", "font-weight": 700, fill: TH.ink });
+  for (let i = 0; i < tripK; i++)
+    el("polygon", { points: `${X(TRIP_T[i])},${Y(0)} ${X(TRIP_T[i])},${Y(TRIP_V[i])} ${X(TRIP_T[i + 1])},${Y(TRIP_V[i + 1])} ${X(TRIP_T[i + 1])},${Y(0)}`, fill: TH.accent, "fill-opacity": 0.25, stroke: TH.accent, "stroke-width": 1.5 }, svg);
+  TRIP_T.forEach((t, i) => el("circle", { cx: X(t), cy: Y(TRIP_V[i]), r: 7, fill: TH.pt, stroke: TH.halo, "stroke-width": 2.5 }, svg));
+  let sum = 0, rows = "";
+  for (let i = 0; i < TRIP_T.length - 1; i++) {
+    const a = 10 * (TRIP_V[i] + TRIP_V[i + 1]) / 2, done = i < tripK;
+    if (done) sum += a;
+    rows += `<tr${done ? "" : ' class="muted"'}><td class="num">${TRIP_T[i]}–${TRIP_T[i + 1]} с</td><td class="num">10 · (${TRIP_V[i]} + ${TRIP_V[i + 1]}) / 2</td><td class="num">${done ? a + " м" : "—"}</td><td class="num">${done ? sum + " м" : ""}</td></tr>`;
+  }
+  document.getElementById("tTrip").innerHTML = "<tr><th>Смужка</th><th>Площа трапеції</th><th>Шлях на смужці</th><th>Разом</th></tr>" + rows;
+  document.getElementById("tripStep").disabled = tripK >= TRIP_T.length - 1;
+}
+document.getElementById("tripStep").addEventListener("click", () => { tripK++; renderTrip(); });
+document.getElementById("tripReset").addEventListener("click", () => { tripK = 0; renderTrip(); });
+function renderAll() { render1(); render3(); render4(); render4d(); render5e(); render7(); render8e(); renderCar(); renderSim(); renderTrip(); }
 // лічильник відвідувань (GoatCounter): сторінка рахується сама, вкладка «Питання» — окремою подією
 function countTab(t) {
   if (t !== "q") return;

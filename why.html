@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Навіщо чисельні методи</title>
+<style>
+  :root {
+    --bg: #11151c; --card: #1a2029; --ink: #e9edf3; --muted: #9aa5b4; --line: #2b3442; --chip: #232c38; --accent: #ffb26b;
+    --L1: #5aa7ff; --L2: #ffab4a; --L3: #d08cff; --L4: #4fd690;
+    --grid: #262f3c; --zero: #56627a; --frame: #3a4556; --tick: #a3adbb; --band: #2b2a1f;
+    --pt: #f4f1e8; --halo: #11151c; --ctrl: #232c38; --ctrl-line: #3a4556; --on: #2f3b4d;
+  }
+  :root[data-theme="light"] {
+    --bg: #f7f5ef; --card: #fffdf8; --ink: #1b2330; --muted: #5a6272; --line: #e2ddd0; --chip: #f0ece2; --accent: #b4501f;
+    --L1: #1f5fa8; --L2: #c9731a; --L3: #7a3e9d; --L4: #2e8a62;
+    --grid: #e7e2d6; --zero: #9a9384; --frame: #cfc9ba; --tick: #5a6272; --band: #efe8d6;
+    --pt: #1b2330; --halo: #fffdf8; --ctrl: #ffffff; --ctrl-line: #cfc9ba; --on: #f0ece2;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 "Segoe UI", system-ui, Arial, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 18px 16px 70px; }
+  .top { display: flex; align-items: center; gap: 12px; }
+  .top button { margin-left: auto; }
+  h1 { font-size: 26px; line-height: 1.25; margin: 6px 0 4px; }
+  h2 { font-size: 20px; margin: 0 0 6px; }
+  p { margin: 6px 0 10px; }
+  .muted { color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin: 18px 0; }
+  .try { background: var(--chip); border-radius: 10px; padding: 8px 12px; margin: 10px 0 0; font-size: 16px; }
+  .try b { color: var(--accent); }
+  .note { border-left: 3px solid var(--accent); padding: 2px 0 2px 12px; margin: 10px 0 0; font-size: 16px; }
+  button, select { font: inherit; font-size: 15px; padding: 6px 12px; border-radius: 9px; border: 1px solid var(--ctrl-line); background: var(--ctrl); color: var(--ink); cursor: pointer; }
+  button.on { background: var(--on); border-color: var(--accent); font-weight: 600; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .chips label { display: inline-flex; align-items: center; gap: 6px; margin: 0 14px 4px 0; cursor: pointer; white-space: nowrap; font-size: 16px; }
+  .tag { display: inline-block; width: 24px; height: 5px; border-radius: 3px; }
+  input[type=range] { width: 100%; margin: 8px 0 2px; accent-color: var(--accent); }
+  .rlabel { display: flex; justify-content: space-between; font-size: 15px; color: var(--muted); }
+  .rlabel b { color: var(--ink); font-family: Consolas, "Courier New", monospace; }
+  svg { width: 100%; height: auto; display: block; touch-action: pan-y; }
+  .drag { cursor: grab; touch-action: none; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; margin-top: 8px; }
+  th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; }
+  td.num { font-family: Consolas, "Courier New", monospace; text-align: right; white-space: nowrap; }
+  .tbl { overflow-x: auto; }
+  .mono { font-family: Consolas, "Courier New", monospace; }
+  .formula { font-family: Consolas, "Courier New", monospace; font-size: 15px; background: var(--chip); border-radius: 10px; padding: 8px 12px; overflow-x: auto; white-space: nowrap; margin-top: 8px; }
+  .big { font-size: 22px; font-weight: 700; font-family: Consolas, "Courier New", monospace; }
+  ul.sum li { margin-bottom: 6px; }
+  .z-in { color: var(--L4); } .z-ex { color: var(--accent); }
+  h3 { font-size: 17px; margin: 14px 0 4px; }
+  ol { margin: 6px 0 10px; padding-left: 22px; }
+  .tbl th { text-align: left; }
+  .tabs { display: flex; gap: 4px; margin: 12px 0 0; border-bottom: 1px solid var(--line); }
+  .tabs button { border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; padding: 8px 14px; font-size: 16px; font-weight: 600; color: var(--muted); }
+  .tabs button.on { color: var(--ink); border-bottom-color: var(--accent); }
+  h2.qtitle { font-size: 22px; margin: 18px 0 4px; }
+  a.pdf { display: inline-block; padding: 6px 14px; border-radius: 9px; border: 1px solid var(--ctrl-line); background: var(--ctrl); color: var(--ink); text-decoration: none; font-weight: 600; }
+  #tabQ ol { padding-left: 26px; } #tabQ li { margin-bottom: 8px; }
+  .big2 { font-size: 18px; font-weight: 700; margin: 10px 0 6px; min-height: 1.5em; }
+  table.mat td.num { font-size: 15px; }
+  table.mat tr.piv td { background: color-mix(in srgb, var(--L4) 22%, transparent); }
+  table.mat tr.tgt td { background: color-mix(in srgb, var(--accent) 24%, transparent); }
+  button:disabled { opacity: .45; cursor: default; }
+  table.numtab th, table.numtab td { text-align: right; }
+  table.numtab th:first-child, table.numtab td:first-child { text-align: center; width: 3em; }
+  .bar { height: 10px; border-radius: 5px; background: var(--accent); min-width: 3px; }
+  .bar.huge { background: #e05a5a; }
+  pre.code { background: var(--chip); border-radius: 10px; padding: 10px 12px; font-size: 15px; overflow-x: auto; margin: 8px 0; }
+  pre.code .ln { display: block; padding: 1px 6px; border-radius: 5px; }
+  pre.code .loop { cursor: pointer; text-decoration: underline dotted; }
+  pre.code .hl { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+  details { margin: 8px 0; } details p { margin: 6px 0 0 18px; }
+</style>
+<script data-goatcounter="https://volodymyrbereziuk.goatcounter.com/count" data-goatcounter-settings='{"allow_frame": true}' async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<main>
+  <div class="top"><span class="muted">Чисельні методи · окрема тема</span><button id="theme" title="Світла / темна тема">☀ / ☾</button></div>
+  <h1>Навіщо чисельні методи</h1>
+  <p class="muted">Що вивчає курс, де це застосовують і кому з програмістів і інженерів це потрібно щодня.</p>
+
+  <!-- 1 -->
+  <section class="card">
+    <h2>1. Комп'ютер не знає математики</h2>
+    <p>Процесор уміє небагато: <b>додавати, віднімати, множити, ділити й порівнювати</b> числа. Він не знає, що таке похідна, інтеграл чи корінь рівняння.</p>
+    <p>Щоб комп'ютер обчислив похідну, площу під кривою, розв'язок системи рівнянь чи траєкторію руху, математичну задачу треба <b>перетворити на послідовність простих дій</b> — алгоритм. Саме цим і займаються чисельні методи.</p>
+    <p class="note"><b>Чисельні методи — це спосіб запрограмувати математику:</b> замінити точну задачу наближеною, яку можна розв'язати арифметикою, і знати, наскільки великою буде похибка.</p>
+  </section>
+
+  <!-- 2 -->
+  <section class="card">
+    <h2>2. Функція: таблицею чи формулою</h2>
+    <h3>Лабораторна робота № 2 — функція задана таблицею</h3>
+    <p>Відомо лише п'ять пар (x; y). Що між точками — невідомо: значення там можна лише оцінити інтерполяцією, і це завжди припущення.</p>
+    <svg id="chL2"></svg>
+    <h3>Лабораторна робота № 3 — функція задана формулою</h3>
+    <p>f(x) = e<sup>−0,189x</sup>: значення можна обчислити в будь-якій точці, а похідну й інтеграл — знайти точно за правилами.</p>
+    <svg id="chL3"></svg>
+    <p>Майже всі дані з практики виглядають як у лабораторній роботі № 2: давач температури записує значення раз на секунду, GPS — координату раз на кілька секунд, метеостанція — тиск щогодини. Формули немає, є лише таблиця — і саме з такими даними працюють чисельні методи.</p>
+    <p class="note">У лабораторній роботі № 3 функцію задано формулою навмисно: тоді відома точна відповідь, і можна виміряти, наскільки точний чисельний метод.</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="card">
+    <h2>3. Приклад: скільки проїхав автомобіль</h2>
+    <p>Спідометр записував швидкість кожні 10 с. Формули v(t) немає — лише таблиця. Пройдений шлях — це площа під графіком швидкості. Розіб'ємо її на смужки і кожну замінимо <b>трапецією</b>: площа = крок · (v₁ + v₂) / 2. Потрібні лише додавання, множення й ділення.</p>
+    <svg id="chCar"></svg>
+    <div class="seg"><button id="cStep">Наступний крок</button><button id="cReset">Спочатку</button></div>
+    <div class="tbl"><table id="tCar"></table></div>
+    <p class="note">Так комп'ютер обчислює інтеграл (лабораторна робота № 3). Що частіше записано швидкість, то точніше трапеції повторюють справжній графік і то точніше результат.</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="card">
+    <h2>4. Що з курсу і де це застосовують</h2>
+    <div class="tbl"><table>
+      <tr><th>Лабораторна робота</th><th>Що вміємо</th><th>Де це застосовують</th></tr>
+      <tr><td>№ 1. Похибки</td><td>розуміти, чому комп'ютер рахує неточно</td><td>будь-яка програма з дробовими числами: гроші, навігація, ігри, наукові розрахунки</td></tr>
+      <tr><td>№ 2. Інтерполяція</td><td>знаходити значення між відомими точками</td><td>плавна анімація між ключовими кадрами, калібрування давачів, графіки за таблицею вимірів</td></tr>
+      <tr><td>№ 3. Похідна та інтеграл</td><td>швидкість зміни і накопичену величину за значеннями функції</td><td>швидкість за координатами GPS, пройдений шлях за швидкістю, обробка сигналів, навчання нейронних мереж (похідні)</td></tr>
+      <tr><td>№ 4. Системи рівнянь</td><td>розв'язувати систему з багатьма невідомими</td><td>розрахунок конструкцій і електричних кіл, теплові задачі, лінійна регресія в аналізі даних</td></tr>
+      <tr><td>№ 5. Нелінійні рівняння</td><td>знаходити корінь рівняння без формули</td><td>корінь у калькуляторі, ставка кредиту, температура за опором давача</td></tr>
+      <tr><td>№ 6. Диференціальні рівняння</td><td>передбачати, як процес розвиватиметься в часі</td><td>фізика в іграх, прогноз погоди, траєкторії руху, дія ліків в організмі</td></tr>
+    </table></div>
+  </section>
+
+  <!-- 4 -->
+  <section class="card">
+    <h2>5. Кому це потрібно</h2>
+    <div class="tbl"><table>
+      <tr><th>Професія</th><th>Що робить чисельними методами</th></tr>
+      <tr><td>Розробник ігор</td><td>фізичний рушій: рух, зіткнення, падіння — крок за кроком щокадру</td></tr>
+      <tr><td>Інженер з аналізу даних / машинного навчання</td><td>навчання моделей — пошук мінімуму функції за похідними; регресія — системи рівнянь</td></tr>
+      <tr><td>Інженер-розрахунковець</td><td>міцність деталей, потоки повітря й рідини, нагрів — моделювання до того, як виготовити виріб</td></tr>
+      <tr><td>Розробник вбудованих систем</td><td>обробка сигналів давачів: згладжування, швидкість зміни, калібрування</td></tr>
+      <tr><td>Фінансовий аналітик</td><td>ставки, дохідність, ризики — рівняння, які не розв'язуються формулою</td></tr>
+      <tr><td>Розробник комп'ютерної графіки</td><td>плавні криві, анімація, освітлення сцени</td></tr>
+    </table></div>
+    <p class="note">У кожній із цих професій бібліотеки вже містять готові методи. Але обрати правильний метод, задати крок і зрозуміти, чи можна довіряти результату, — завдання програміста. Саме цього вчить курс.</p>
+  </section>
+
+  <!-- 5 -->
+  <section class="card">
+    <h2>6. Приклади з життя</h2>
+    <p class="muted">Розділ доповнюватиметься.</p>
+  </section>
+</main>
+<script>
+// ---------- тема: усередині сайту задає оболонка (#theme=dark) ----------
+const embedded = window.parent !== window;
+let theme = "dark";
+try { theme = localStorage.getItem("chm.theme") || "dark"; } catch (e) {}
+const hashTheme = () => { const t = new URLSearchParams(location.hash.slice(1)).get("theme"); return t === "light" || t === "dark" ? t : null; };
+if (hashTheme()) theme = hashTheme();
+if (embedded) document.getElementById("theme").style.display = "none";
+function applyTheme() { if (theme === "light") document.documentElement.setAttribute("data-theme", "light"); else document.documentElement.removeAttribute("data-theme"); }
+window.addEventListener("hashchange", () => { const t = hashTheme(); if (t && t !== theme) { theme = t; applyTheme(); renderCar(); renderFuncs(); } });
+document.getElementById("theme").addEventListener("click", () => {
+  theme = theme === "dark" ? "light" : "dark";
+  try { localStorage.setItem("chm.theme", theme); } catch (e) {}
+  applyTheme(); renderCar(); renderFuncs();
+});
+
+// ---------- приклад: шлях за таблицею швидкостей (трапеції) ----------
+const CAR_T = [0, 10, 20, 30, 40, 50, 60], CAR_V = [0, 5, 9, 12, 14, 15, 15];   // с, м/с
+let carK = 0;   // скільки трапецій уже порахували
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const a in attrs) e.setAttribute(a, attrs[a]); if (parent) parent.appendChild(e); return e; }
+function txt(parent, x, y, s, attrs = {}) { const t = el("text", Object.assign({ x, y, "font-size": 14, fill: css("--tick") }, attrs), parent); t.textContent = s; return t; }
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt = v => String(v).replace(".", ",");
+function renderCar() {
+  const svg = document.getElementById("chCar"), W = 720, H = 300, L = 54, R = 44, T = 32, B = 32;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  const X = t => L + t / 64 * (W - L - R), Y = v => H - B - v / 17 * (H - T - B);
+  for (let v = 0; v <= 16; v += 2) { el("line", { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: css("--grid") }, svg); txt(svg, L - 8, Y(v) + 5, String(v), { "text-anchor": "end" }); }
+  CAR_T.forEach(t => txt(svg, X(t), H - B + 21, String(t), { "text-anchor": "middle" }));
+  el("rect", { x: L, y: T, width: W - L - R, height: H - T - B, fill: "none", stroke: css("--frame") }, svg);
+  // підписи осей: x — праворуч від міток унизу, y — над рамкою
+  txt(svg, W - 4, H - B + 21, "t, с", { "text-anchor": "end", "font-weight": 700, fill: css("--ink") });
+  txt(svg, L, T - 10, "v, м/с", { "text-anchor": "middle", "font-weight": 700, fill: css("--ink") });
+  for (let i = 0; i < carK; i++) {
+    el("polygon", { points: `${X(CAR_T[i])},${Y(0)} ${X(CAR_T[i])},${Y(CAR_V[i])} ${X(CAR_T[i + 1])},${Y(CAR_V[i + 1])} ${X(CAR_T[i + 1])},${Y(0)}`, fill: css("--accent"), "fill-opacity": 0.25, stroke: css("--accent"), "stroke-width": 1.5 }, svg);
+  }
+  CAR_T.forEach((t, i) => el("circle", { cx: X(t), cy: Y(CAR_V[i]), r: 7, fill: css("--pt"), stroke: css("--halo"), "stroke-width": 2.5 }, svg));
+  let sum = 0, rows = "";
+  for (let i = 0; i < CAR_T.length - 1; i++) {
+    const a = 10 * (CAR_V[i] + CAR_V[i + 1]) / 2, done = i < carK;
+    if (done) sum += a;
+    rows += `<tr${done ? "" : ' class="muted"'}><td class="num">${CAR_T[i]}–${CAR_T[i + 1]} с</td><td class="num">10 · (${CAR_V[i]} + ${CAR_V[i + 1]}) / 2</td><td class="num">${done ? fmt(a) + " м" : "—"}</td><td class="num">${done ? fmt(sum) + " м" : ""}</td></tr>`;
+  }
+  document.getElementById("tCar").innerHTML = "<tr><th>Смужка</th><th>Площа трапеції</th><th>Шлях на смужці</th><th>Разом</th></tr>" + rows;
+  document.getElementById("cStep").disabled = carK >= CAR_T.length - 1;
+}
+// ---------- 2. функція з ЛР2 (таблиця) і з ЛР3 (формула) ----------
+// невеликий графік: вікно [x0; x1] × [y0; y1], сітка з кроками sx/sy, підписи осей x / y
+function smallChart(id, o) {
+  const svg = document.getElementById(id), W = 720, H = 280, L = 58, R = 40, T = 32, B = 32;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  const X = x => L + (x - o.x0) / (o.x1 - o.x0) * (W - L - R), Y = y => H - B - (y - o.y0) / (o.y1 - o.y0) * (H - T - B);
+  for (let y = o.y0; y <= o.y1 + 1e-9; y += o.sy) { el("line", { x1: L, x2: W - R, y1: Y(y), y2: Y(y), stroke: css(Math.abs(y) < 1e-9 ? "--zero" : "--grid") }, svg); txt(svg, L - 8, Y(y) + 5, fmt(+y.toFixed(2)), { "text-anchor": "end" }); }
+  for (let x = o.x0; x <= o.x1 + 1e-9; x += o.sx) txt(svg, X(x), H - B + 21, fmt(+x.toFixed(2)), { "text-anchor": "middle" });
+  el("rect", { x: L, y: T, width: W - L - R, height: H - T - B, fill: "none", stroke: css("--frame") }, svg);
+  txt(svg, W - 4, H - B + 21, "x", { "text-anchor": "end", "font-weight": 700, fill: css("--ink") });
+  txt(svg, L, T - 10, "y", { "text-anchor": "middle", "font-weight": 700, fill: css("--ink") });
+  return { svg, X, Y };
+}
+function renderFuncs() {
+  // ЛР2, зразок: лише 5 точок
+  const P = [[0, 0.03], [0.15, 0.08], [0.3, 0.34], [0.45, 0.18], [0.6, 0.3]];
+  const a = smallChart("chL2", { x0: -0.05, x1: 0.65, y0: 0, y1: 0.45, sx: 0.15, sy: 0.1 });
+  P.forEach(([x, y], i) => {
+    el("circle", { cx: a.X(x), cy: a.Y(y), r: 8, fill: css("--pt"), stroke: css("--halo"), "stroke-width": 2.5 }, a.svg);
+    txt(a.svg, a.X(x), a.Y(y) + (i % 2 ? 26 : -14), `${i + 1}(${fmt(x)}; ${fmt(y)})`, { "text-anchor": "middle", "font-weight": 700, fill: css("--ink"), stroke: css("--halo"), "stroke-width": 4, "paint-order": "stroke" });
+  });
+  // ЛР3, зразок: формула — суцільна крива
+  const b = smallChart("chL3", { x0: 0, x1: 20, y0: 0, y1: 1.1, sx: 5, sy: 0.2 });
+  let d = ""; for (let i = 0; i <= 200; i++) { const x = 20 * i / 200; d += (i ? "L" : "M") + b.X(x).toFixed(1) + " " + b.Y(Math.exp(-0.189 * x)).toFixed(1); }
+  el("path", { d, fill: "none", stroke: css("--L1"), "stroke-width": 4 }, b.svg);
+  txt(b.svg, b.X(6), b.Y(Math.exp(-0.189 * 6)) - 14, "f(x) = e^(−0,189x)", { "font-weight": 700, fill: css("--L1"), stroke: css("--halo"), "stroke-width": 4, "paint-order": "stroke" });
+}
+document.getElementById("cStep").addEventListener("click", () => { carK++; renderCar(); });
+document.getElementById("cReset").addEventListener("click", () => { carK = 0; renderCar(); });
+
+applyTheme(); renderCar(); renderFuncs();
+</script>
+</body>
+</html>
