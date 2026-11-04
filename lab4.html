@@ -602,6 +602,41 @@ showTab(tabParam());
 countTab(tabParam());
 
 applyTheme(); renderAll();
+// ---------- розряди: 10000000 → 10 000 000 у таблицях і на графіках (крім чисел із крапкою — це вивід Python) ----------
+const DIGITS_RE = /(^|[^\d.,\wⁱ⁰¹²³⁴⁵⁶⁷⁸⁹])(\d{4,})(?=(,\d+)?(?![\d.\w]))/g;
+function groupDigits() {
+  document.querySelectorAll("td, th, svg text").forEach(cell => {
+    if (cell.closest(".nogroup")) return;
+    const w = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
+    for (let n = w.nextNode(); n; n = w.nextNode()) {
+      if (/\d\.\d/.test(n.nodeValue)) continue;
+      const v = n.nodeValue.replace(DIGITS_RE, (m, pre, d) => pre + d.replace(/\B(?=(\d{3})+$)/g, "\u00a0"));
+      if (v !== n.nodeValue) n.nodeValue = v;
+    }
+  });
+}
+// ---------- таблиці: заголовок стовпця вирівнюємо так само, як числа під ним ----------
+function alignHeads() {
+  groupDigits();
+  document.querySelectorAll("table").forEach(t => {
+    const rows = [...t.rows], isHead = r => r.cells.length && [...r.cells].every(c => c.tagName === "TH");
+    const body = rows.find(r => !isHead(r) && r.cells.length > 1);
+    if (!body) return;
+    const at = [];   // стовпець → клітинка першого рядка даних (з урахуванням colspan)
+    [...body.cells].forEach(c => { for (let k = 0; k < c.colSpan; k++) at.push(c.colSpan === 1 ? c : null); });
+    rows.filter(isHead).forEach(h => {
+      let col = 0;
+      [...h.cells].forEach(th => {
+        const td = at[col];
+        if (th.colSpan === 1 && td) th.style.textAlign = getComputedStyle(td).textAlign;
+        col += th.colSpan;
+      });
+    });
+  });
+}
+let alignTimer = null;
+new MutationObserver(() => { clearTimeout(alignTimer); alignTimer = setTimeout(alignHeads, 0); }).observe(document.body, { childList: true, subtree: true });
+alignHeads();
 </script>
 </body>
 </html>
