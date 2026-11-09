@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ЛР6 · Диференціальне рівняння</title>
+<style>
+  :root {
+    --bg: #11151c; --card: #1a2029; --ink: #e9edf3; --muted: #9aa5b4; --line: #2b3442; --chip: #232c38; --accent: #ffb26b;
+    --L1: #5aa7ff; --L2: #ffab4a; --L3: #d08cff; --L4: #4fd690;
+    --grid: #262f3c; --zero: #56627a; --frame: #3a4556; --tick: #a3adbb; --band: #2b2a1f;
+    --pt: #f4f1e8; --halo: #11151c; --ctrl: #232c38; --ctrl-line: #3a4556; --on: #2f3b4d;
+  }
+  :root[data-theme="light"] {
+    --bg: #f7f5ef; --card: #fffdf8; --ink: #1b2330; --muted: #5a6272; --line: #e2ddd0; --chip: #f0ece2; --accent: #b4501f;
+    --L1: #1f5fa8; --L2: #c9731a; --L3: #7a3e9d; --L4: #2e8a62;
+    --grid: #e7e2d6; --zero: #9a9384; --frame: #cfc9ba; --tick: #5a6272; --band: #efe8d6;
+    --pt: #1b2330; --halo: #fffdf8; --ctrl: #ffffff; --ctrl-line: #cfc9ba; --on: #f0ece2;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 "Segoe UI", system-ui, Arial, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 18px 16px 70px; }
+  .top { display: flex; align-items: center; gap: 12px; }
+  .top button { margin-left: auto; }
+  h1 { font-size: 26px; line-height: 1.25; margin: 6px 0 4px; }
+  h2 { font-size: 20px; margin: 0 0 6px; }
+  p { margin: 6px 0 10px; }
+  .muted { color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin: 18px 0; }
+  .try { background: var(--chip); border-radius: 10px; padding: 8px 12px; margin: 10px 0 0; font-size: 16px; }
+  .try b { color: var(--accent); }
+  .note { border-left: 3px solid var(--accent); padding: 2px 0 2px 12px; margin: 10px 0 0; font-size: 16px; }
+  button, select { font: inherit; font-size: 15px; padding: 6px 12px; border-radius: 9px; border: 1px solid var(--ctrl-line); background: var(--ctrl); color: var(--ink); cursor: pointer; }
+  button.on { background: var(--on); border-color: var(--accent); font-weight: 600; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .chips label { display: inline-flex; align-items: center; gap: 6px; margin: 0 14px 4px 0; cursor: pointer; white-space: nowrap; font-size: 16px; }
+  .tag { display: inline-block; width: 24px; height: 5px; border-radius: 3px; }
+  input[type=range] { width: 100%; margin: 8px 0 2px; accent-color: var(--accent); }
+  .rlabel { display: flex; justify-content: space-between; font-size: 15px; color: var(--muted); }
+  .rlabel b { color: var(--ink); font-family: Consolas, "Courier New", monospace; }
+  svg { width: 100%; height: auto; display: block; touch-action: pan-y; }
+  .drag { cursor: grab; touch-action: none; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; margin-top: 8px; }
+  th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; }
+  td.num { font-family: Consolas, "Courier New", monospace; text-align: right; white-space: nowrap; }
+  .tbl { overflow-x: auto; }
+  .mono { font-family: Consolas, "Courier New", monospace; }
+  .formula { font-family: Consolas, "Courier New", monospace; font-size: 15px; background: var(--chip); border-radius: 10px; padding: 8px 12px; overflow-x: auto; white-space: nowrap; margin-top: 8px; }
+  .big { font-size: 22px; font-weight: 700; font-family: Consolas, "Courier New", monospace; }
+  ul.sum li { margin-bottom: 6px; }
+  .z-in { color: var(--L4); } .z-ex { color: var(--accent); }
+  h3 { font-size: 17px; margin: 14px 0 4px; }
+  ol { margin: 6px 0 10px; padding-left: 22px; }
+  .tbl th { text-align: left; }
+  .tabs { display: flex; gap: 4px; margin: 12px 0 0; border-bottom: 1px solid var(--line); }
+  .tabs button { border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; padding: 8px 14px; font-size: 16px; font-weight: 600; color: var(--muted); }
+  .tabs button.on { color: var(--ink); border-bottom-color: var(--accent); }
+  h2.qtitle { font-size: 22px; margin: 18px 0 4px; }
+  a.pdf { display: inline-block; padding: 6px 14px; border-radius: 9px; border: 1px solid var(--ctrl-line); background: var(--ctrl); color: var(--ink); text-decoration: none; font-weight: 600; }
+  .formula sub { font-size: 12px; }
+  .formula { white-space: normal; word-break: break-all; }
+  button:disabled { opacity: 0.45; cursor: default; }
+  #t3 th, #t4 th { text-align: right; } #t3 th:first-child, #t4 th:first-child { text-align: left; }
+  #tabQ ol { padding-left: 26px; } #tabQ li { margin-bottom: 8px; }
+</style>
+<script data-goatcounter="https://volodymyrbereziuk.goatcounter.com/count" data-goatcounter-settings='{"allow_frame": true}' async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<main>
+  <div class="top"><span class="muted">Лабораторна робота № 6 · Чисельні методи</span><button id="theme" title="Світла / темна тема">☀ / ☾</button></div>
+  <h1>Чисельне розв'язування диференціального рівняння</h1>
+  <p class="muted">Усі приклади побудовано на рівнянні зі зразка звіту. Результати свого варіанта отримайте власною програмою та порівняйте, чи спостерігаються ті самі ефекти.</p>
+  <div class="tabs" id="tabs"><button data-tab="m">Матеріал</button><button data-tab="q">Питання для підготовки</button></div>
+  <div id="tabMat">
+
+  <!-- 1 -->
+  <section class="card">
+    <h2>1. Що таке диференціальне рівняння</h2>
+    <p>У звичайному рівнянні невідоме — <b>число</b>: x + 3 = 5, отже x = 2. У диференціальному рівнянні невідоме — <b>функція</b>, а задано <b>правило</b>, за яким обчислюється її швидкість зміни (похідна).</p>
+    <div class="formula big">dy/dx = −0,6 · y, &nbsp; y(0) = 0,3</div>
+    <p>dy/dx — швидкість зміни y; −0,6·y — якою вона має бути: <b>що більше y, то швидше воно зменшується</b>. Сама швидкість заздалегідь не відома — її обчислюють із поточного значення y:</p>
+    <div class="tbl"><table>
+      <tr><th>y</th><th>0,3</th><th>0,2</th><th>0,1</th><th>0</th></tr>
+      <tr><td>швидкість −0,6·y</td><td>−0,18</td><td>−0,12</td><td>−0,06</td><td>0</td></tr>
+    </table></div>
+    <p>Правило задовольняє <b>безліч</b> функцій. <b>Початкова умова</b> y(0) = 0,3 вказує, звідки починається розв'язок, і вибирає з них одну.</p>
+    <p class="note">Знайти функцію можна двома способами. <b>Аналітично</b> — формулою; це можливо лише для простих типів рівнянь. <b>Чисельно</b> — кроками (Ейлер, Гюн, Рунге — Кутта); це можливо для будь-якого рівняння, але результат наближений. У роботі використовуються обидва способи: формула дає точні значення, з якими порівнюються чисельні методи.</p>
+  </section>
+
+  <!-- 1а -->
+  <section class="card">
+    <h2>2. Аналітичний розв'язок (п. 2 звіту)</h2>
+    <p>Рівняння зразка розв'язується <b>розділенням змінних</b>.</p>
+    <p><b>Крок 1.</b> Перенесіть y і x у різні частини рівняння (поділіть на y, помножте на dx):</p>
+    <div class="formula">dy / y = −0,6 · dx</div>
+    <p><b>Крок 2.</b> Проінтегруйте обидві частини: ∫ 1/y dy = ln y, ∫ −0,6 dx = −0,6·x. Стала c з'являється, бо похідна сталої дорівнює нулю:</p>
+    <div class="formula">ln y = −0,6·x + c</div>
+    <p><b>Крок 3.</b> Позбудьтеся логарифма (якщо ln y = a, то y = e<sup>a</sup>) і позначте e<sup>c</sup> = C:</p>
+    <div class="formula">y = e<sup>−0,6x + c</sup> = e<sup>c</sup> · e<sup>−0,6x</sup> = C · e<sup>−0,6x</sup></div>
+    <p>Це загальний розв'язок — уся множина функцій, по одній для кожного C.</p>
+    <p><b>Крок 4.</b> Початкова умова визначає C: y(0) = C · e<sup>0</sup> = C = 0,3.</p>
+    <div class="formula big">y = 0,3 · e<sup>−0,6x</sup></div>
+    <p class="try"><b>Завдання:</b> розв'яжіть так само рівняння свого варіанта.</p>
+  </section>
+
+  <!-- 2 -->
+  <section class="card">
+    <h2>3. Поле напрямків</h2>
+    <p>За правилом dy/dx = −0,6·y поводяться ліки в крові, радіоактивний розпад, розряд конденсатора.</p>
+    <p>У кожній точці (x; y) рівняння задає <b>нахил</b> — намалюємо його маленькою рискою. Вийде «течія». Розв'язок — крива, що пливе за течією. <b>Клацніть на графіку</b> в будь-якій точці — від неї попливе ще один розв'язок.</p>
+    <div class="seg" id="segF"></div>
+    <svg id="ch2" style="cursor:crosshair"></svg>
+    <div class="seg"><button id="clear2">Залишити лише y(0) = 0,3</button></div>
+    <p class="try"><b>Завдання:</b> запустіть кілька розв'язків з різних точок. Чи перетинаються криві? Що відбувається на осі y = 0? Яку роль тоді відіграє початкова умова y(0) = 0,3?</p>
+    <p class="note">Одне рівняння має <b>безліч</b> розв'язків — по одному через кожну точку. Початкова умова вибирає з них один. Точний розв'язок зразка — y = 0,3·e<sup>−0,6x</sup>; для більшості рівнянь такої формули немає, і криву будують чисельно.</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="card">
+    <h2>4. Метод Ейлера: як він працює</h2>
+    <p>Відома лише одна точка — початкова: x = 0, y = 0,3. Відрізок [0; 1] ділять на N = 20 кроків довжиною h = (1 − 0) / 20 = 0,05 і проходять його крок за кроком.</p>
+    <p><b>Один крок методу:</b></p>
+    <div class="formula">k = f(x, y) &nbsp;&nbsp;— похідна в поточній точці (з рівняння: k = −0,6·y)<br>y := y + k·h &nbsp;— нове y = старе y + похідна × крок<br>x := x + h</div>
+    <p>Рівняння dy/dx = −0,6·y — це правило для похідної в <b>будь-якій</b> точці; k — її значення в <b>поточній</b> точці, тобто нахил дотичної. Метод вважає, що протягом усього кроку похідна така сама, як на його початку, і рухається вздовж дотичної (як метод Ньютона в ЛР5; зв'язок з ЛР3: похідна ≈ Δy / h, отже Δy ≈ похідна · h).</p>
+    <div class="tbl"><table>
+      <tr><th>крок</th><th>x</th><th>k = −0,6·y</th><th>y := y + k·0,05</th><th>точно 0,3·e<sup>−0,6x</sup></th></tr>
+      <tr><td>0</td><td>0</td><td></td><td>0,3</td><td>0,3</td></tr>
+      <tr><td>1</td><td>0,05</td><td>−0,6·0,3 = −0,18</td><td>0,3 − 0,009 = 0,291</td><td>0,291134</td></tr>
+      <tr><td>2</td><td>0,10</td><td>−0,6·0,291 = −0,1746</td><td>0,291 − 0,00873 = 0,28227</td><td>0,282529</td></tr>
+      <tr><td>3</td><td>0,15</td><td>−0,169362</td><td>0,273802</td><td>0,274179</td></tr>
+      <tr><td>…</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>20</td><td>1,00</td><td>−0,100910</td><td>0,163138</td><td>0,164643</td></tr>
+    </table></div>
+    <p>Результат — таблиця з 21 значення y (початкова точка і 20 кроків); це і є наближений розв'язок на [0; 1]. Значення збігаються з консоллю зразка.</p>
+    <p>Метод Ейлера весь час дає значення <b>нижче</b> точних, і похибка зростає: 0,00013 після першого кроку, 0,0015 у кінці. Причина: похідна береться на початку кроку, коли y найбільше і спадає найшвидше; протягом кроку y зменшується, і справжня швидкість стає меншою. Похибки окремих кроків <b>накопичуються</b>.</p>
+    <p>У програмі зразка крок методу — три рядки в циклі; функція fun(x, y) — права частина рівняння:</p>
+    <div class="formula">for i in range(1, n + 1):<br>&nbsp;&nbsp;&nbsp;&nbsp;k1 = fun(x, y)<br>&nbsp;&nbsp;&nbsp;&nbsp;y = y + k1 * h<br>&nbsp;&nbsp;&nbsp;&nbsp;x = x + h</div>
+    <p class="note">У рівнянні зразка права частина не залежить від x, але fun приймає і x, і y: загальний вигляд рівняння — dy/dx = f(x, y). Тому ті самі методи працюють для будь-якого рівняння — змінюється лише fun.</p>
+  </section>
+
+  <!-- 3б -->
+  <section class="card">
+    <h2>5. Метод Гюна: середня похідна початку й кінця кроку</h2>
+    <p>Метод Ейлера бере похідну лише на <b>початку</b> кроку і тому відстає. Метод Гюна визначає похідну і на початку, і в <b>кінці</b> кроку, а крок робить із їхнім <b>середнім</b>.</p>
+    <p><b>Один крок методу:</b></p>
+    <div class="formula">k1 = f(x, y) &nbsp;&nbsp;— похідна на початку кроку<br>y + h·k1 &nbsp;&nbsp;— пробний крок Ейлером: наближене y в кінці кроку<br>k2 = f(x + h, y + h·k1) &nbsp;&nbsp;— похідна в кінці кроку<br>y := y + (k1 + k2) / 2 · h<br>x := x + h</div>
+    <p>Пробне значення y + h·k1 — це ще не похідна, а <b>значення y</b> в кінці кроку, обчислене методом Ейлера. Воно потрібне лише для того, щоб підставити його в рівняння й отримати похідну k2. Потім крок виконується заново — із середньою похідною.</p>
+    <div class="tbl"><table>
+      <tr><th>крок</th><th>x</th><th>k1 = −0,6·y</th><th>пробне y + h·k1</th><th>k2</th><th>y := y + (k1 + k2)/2·h</th><th>точно</th></tr>
+      <tr><td>0</td><td>0</td><td></td><td></td><td></td><td>0,3</td><td>0,3</td></tr>
+      <tr><td>1</td><td>0,05</td><td>−0,18</td><td>0,3 + 0,05·(−0,18) = 0,291</td><td>−0,6·0,291 = −0,1746</td><td>0,3 + 0,05·(−0,1773) = 0,291135</td><td>0,291134</td></tr>
+      <tr><td>2</td><td>0,10</td><td>−0,174681</td><td>0,282401</td><td>−0,169441</td><td>0,282532</td><td>0,282529</td></tr>
+      <tr><td>…</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>20</td><td>1,00</td><td>−0,101803</td><td></td><td>−0,098749</td><td>0,164659</td><td>0,164643</td></tr>
+    </table></div>
+    <p>На кінці відрізка (x = 1, N = 20) похибка методу Ейлера — 0,0015, методу Гюна — 0,000015: <b>у 100 разів менша</b>, хоча на кожному кроці обчислюється лише дві похідні замість однієї.</p>
+    <p>У програмі зразка:</p>
+    <div class="formula">k1 = fun(x, y)<br>k2 = fun(x + h, y + h * k1)<br>y = y + (k1 + k2) * h / 2<br>x = x + h</div>
+    <p class="note">Зв'язок з ЛР3: метод Ейлера подібний до методу лівих прямокутників (значення лише на лівому краї), метод Гюна — до методу трапецій (середнє двох країв).</p>
+  </section>
+
+  <!-- 3в -->
+  <section class="card">
+    <h2>6. Метод Рунге — Кутта: чотири похідні на крок</h2>
+    <p>Метод Рунге — Кутта продовжує ту саму ідею: похідну визначають у кількох точках кроку й беруть середнє.</p>
+    <div class="tbl"><table>
+      <tr><th>Метод</th><th>Похідних на крок</th><th>Де</th></tr>
+      <tr><td>Ейлер</td><td>1</td><td>на початку</td></tr>
+      <tr><td>Гюн</td><td>2</td><td>на початку і в кінці</td></tr>
+      <tr><td>Рунге — Кутта</td><td>4</td><td>на початку, двічі в середині, у кінці</td></tr>
+    </table></div>
+    <p><b>Один крок методу:</b></p>
+    <div class="formula">k1 = f(x, y) &nbsp;&nbsp;— похідна на початку<br>k2 = f(x + h/2, y + k1·h/2) &nbsp;&nbsp;— пробні пів кроку з k1: похідна в середині<br>k3 = f(x + h/2, y + k2·h/2) &nbsp;&nbsp;— ще раз пів кроку, з k2: уточнена похідна в середині<br>k4 = f(x + h, y + k3·h) &nbsp;&nbsp;— повний пробний крок з k3: похідна в кінці<br>y := y + (k1 + 2·k2 + 2·k3 + k4) / 6 · h<br>x := x + h</div>
+    <p>Як і в методі Гюна, пробні кроки дають лише <b>значення y</b>, у яких обчислюється похідна; кожен наступний пробний крок використовує уточнену похідну з попереднього. Середина має вагу 2 (ваги 1, 2, 2, 1, сума 6).</p>
+    <div class="tbl"><table>
+      <tr><th>Перший крок</th><th>пробне y</th><th>похідна</th></tr>
+      <tr><td>k1</td><td>0,3 (початок)</td><td>−0,6·0,3 = −0,18</td></tr>
+      <tr><td>k2</td><td>0,3 + (−0,18)·0,025 = 0,2955</td><td>−0,6·0,2955 = −0,1773</td></tr>
+      <tr><td>k3</td><td>0,3 + (−0,1773)·0,025 = 0,2955675</td><td>−0,17734</td></tr>
+      <tr><td>k4</td><td>0,3 + (−0,17734)·0,05 = 0,291133</td><td>−0,17468</td></tr>
+    </table></div>
+    <div class="formula">y = 0,3 + (−0,18 + 2·(−0,1773) + 2·(−0,17734) − 0,17468) / 6 · 0,05 = 0,29113366</div>
+    <p>Точне значення — 0,29113366: збіг у восьми знаках.</p>
+    <div class="tbl"><table>
+      <tr><th>x = 1, N = 20</th><th>y(1)</th><th>похибка</th><th>обчислень похідної</th></tr>
+      <tr><td>точно</td><td>0,1646434908</td><td></td><td></td></tr>
+      <tr><td>Ейлер</td><td>0,163138</td><td>1,5·10⁻³</td><td>N = 20</td></tr>
+      <tr><td>Гюн</td><td>0,164659</td><td>1,5·10⁻⁵</td><td>2N = 40</td></tr>
+      <tr><td>Рунге — Кутта</td><td>0,1646434915</td><td>7·10⁻¹⁰</td><td>4N = 80</td></tr>
+    </table></div>
+    <p>Усі три методи мають складність <b>O(N)</b> — відрізняється лише сталий множник (1, 2, 4). Натомість при подвоєнні N похибка зменшується в 2, 4 і 16 разів відповідно, тому за однакову точність метод Рунге — Кутта найдешевший. На практиці використовують саме його.</p>
+    <p>У програмі зразка:</p>
+    <div class="formula">k1 = fun(x, y)<br>k2 = fun(x + h / 2, y + k1 * h / 2)<br>k3 = fun(x + h / 2, y + k2 * h / 2)<br>k4 = fun(x + h, y + k3 * h)<br>y = y + (k1 + 2 * k2 + 2 * k3 + k4) * h / 6<br>x = x + h</div>
+    <p class="note">Зв'язок з ЛР3: ваги 1, 2, 2, 1 — це формула Сімпсона (1 : 4 : 1), у якій середня точка врахована двічі (4 = 2 + 2).</p>
+  </section>
+
+  <!-- порівняння -->
+  <section class="card">
+    <h2>7. Порівняння методів на графіку</h2>
+    <p>Ламані чисельних методів і точний розв'язок y = 0,3·e<sup>−0,6x</sup>. Кожна ланка ламаної — один крок. Змінюйте кількість кроків N.</p>
+    <div class="chips" id="chips3"></div>
+    <input type="range" id="n3" min="2" max="100" value="5">
+    <div class="rlabel"><span>кількість кроків N = <b id="n3v"></b></span><span>крок h = <b id="h3v"></b></span></div>
+    <svg id="ch3"></svg>
+    <p>Уже при N = 20 ламані методів Гюна та Рунге — Кутта на графіку функції зливаються з точною кривою. Різницю видно на графіку <b>абсолютної похибки</b> |y − y<sub>точне</sub>| залежно від номера кроку (як у п. 5 звіту). Вісь похибки — логарифмічна: кожна поділка — у 10 разів менше.</p>
+    <input type="range" id="n3e" min="2" max="100" value="20">
+    <div class="rlabel"><span>кількість кроків N = <b id="n3ev"></b></span><span>крок h = <b id="h3ev"></b></span></div>
+    <svg id="ch3e"></svg>
+    <div class="tbl"><table id="t3"></table></div>
+    <p class="try"><b>Завдання:</b> встановіть N = 20, як у роботі, і порівняйте y(1) кожного методу з консоллю. Чому ламана Ейлера завжди нижче точної кривої? Як змінюється похибка вздовж відрізка? Збільште N удвічі — на скільки поділок опустилася лінія похибки кожного методу?</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="card">
+    <h2>8. Де застосовують диференціальні рівняння</h2>
+    <p>Майже всі закони природи записано як правила зміни. Формулою розв'язується мала частина; решту обчислюють кроками — як у цій роботі.</p>
+    <div class="tbl"><table>
+      <tr><th>Галузь</th><th>Правило зміни</th><th>Що невідоме</th></tr>
+      <tr><td>Теплотехніка</td><td>швидкість остигання ∝ різниці температур</td><td>температура від часу</td></tr>
+      <tr><td>Медицина</td><td>організм виводить частку ліків за годину</td><td>концентрація в крові, коли давати наступну дозу</td></tr>
+      <tr><td>Електроніка</td><td>струм конденсатора ∝ швидкості зміни напруги</td><td>напруга в колі від часу</td></tr>
+      <tr><td>Механіка, ігри</td><td>прискорення = сила / маса (закон Ньютона)</td><td>положення й швидкість тіла</td></tr>
+      <tr><td>Епідеміологія</td><td>нові хворі ∝ контактам хворих зі здоровими</td><td>кількість хворих від часу</td></tr>
+      <tr><td>Прогноз погоди</td><td>рівняння руху й нагріву повітря</td><td>температура, тиск, вітер у кожній точці</td></tr>
+    </table></div>
+    <h3>Фізика в іграх</h3>
+    <p>Ігровий рушій кожен кадр (60 разів за секунду) робить саме крок методу Ейлера або подібного: швидкість := швидкість + прискорення·h, положення := положення + швидкість·h, де h = 1/60 с. Формули траєкторії ніхто не шукає — правило зміни виконується кроками.</p>
+    <h3>Прогноз погоди</h3>
+    <p>Атмосферу ділять на сітку точок і для кожної крок за кроком розв'язують рівняння руху й теплообміну. Це ті самі чисельні методи, лише рівнянь — мільйони, тому прогноз рахують суперкомп'ютери.</p>
+    <p class="note">Детальніше і дуже наочно — урок 3Blue1Brown «Differential equations, studying the unsolvable» (англійською, є субтитри).</p>
+  </section>
+
+  <section class="card">
+    <h2>Висновки</h2>
+    <ul class="sum">
+      <li>Диференціальне рівняння задає не функцію, а <b>правило її зміни</b>; початкова умова вибирає один розв'язок із безлічі.</li>
+      <li>Чисельний метод іде за правилом <b>кроками</b>: Ейлер — по нахилу на початку кроку, Гюн і Рунге — Кутта — по усереднених нахилах.</li>
+      <li>Менший крок — менша похибка; що вищий порядок методу, то швидше вона зменшується.</li>
+    </ul>
+    <p class="muted">Перевірте на своєму варіанті: у скільки разів похибки трьох методів відрізняються при N = 20? Як змінюється абсолютна похибка Ейлера вздовж x?</p>
+  </section>
+  </div>
+  <div id="tabQ" hidden><!-- QUESTIONS:START -->
+  <h2 class="qtitle">Питання для підготовки до захисту</h2>
+  <p>Готуйтеся пояснювати <b>своїми словами</b> і <b>на своїх даних</b>: що вийшло у вашій роботі і чому. На захисті будуть і інші питання на розуміння.</p>
+  <p><a class="pdf" href="lab6_questions.pdf" download>Завантажити PDF</a></p>
+  <section class="card">
+    <h2>Рівень 1</h2>
+    <ol start="1">
+      <li>Що таке диференціальне рівняння? Чим воно відрізняється від рівняння, яке ви розв'язували в ЛР5?</li>
+      <li>Навіщо потрібна початкова умова y(0)? Скільки розв'язків мало б ваше рівняння без неї?</li>
+      <li>Як ви знайшли аналітичний розв'язок свого рівняння? Як перевірити, що він правильний?</li>
+      <li>Опишіть один крок методу Ейлера на своїх числах. Що таке k і чим воно відрізняється від самого рівняння?</li>
+      <li>Значення методу Ейлера у вашій таблиці вище чи нижче точних? Чому? Як змінюється похибка вздовж x?</li>
+    </ol>
+    <h3>По коду</h3>
+    <ol start="6">
+      <li>Що таке h у вашій програмі і як воно обчислюється? Скільки рядків у вашій таблиці методу Ейлера і чому саме стільки?</li>
+      <li>Навіщо функції fun параметр x, якщо у вашому рівнянні x немає?</li>
+      <li>У методі Гюна обчислюється y + h·k1. Що це — похідна чи значення y? Навіщо воно потрібне?</li>
+    </ol>
+  </section>
+  <section class="card">
+    <h2>Рівень 2</h2>
+    <ol start="1">
+      <li>Чим метод Гюна кращий за метод Ейлера? У скільки разів відрізняються їхні похибки у вашій роботі?</li>
+      <li>Скільки похідних обчислює метод Рунге — Кутта на одному кроці і в яких точках? Чому середня точка має вагу 2? З якою формулою ЛР3 це пов'язано?</li>
+      <li>Що станеться з похибкою кожного методу, якщо взяти N = 40? Спершу передбачте, потім перевірте.</li>
+      <li>Що вийде, якщо зробити лише один крок на весь відрізок (N = 1)? Який метод упорається найкраще?</li>
+      <li>Скільки разів обчислює похідну кожен метод при N кроках? Який метод найвигідніший, якщо потрібна висока точність?</li>
+      <li>Чому на графіку абсолютної похибки вісь y логарифмічна? Як виглядав би графік зі звичайною віссю?</li>
+    </ol>
+  </section>
+  <!-- QUESTIONS:END --></div>
+</main>
+<script>
+// ---------- форматування ----------
+// число з комою; d — знаків після коми (зайві нулі відкидаються)
+const c = (v, d = 3) => { const r = Number(v.toFixed(d)); return (r < 0 ? "−" : "") + String(Math.abs(r)).replace(".", ","); };
+const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+const sup = n => (n < 0 ? "⁻" : "") + String(Math.abs(n)).replace(/\d/g, d => SUP[d]);
+function sci(v) {
+  if (v === 0) return "0";
+  const p = Math.floor(Math.log10(Math.abs(v))), m = v / 10 ** p;
+  return (m < 0 ? "−" : "") + Math.abs(m).toFixed(1).replace(".", ",") + "·10" + sup(p);
+}
+// ---------- тема ----------
+let TH = {};
+function readTheme() {
+  const s = getComputedStyle(document.documentElement), v = n => s.getPropertyValue(n).trim();
+  TH = { L1: v("--L1"), L2: v("--L2"), L3: v("--L3"), L4: v("--L4"), grid: v("--grid"), zero: v("--zero"), frame: v("--frame"),
+    tick: v("--tick"), band: v("--band"), pt: v("--pt"), halo: v("--halo"), ink: v("--ink"), accent: v("--accent"), muted: v("--muted") };
+}
+// усередині сайту тему задає оболонка (#theme=dark), тоді своя кнопка не потрібна
+const embedded = window.parent !== window;
+let theme = "dark";
+try { theme = localStorage.getItem("chm.theme") || "dark"; } catch (e) {}
+const hashTheme = () => { const t = new URLSearchParams(location.hash.slice(1)).get("theme"); return t === "light" || t === "dark" ? t : null; };
+if (hashTheme()) theme = hashTheme();
+if (embedded) document.getElementById("theme").style.display = "none";
+function applyTheme() {
+  if (theme === "light") document.documentElement.setAttribute("data-theme", "light"); else document.documentElement.removeAttribute("data-theme");
+  readTheme();
+}
+window.addEventListener("hashchange", () => { const t = hashTheme(); if (t && t !== theme) { theme = t; applyTheme(); renderAll(); } });
+document.getElementById("theme").addEventListener("click", () => {
+  theme = theme === "dark" ? "light" : "dark";
+  try { localStorage.setItem("chm.theme", theme); } catch (e) {}
+  applyTheme(); renderAll();
+});
+
+// ---------- SVG-графік ----------
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const a in attrs) e.setAttribute(a, attrs[a]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(parent, x, y, s, attrs = {}) {
+  const t = el("text", Object.assign({ x, y, "font-size": 14, fill: TH.tick }, attrs), parent);
+  t.textContent = s; return t;
+}
+function label(parent, x, y, s, attrs = {}) {
+  return txt(parent, x, y, s, Object.assign({ "font-size": 15, "font-weight": 700, fill: TH.ink, stroke: TH.halo, "stroke-width": 5, "paint-order": "stroke", "stroke-linejoin": "round" }, attrs));
+}
+function ticks(min, max, count = 6) {
+  const span = max - min || 1;
+  let step = Math.pow(10, Math.floor(Math.log10(span / count)));
+  const err = span / count / step;
+  if (err >= 7.5) step *= 10; else if (err >= 3.5) step *= 5; else if (err >= 1.5) step *= 2;
+  const t = [], dec = Math.max(0, -Math.floor(Math.log10(step) + 1e-9));
+  for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) t.push(Number(v.toFixed(dec + 2)));
+  return { t, dec };
+}
+function chart(svg, o) {
+  const W = 720, H = o.H || 360, Lm = 64, R = 12, T = 12, B = 32;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  const X = v => Lm + (v - o.xmin) / (o.xmax - o.xmin) * (W - Lm - R);
+  const Y = v => H - B - (v - o.ymin) / (o.ymax - o.ymin) * (H - T - B);
+  const id = "c" + Math.random().toString(36).slice(2);
+  el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B }, el("clipPath", { id }, el("defs", {}, svg)));
+  const ty = ticks(o.ymin, o.ymax), tx = ticks(o.xmin, o.xmax, 8);
+  for (const v of ty.t) {
+    const zero = Math.abs(v) < 1e-12;
+    el("line", { x1: Lm, x2: W - R, y1: Y(v), y2: Y(v), stroke: zero ? TH.zero : TH.grid, "stroke-width": zero ? 2 : 1 }, svg);
+    txt(svg, Lm - 8, Y(v) + 5, c(v, ty.dec + 1), { "text-anchor": "end" });
+  }
+  for (const v of tx.t) {
+    el("line", { x1: X(v), x2: X(v), y1: T, y2: H - B, stroke: TH.grid, "stroke-dasharray": "3 4" }, svg);
+    txt(svg, X(v), H - B + 21, c(v, tx.dec + 1), { "text-anchor": "middle" });
+  }
+  el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B, fill: "none", stroke: TH.frame }, svg);
+  const g = el("g", { "clip-path": `url(#${id})` }, svg);
+  return { X, Y, g, svg, W, H, T, B, Lm, R };
+}
+function curve(ch, fn, a, b, attrs, n = 300) {
+  let d = "";
+  for (let i = 0; i <= n; i++) {
+    const x = a + (b - a) * i / n, y = Math.max(-1e4, Math.min(1e4, ch.Y(fn(x))));
+    d += (i ? "L" : "M") + ch.X(x).toFixed(1) + " " + y.toFixed(1);
+  }
+  return el("path", Object.assign({ d, fill: "none", "stroke-width": 4, "stroke-linecap": "round", "stroke-linejoin": "round" }, attrs), ch.g);
+}
+function dot(ch, x, y, color, r = 9) { el("circle", { cx: ch.X(x), cy: ch.Y(y), r, fill: color, stroke: TH.halo, "stroke-width": 3 }, ch.g); }
+function seg(boxId, items, cur, onPick) {
+  const box = document.getElementById(boxId);
+  box.innerHTML = items.map(([v, t]) => `<button data-v="${v}" class="${String(v) === String(cur) ? "on" : ""}">${t}</button>`).join("");
+  box.querySelectorAll("button").forEach(b => b.addEventListener("click", () => onPick(b.dataset.v)));
+}
+
+// ---------- 2. поле напрямків: dy/dx = a·(y − b) ----------
+const RULES = { s: [-0.6, 0, "−0,6·y (зразок)"], g: [0.6, 0, "+0,6·y (ріст)"] };
+let rule = "s", starts = [[0, 0.3]];
+const W2 = { xmin: 0, xmax: 4, ymin: -0.6, ymax: 0.6 };
+function render2() {
+  seg("segF", Object.entries(RULES).map(([k, v]) => [k, v[2]]), rule, v => { rule = v; render2(); });
+  const [a, b] = RULES[rule], F = y => a * (y - b);
+  const ch = chart(document.getElementById("ch2"), Object.assign({ H: 380 }, W2));
+  // риски поля: однакової довжини на екрані
+  for (let i = 0; i <= 16; i++) for (let j = 0; j <= 12; j++) {
+    const x = W2.xmin + (W2.xmax - W2.xmin) * (i + 0.5) / 17, y = W2.ymin + (W2.ymax - W2.ymin) * (j + 0.5) / 13;
+    const dx = 1, dy = F(y), sx = ch.X(x + dx) - ch.X(x), sy = ch.Y(y + dy) - ch.Y(y), L = Math.hypot(sx, sy), r = 11;
+    el("line", { x1: ch.X(x) - sx / L * r, x2: ch.X(x) + sx / L * r, y1: ch.Y(y) - sy / L * r, y2: ch.Y(y) + sy / L * r, stroke: TH.muted, "stroke-width": 2, "stroke-linecap": "round", opacity: 0.7 }, ch.g);
+  }
+  // розв'язки: y = b + (y0 − b)·e^(a(x − x0))
+  starts.forEach(([x0, y0], k) => {
+    const col = k === 0 && rule === "s" && x0 === 0 && y0 === 0.3 ? TH.L2 : TH.L1;
+    curve(ch, x => b + (y0 - b) * Math.exp(a * (x - x0)), W2.xmin, W2.xmax, { stroke: col, "stroke-width": 3.5 }, 200);
+    dot(ch, x0, y0, col, 8);
+    if (k === 0) label(ch.svg, ch.X(x0) + 14, ch.Y(y0) - 10, `(${c(x0, 2)}; ${c(y0, 2)})`, { "font-size": 14 });
+  });
+  ch.svg.onclick = e => { const p = toData(ch, e); starts.push(p); render2(); };
+}
+function toData(ch, evt) {
+  const pt = ch.svg.createSVGPoint(); pt.x = evt.clientX; pt.y = evt.clientY;
+  const p = pt.matrixTransform(ch.svg.getScreenCTM().inverse());
+  const x = W2.xmin + (p.x - ch.Lm) / (ch.W - ch.Lm - ch.R) * (W2.xmax - W2.xmin);
+  const y = W2.ymin + (ch.H - ch.B - p.y) / (ch.H - ch.T - ch.B) * (W2.ymax - W2.ymin);
+  return [Math.max(W2.xmin, Math.min(W2.xmax, x)), Math.max(W2.ymin, Math.min(W2.ymax, y))];
+}
+document.getElementById("clear2").addEventListener("click", () => { starts = [[0, 0.3]]; rule = "s"; render2(); });
+
+// ---------- 3. Ейлер, Гюн, Рунге — Кутта на зразку ----------
+const fz = (x, y) => -0.6 * y, exact = x => 0.3 * Math.exp(-0.6 * x);
+const METHODS = {
+  e: ["Ейлер", "L1", (x, y, h) => y + fz(x, y) * h],
+  h: ["Гюн", "L4", (x, y, h) => { const k1 = fz(x, y), k2 = fz(x + h, y + h * k1); return y + (k1 + k2) * h / 2; }],
+  r: ["Рунге — Кутта", "L3", (x, y, h) => { const k1 = fz(x, y), k2 = fz(x + h / 2, y + k1 * h / 2), k3 = fz(x + h / 2, y + k2 * h / 2), k4 = fz(x + h, y + k3 * h); return y + (k1 + 2 * k2 + 2 * k3 + k4) * h / 6; }]
+};
+const on3 = { e: true, h: false, r: false };
+function path(m, N) {
+  const h = 1 / N, P = [[0, 0.3]];
+  let x = 0, y = 0.3;
+  for (let i = 0; i < N; i++) { y = METHODS[m][2](x, y, h); x = (i + 1) * h; P.push([x, y]); }
+  return P;
+}
+function renderM(id, SHOW3) {
+  const box = document.getElementById("chips" + id);
+  box.innerHTML = SHOW3.map(k => [k, METHODS[k]]).map(([k, [n, col]]) => `<label><span class="tag" style="background:${TH[col]}"></span>${n}</label>`).join("") +
+    `<label><span class="tag" style="background:${TH.L2}"></span>точний розв'язок</label>`;
+  box.querySelectorAll("input").forEach(cb => cb.addEventListener("change", () => { on3[cb.dataset.m] = cb.checked; renderM(id, SHOW3); }));
+  const N = Number(document.getElementById("n" + id).value), h = 1 / N;
+  document.getElementById("n" + id + "v").textContent = N;
+  document.getElementById("h" + id + "v").textContent = c(h, 4);
+  const ch = chart(document.getElementById("ch" + id), { xmin: 0, xmax: 1, ymin: 0.14, ymax: 0.31, H: 360 });
+  curve(ch, exact, 0, 1, { stroke: TH.L2, "stroke-width": 5, opacity: 0.8 });
+  for (const m of SHOW3) {
+    const P = path(m, N), col = TH[METHODS[m][1]];
+    el("path", { d: P.map(([x, y], i) => (i ? "L" : "M") + ch.X(x).toFixed(1) + " " + ch.Y(y).toFixed(1)).join(""), fill: "none", stroke: col, "stroke-width": 3 }, ch.g);
+    P.forEach(([x, y]) => el("circle", { cx: ch.X(x), cy: ch.Y(y), r: N <= 10 ? 6 : 4, fill: col, stroke: TH.halo, "stroke-width": 2 }, ch.g));
+    if (m === "e" && N <= 10) { const [x, y] = P[P.length - 1]; label(ch.svg, ch.X(x) - 10, ch.Y(y) + 26, `(1; ${c(y, 4)})`, { "text-anchor": "end", fill: col, "font-size": 14 }); }
+  }
+  label(ch.svg, ch.X(1) - 10, ch.Y(exact(1)) - 14, `точне (1; ${c(exact(1), 4)})`, { "text-anchor": "end", fill: TH.L2, "font-size": 14 });
+  axisNames(ch, "x", "y");
+  renderErr(id, SHOW3);
+}
+// графік похибки і таблиця — зі своїм повзунком N
+function renderErr(id, SHOW3) {
+  const N = Number(document.getElementById("n" + id + "e").value);
+  document.getElementById("n" + id + "ev").textContent = N;
+  document.getElementById("h" + id + "ev").textContent = c(1 / N, 4);
+  errChart(document.getElementById("ch" + id + "e"), SHOW3, N);
+  const ex = exact(1);
+  document.getElementById("t" + id).innerHTML = "<tr><th>Метод</th><th>y(1)</th><th>абсолютна похибка</th><th>відносна похибка</th><th>у скільки разів зменшується похибка при N × 2</th></tr>" +
+    SHOW3.map(k => [k, METHODS[k]]).map(([k, [n]]) => {
+      const y = path(k, N).at(-1)[1], y2 = path(k, 2 * N).at(-1)[1], e = Math.abs(y - ex) / ex, e2 = Math.abs(y2 - ex) / ex;
+      return `<tr><td>${n}</td><td class="num">${c(y, 8)}</td><td class="num">${Math.abs(y - ex) < 1e-4 ? sci(Math.abs(y - ex)) : c(Math.abs(y - ex), 6)}</td><td class="num">${e < 1e-4 ? sci(e * 100) : c(e * 100, 4)} %</td><td class="num">${c(e / e2, 1)}</td></tr>`;
+    }).join("") + `<tr><td>точне 0,3·e<sup>−0,6</sup></td><td class="num">${c(ex, 8)}</td><td></td><td></td><td></td></tr>`;
+}
+// підписи осей
+function axisNames(ch, xn, yn) {
+  label(ch.svg, ch.W - ch.R - (ch.W - ch.Lm - ch.R) * 0.05, ch.H - ch.B + 21, xn, { "text-anchor": "middle", "font-size": 14 });   // під віссю, між двома останніми поділками
+  label(ch.svg, ch.Lm + 8, ch.T + 18, yn, { "font-size": 14 });
+}
+// абсолютна похибка від номера кроку, вісь y — логарифмічна (фіксована: 10⁻¹⁴ … 10⁻¹)
+function errChart(svg, show, N) {
+  const LO = -14, HI = -1, W = 720, H = 340, Lm = 64, R = 12, T = 12, B = 32;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  const X = i => Lm + i / N * (W - Lm - R), Y = p => H - B - (p - LO) / (HI - LO) * (H - T - B);
+  for (let p = LO; p <= HI; p++) {
+    el("line", { x1: Lm, x2: W - R, y1: Y(p), y2: Y(p), stroke: TH.grid }, svg);
+    if (p % 2 === 0 || p === HI) txt(svg, Lm - 8, Y(p) + 5, "10" + sup(p), { "text-anchor": "end" });
+  }
+  const tx = ticks(0, N, 10).t.filter(v => Number.isInteger(v));
+  for (const v of tx) { el("line", { x1: X(v), x2: X(v), y1: T, y2: H - B, stroke: TH.grid, "stroke-dasharray": "3 4" }, svg); txt(svg, X(v), H - B + 21, String(v), { "text-anchor": "middle" }); }
+  el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B, fill: "none", stroke: TH.frame }, svg);
+  const id = "e" + Math.random().toString(36).slice(2);
+  el("rect", { x: Lm, y: T, width: W - Lm - R, height: H - T - B }, el("clipPath", { id }, el("defs", {}, svg)));
+  const g = el("g", { "clip-path": `url(#${id})` }, svg);
+  for (const m of show) {
+    const col = TH[METHODS[m][1]];
+    const P = path(m, N).slice(1).map(([x, y], i) => [i + 1, Math.log10(Math.max(1e-16, Math.abs(y - exact(x))))]);
+    el("path", { d: P.map(([i, p], k) => (k ? "L" : "M") + X(i).toFixed(1) + " " + Y(p).toFixed(1)).join(""), fill: "none", stroke: col, "stroke-width": 3 }, g);
+    P.forEach(([i, p]) => el("circle", { cx: X(i), cy: Y(p), r: N <= 20 ? 5 : 3, fill: col, stroke: TH.halo, "stroke-width": 1.5 }, g));
+    const [iL, pL] = P[P.length - 1];
+    label(svg, X(iL) - 8, Y(pL) - 10, `${METHODS[m][0]}: ${sci(10 ** pL)}`, { "text-anchor": "end", fill: col, "font-size": 14 });
+  }
+  label(svg, W - R - 4, H - B - 8, "номер кроку i", { "text-anchor": "end", "font-size": 14 });
+  label(svg, Lm + 8, T + 18, "абсолютна похибка |y − y точне|", { "font-size": 14 });
+}
+const render3 = () => renderM("3", ["e", "h", "r"]);
+document.getElementById("n3").addEventListener("input", render3);
+document.getElementById("n3e").addEventListener("input", () => renderErr("3", ["e", "h", "r"]));
+
+function renderAll() { render2(); render3(); }
+
+// лічильник відвідувань (GoatCounter): сторінка рахується сама, вкладка «Питання» — окремою подією
+function countTab(t) {
+  if (t !== "q") return;
+  const n = (location.pathname.match(/lab(\d)/) || [])[1];
+  const go = () => window.goatcounter && window.goatcounter.count && window.goatcounter.count({ path: `lab${n}-questions`, title: `ЛР${n} · питання`, event: true });
+  if (window.goatcounter && window.goatcounter.count) go(); else window.addEventListener("load", () => setTimeout(go, 500));
+}
+// ---------- вкладки: матеріал / питання (#tab=q) ----------
+const DEFAULT_TAB = "m";
+const tabParam = () => { const t = new URLSearchParams(location.hash.slice(1)).get("tab"); return t === "q" || t === "m" ? t : DEFAULT_TAB; };
+function showTab(t) {
+  document.getElementById("tabMat").hidden = t === "q";
+  document.getElementById("tabQ").hidden = t !== "q";
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+}
+document.querySelectorAll("#tabs button").forEach(b => b.addEventListener("click", () => {
+  const p = new URLSearchParams(location.hash.slice(1)); p.set("tab", b.dataset.tab);
+  history.replaceState(null, "", "#" + p.toString());
+  showTab(b.dataset.tab);
+  countTab(b.dataset.tab);
+  if (window.parent !== window) parent.postMessage({ type: "chm-tab", tab: b.dataset.tab }, "*");
+}));
+window.addEventListener("hashchange", () => showTab(tabParam()));
+showTab(tabParam());
+countTab(tabParam());
+
+applyTheme(); renderAll();
+// ---------- розряди: 10000000 → 10 000 000 у таблицях і на графіках (крім чисел із крапкою — це вивід Python) ----------
+const DIGITS_RE = /(^|[^\d.,\wⁱ⁰¹²³⁴⁵⁶⁷⁸⁹])(\d{4,})(?=(,\d+)?(?![\d.\w]))/g;
+function groupDigits() {
+  document.querySelectorAll("td, th, svg text").forEach(cell => {
+    if (cell.closest(".nogroup")) return;
+    const w = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
+    for (let n = w.nextNode(); n; n = w.nextNode()) {
+      if (/\d\.\d/.test(n.nodeValue)) continue;
+      const v = n.nodeValue.replace(DIGITS_RE, (m, pre, d) => pre + d.replace(/\B(?=(\d{3})+$)/g, "\u00a0"));
+      if (v !== n.nodeValue) n.nodeValue = v;
+    }
+  });
+}
+// ---------- таблиці: заголовок стовпця вирівнюємо так само, як числа під ним ----------
+function alignHeads() {
+  groupDigits();
+  document.querySelectorAll("table").forEach(t => {
+    const rows = [...t.rows], isHead = r => r.cells.length && [...r.cells].every(c => c.tagName === "TH");
+    const body = rows.find(r => !isHead(r) && r.cells.length > 1);
+    if (!body) return;
+    const at = [];   // стовпець → клітинка першого рядка даних (з урахуванням colspan)
+    [...body.cells].forEach(c => { for (let k = 0; k < c.colSpan; k++) at.push(c.colSpan === 1 ? c : null); });
+    rows.filter(isHead).forEach(h => {
+      let col = 0;
+      [...h.cells].forEach(th => {
+        const td = at[col];
+        if (th.colSpan === 1 && td) th.style.textAlign = getComputedStyle(td).textAlign;
+        col += th.colSpan;
+      });
+    });
+  });
+}
+let alignTimer = null;
+new MutationObserver(() => { clearTimeout(alignTimer); alignTimer = setTimeout(alignHeads, 0); }).observe(document.body, { childList: true, subtree: true });
+alignHeads();
+</script>
+</body>
+</html>
