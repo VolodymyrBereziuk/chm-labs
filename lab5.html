@@ -112,7 +112,7 @@
     <div class="seg" id="segN"></div>
     <svg id="ch3"></svg>
     <div class="chips"><label><span class="tag" style="background:var(--L1)"></span>f(x)</label><label><span class="tag" style="background:var(--L2)"></span>дотична в точці xₙ</label><label><span class="tag" style="background:var(--L4)"></span>наступне наближення</label></div>
-    <div class="seg"><button id="stepN">Наступний крок</button><button id="resetN">Спочатку</button></div>
+    <div class="seg"><button id="prevN">Попередній крок</button><button id="stepN">Наступний крок</button><button id="resetN">Спочатку</button></div>
     <div class="tbl"><table id="tN"></table></div>
     <p class="try"><b>Завдання:</b> зі старту зразка x₀ = 0 перший крок «перестрибує» корінь. Чому? Порівняйте старти −0,15, −0,14 і −1: що відбувається і чому?</p>
     <p class="note">Ньютон потребує похідної та стартової точки поблизу кореня. Якщо дотична майже горизонтальна (біля вершини параболи), наступна точка відлітає далеко; якщо f′ = 0 — ділення на нуль. Зі старту лівіше вершини метод знаходить інший корінь, −0,6.</p>
@@ -394,12 +394,14 @@ function render3() {
     dot(ch, nx, 0, TH.L4);
     label(ch.svg, ch.X(nx), ch.Y(0) + (f(x) > 0 ? 28 : -16), `xₙ₊₁ = ${val(nx)}`, { "text-anchor": "middle", fill: TH.L4 });
   }
+  document.getElementById("prevN").disabled = nRows.length < 2;
   document.getElementById("stepN").disabled = d === 0 || nRows.length > 12 || (nRows.length > 1 && Math.abs(nRows[nRows.length - 1].x - nRows[nRows.length - 2].x) < 1e-10);
   document.getElementById("tN").innerHTML = "<tr><th>n</th><th>xₙ</th><th>f(xₙ)</th><th>f′(xₙ)</th><th>xₙ₊₁ = xₙ − f/f′</th><th>до кореня 0,3</th></tr>" +
     nRows.map((r, i) => { const dd = df(r.x), n1 = dd === 0 ? null : r.x - f(r.x) / dd;
       return `<tr><td class="num">${i}</td><td class="num">${val(r.x)}</td><td class="num">${val(f(r.x))}</td><td class="num">${val(dd)}</td><td class="num">${n1 === null ? '<b class="z-ex">ділення на 0</b>' : val(n1)}</td><td class="num">${val(Math.abs(r.x - ROOT))}</td></tr>`; }).join("");
 }
 document.getElementById("stepN").addEventListener("click", () => { nwStep(); render3(); });
+document.getElementById("prevN").addEventListener("click", () => { if (nRows.length > 1) nRows.pop(); render3(); });
 document.getElementById("resetN").addEventListener("click", () => { nwReset(); render3(); });
 
 
